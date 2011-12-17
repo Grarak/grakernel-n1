@@ -87,6 +87,10 @@
 #include <linux/regulator/consumer.h>
 #include <linux/gpio.h>
 
+#ifdef CONFIG_TOUCH_WAKE
+#include <linux/touch_wake.h>
+#endif
+
 /*
 * This is a driver for the Atmel maXTouch Object Protocol
 *
@@ -1586,6 +1590,9 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 				input_mt_slot(mxt->input, i);
 				input_mt_report_slot_state(mxt->input, MT_TOOL_FINGER, false);
 			} else {
+                                #ifdef CONFIG_TOUCH_WAKE
+                                if (!device_is_suspended())
+                                #endif
 				input_mt_slot(mxt->input, i);
 				input_mt_report_slot_state(mxt->input, MT_TOOL_FINGER, true);
 				input_report_abs(mxt->input,
@@ -1600,7 +1607,12 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 					mtouch_info[i].size);
 
 				chkpress++;
+
+                                #ifdef CONFIG_TOUCH_WAKE
+                                touch_press();
+                                #endif
 			}
+
 #ifdef TOUCH_LOCKUP_PATTERN_RELEASE
 /*
 Forced-calibration or Touch kernel reboot at power on or system wake-up.
@@ -5166,6 +5178,7 @@ static void mxt_early_suspend(struct early_suspend *h)
 	}
 	mxt->mxt_status = false;
 	key_led_set(mxt, 0x00);
+
 #if 0
 #ifdef MXT_SLEEP_POWEROFF
 	if (mxt->pdata->suspend_platform_hw != NULL)
@@ -5264,10 +5277,33 @@ static void mxt_late_resume(struct early_suspend *h)
 #ifndef MXT_SLEEP_POWEROFF
 	calibrate_chip(mxt);
 #endif
-	metal_suppression_chk_flag = true;
+	metal_suppression_chk_flag = false;
 	mxt->mxt_status = true;
 	enable_irq(mxt->client->irq);
 }
+#endif
+
+#ifdef CONFIG_TOUCH_WAKE
+static struct mxt_data *touchwake_data;
+
+void touchscreen_disable(void)
+{
+    disable_irq(touchwake_data->client->irq);
+    calibrate_chip(touchwake_data);
+
+    return;
+}
+
+EXPORT_SYMBOL(touchscreen_disable);
+
+void touchscreen_enable(void)
+{
+    calibrate_chip(touchwake_data);
+    enable_irq(touchwake_data->client->irq);
+
+    return;
+}
+EXPORT_SYMBOL(touchscreen_enable);
 #endif
 
 #ifdef KEY_LED_CONTROL
@@ -5872,6 +5908,10 @@ static int mxt_resume(struct i2c_client *client)
 
 	if (device_may_wakeup(&client->dev))
 		disable_irq_wake(mxt->irq);
+        
+        #ifdef CONFIG_TOUCH_WAKE
+        touchwake_data = data;
+        #endif
 
 	return 0;
 }

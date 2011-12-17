@@ -46,6 +46,10 @@
 #include <linux/regulator/machine.h>
 //#include <plat/gpio-cfg.h>
 
+#ifdef CONFIG_TOUCH_WAKE
+#include <linux/touch_wake.h>
+#endif
+
 /*
 Melfas touchkey register
 */
@@ -115,6 +119,7 @@ static struct wake_lock bln_wake_lock;
 struct i2c_touchkey_driver {
 	struct i2c_client *client;
 	struct input_dev *input_dev;
+        struct touchkey_platform_data *pdata;
 	struct early_suspend early_suspend;
 };
 
@@ -124,6 +129,10 @@ struct workqueue_struct *touchkey_wq;
 
 struct work_struct touch_update_work;
 struct delayed_work touch_resume_work;
+
+#ifdef CONFIG_TOUCH_WAKE
+static struct i2c_touchkey_driver *touchwake_touchkey_driver;
+#endif
 
 #ifdef WHY_DO_WE_NEED_THIS
 static void __iomem *gpio_pend_mask_mem;
@@ -654,6 +663,11 @@ static irqreturn_t touchkey_interrupt(int irq, void *dummy)
 #ifdef CONFIG_HAS_EARLYSUSPEND
 static int melfas_touchkey_early_suspend(struct early_suspend *h)
 {
+
+        #ifdef CONFIG_TOUCH_WAKE
+	disable_touchkey_backlights();
+        #endif
+
 	int i;
 
 	touchkey_enable = 0;
@@ -679,11 +693,55 @@ static int melfas_touchkey_early_suspend(struct early_suspend *h)
 	return 0;
 }
 
+#ifdef CONFIG_TOUCH_WAKE
+			if (!device_is_suspended())
+	#endif
+		    	{
+				input_report_key(touchkey_driver->input_dev,
+					 touchkey_keycode[i],
+					 !(data & UPDOWN_EVENT_BIT));
+		    	}
+	#if defined(CONFIG_TOUCH_WAKE) || defined(CONFIG_BLD)
+			if (!(data & UPDOWN_EVENT_BIT))
+		    	{
+	#ifdef CONFIG_TOUCH_WAKE
+				touch_press();
+	#endif
+		    	}
+	#endif
+        		} else {
+        #ifdef CONFIG_TOUCH_WAKE
+		        if (!device_is_suspended())
+        #endif
+		            {
+			        for (i = 0; i < touchkey_driver->pdata->keycode_cnt; i++)
+			                     input_report_key(touchkey_driver->input_dev,
+					     touchkey_keycode[i],
+					     !!(data & (1U << i)));
+		            }
+
+        #if defined(CONFIG_TOUCH_WAKE) || defined(CONFIG_BLD)
+		        for (i = 0; i < touchkey_driver->pdata->keycode_cnt; i++)
+		            {
+			        if(!!(data & (1U << i)))
+			            {
+        #ifdef CONFIG_TOUCH_WAKE
+				        touch_press();
+        #endif
+				        break;
+			            }
+		            }
+        #endif
+	        }
+
 static int melfas_touchkey_late_resume(struct early_suspend *h)
 {
 	set_touchkey_debug('R');
 	printk(KERN_DEBUG "[TouchKey] melfas_touchkey_late_resume\n");
 
+        #ifdef CONFIG_TOUCH_WAKE
+        disable_touchkey_backlights();
+        #endif
 
 	/* enable ldo20 */
 	touchkey_ldo_on(1);

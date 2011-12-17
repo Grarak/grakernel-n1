@@ -1,4 +1,3 @@
-#
 # Makefile for misc devices that really don't fit anywhere else.
 #
 GCOV_PROFILE_tegra-cryptodev.o := y
@@ -48,14 +47,14 @@ obj-y				+= ti-st/
 obj-$(CONFIG_AB8500_PWM)	+= ab8500-pwm.o
 obj-y				+= lis3lv02d/
 obj-y				+= carma/
-obj-$(CONFIG_USB_SWITCH_FSA9480) += fsa9480.o
+obj-$(CONFIG_USB_SWITCH_FSA9480)+= fsa9480.o
 obj-$(CONFIG_WL127X_RFKILL)	+= wl127x-rfkill.o
 obj-$(CONFIG_APANIC)		+= apanic.o
 obj-$(CONFIG_SENSORS_NCT1008)	+= nct1008.o
 obj-$(CONFIG_BCM4329_RFKILL)	+= bcm4329_rfkill.o
 obj-$(CONFIG_BCM4330_RFKILL)    += bcm4330_rfkill.o
-obj-$(CONFIG_SAMSUNG_JACK)  += sec_jack.o
-obj-$(CONFIG_SAMSUNG_FM_SI4709)		+= fm_si4709/
+obj-$(CONFIG_SAMSUNG_JACK)      += sec_jack.o
+obj-$(CONFIG_SAMSUNG_FM_SI4709)	+= fm_si4709/
 obj-$(CONFIG_TEGRA_CRYPTO_DEV)	+= tegra-cryptodev.o
 obj-$(CONFIG_TEGRA_BB_SUPPORT)	+= tegra-baseband/
 obj-$(CONFIG_MAX1749_VIBRATOR)	+= max1749.o
@@ -69,3 +68,4 @@ obj-$(CONFIG_GENERIC_BLN)       += bln.o
 obj-$(CONFIG_BLX)		+= blx.o
 obj-$(CONFIG_FSYNC_CONTROL)	+= fsync_control.o
 obj-$(CONFIG_MALI_CONTROL)	+= mali_control.o
+obj-$(CONFIG_TOUCH_WAKE)        += touch_wake.o
