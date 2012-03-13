@@ -64,3 +64,4 @@ obj-$(CONFIG_SEC_MODEM)     += modem_if/
 obj-$(CONFIG_VIBTONZ)       += vibetonz/
 obj-$(CONFIG_GENERIC_BLN)   += bln.o
 obj-$(CONFIG_FSYNC_CONTROL)  += fsync_control.o
+obj-$(CONFIG_CACHE2DMANAGER)	+= cache-2dmanager/
