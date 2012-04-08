@@ -608,5 +608,11 @@ source "drivers/misc/carma/Kconfig"
 source "drivers/misc/tegra-baseband/Kconfig"
 source "drivers/misc/modem_if/Kconfig"
 
+config FSYNC_CONTROL
+        bool "Support for FSync Control"
+        default y
+        help
+          Say Y here to enable FSync Control
+
 endif # MISC_DEVICES
 
