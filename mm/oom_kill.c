@@ -315,48 +315,6 @@ enum oom_scan_t oom_scan_process_thread(struct task_struct *task,
 	return OOM_SCAN_OK;
 }
 
-/*
- * Simple selection loop. We chose the process with the highest
- * number of 'points'. We expect the caller will lock the tasklist.
- *
- * (not docbooked, we don't want this one cluttering up the manual)
- */
-static struct task_struct *select_bad_process(unsigned int *ppoints,
-		unsigned long totalpages, const nodemask_t *nodemask,
-		bool force_kill)
-{
-	struct task_struct *g, *p;
-	struct task_struct *chosen = NULL;
-	unsigned long chosen_points = 0;
-
-	do_each_thread(g, p) {
-		unsigned int points;
-
-		switch (oom_scan_process_thread(p, totalpages, nodemask,
-						force_kill)) {
-		case OOM_SCAN_SELECT:
-			chosen = p;
-			chosen_points = ULONG_MAX;
-			/* fall through */
-		case OOM_SCAN_CONTINUE:
-			continue;
-		case OOM_SCAN_ABORT:
-			return ERR_PTR(-1UL);
-		case OOM_SCAN_OK:
-			break;
-		};
-
-		points = oom_badness(p, NULL, nodemask, totalpages);
-		if (points > chosen_points) {
-			chosen = p;
-			chosen_points = points;
-		}
-	} while_each_thread(g, p);
-
-	*ppoints = chosen_points * 1000 / totalpages;
-	return chosen;
-}
-
 /**
  * dump_tasks - dump current memory state of all system tasks
  * @mem: current's memory controller, if constrained
@@ -365,10 +323,8 @@ static struct task_struct *select_bad_process(unsigned int *ppoints,
  * Dumps the current memory state of all eligible tasks.  Tasks not in the same
  * memcg, not in the same cpuset, or bound to a disjoint set of mempolicy nodes
  * are not shown.
- * State information includes task's pid, uid, tgid, vm size, rss, cpu, oom_adj
- * value, oom_score_adj value, and name.
- *
- * Call with tasklist_lock read-locked.
+ * State information includes task's pid, uid, tgid, vm size, rss, nr_ptes,
+ * swapents, oom_score_adj value, and name.
  */
 static void dump_tasks(const struct mem_cgroup *mem, const nodemask_t *nodemask)
 {
@@ -376,6 +332,7 @@ static void dump_tasks(const struct mem_cgroup *mem, const nodemask_t *nodemask)
 	struct task_struct *task;
 
 	pr_info("[ pid ]   uid  tgid total_vm      rss cpu oom_adj oom_score_adj name\n");
+	rcu_read_lock();
 	for_each_process(p) {
 		if (oom_unkillable_task(p, mem, nodemask))
 			continue;
@@ -397,6 +354,7 @@ static void dump_tasks(const struct mem_cgroup *mem, const nodemask_t *nodemask)
 			task->signal->oom_score_adj, task->comm);
 		task_unlock(task);
 	}
+	rcu_read_unlock();
 }
 
 static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
@@ -417,50 +375,10 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
 }
 
 #define K(x) ((x) << (PAGE_SHIFT-10))
-static int oom_kill_task(struct task_struct *p, struct mem_cgroup *mem)
-{
-	struct task_struct *q;
-	struct mm_struct *mm;
-
-	p = find_lock_task_mm(p);
-	if (!p)
-		return 1;
-
-	/* mm cannot be safely dereferenced after task_unlock(p) */
-	mm = p->mm;
-
-	pr_err("Killed process %d (%s) total-vm:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
-		task_pid_nr(p), p->comm, K(p->mm->total_vm),
-		K(get_mm_counter(p->mm, MM_ANONPAGES)),
-		K(get_mm_counter(p->mm, MM_FILEPAGES)));
-	task_unlock(p);
-
-	/*
-	 * Kill all processes sharing p->mm in other thread groups, if any.
-	 * They don't get access to memory reserves or a higher scheduler
-	 * priority, though, to avoid depletion of all memory or task
-	 * starvation.  This prevents mm->mmap_sem livelock when an oom killed
-	 * task cannot exit because it requires the semaphore and its contended
-	 * by another thread trying to allocate memory itself.  That thread will
-	 * now get access to memory reserves since it has a pending fatal
-	 * signal.
-	 */
-	for_each_process(q)
-		if (q->mm == mm && !same_thread_group(q, p)) {
-			task_lock(q);	/* Protect ->comm from prctl() */
-			pr_err("Kill process %d (%s) sharing same memory\n",
-				task_pid_nr(q), q->comm);
-			task_unlock(q);
-			force_sig(SIGKILL, q);
-		}
-
-	set_tsk_thread_flag(p, TIF_MEMDIE);
-	force_sig(SIGKILL, p);
-
-	return 0;
-}
-#undef K
-
+/*
+ * Must be called while holding a reference to p, which will be released upon
+ * returning.
+ */
 void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 		      unsigned int points, unsigned long totalpages,
 		      struct mem_cgroup *memcg, nodemask_t *nodemask,
@@ -480,7 +398,8 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	 */
 	if (p->flags & PF_EXITING) {
 		set_tsk_thread_flag(p, TIF_MEMDIE);
-		return 0;
+		put_task_struct(p);
+		return;
 	}
 
 	task_lock(p);
@@ -494,6 +413,7 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	 * parent.  This attempts to lose the minimal amount of work done while
 	 * still freeing memory.
 	 */
+	read_lock(&tasklist_lock);
 	do {
 		list_for_each_entry(child, &t->children, sibling) {
 			unsigned int child_points;
@@ -506,13 +426,30 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 			child_points = oom_badness(child, memcg, nodemask,
 								totalpages);
 			if (child_points > victim_points) {
+				put_task_struct(victim);
 				victim = child;
 				victim_points = child_points;
+				get_task_struct(victim);
 			}
 		}
 	} while_each_thread(p, t);
+	read_unlock(&tasklist_lock);
 
-	return oom_kill_task(victim, memcg);
+	rcu_read_lock();
+	p = find_lock_task_mm(victim);
+	if (!p) {
+		rcu_read_unlock();
+		put_task_struct(victim);
+		return;
+	} else if (victim != p) {
+		get_task_struct(p);
+		put_task_struct(victim);
+		victim = p;
+	}
+
+	set_tsk_thread_flag(victim, TIF_MEMDIE);
+	do_send_sig_info(SIGKILL, SEND_SIG_FORCED, victim, true);
+	put_task_struct(victim);
 }
 
 /*
@@ -532,9 +469,7 @@ static void check_panic_on_oom(enum oom_constraint constraint, gfp_t gfp_mask,
 		if (constraint != CONSTRAINT_NONE)
 			return;
 	}
-	read_lock(&tasklist_lock);
 	dump_header(NULL, gfp_mask, order, NULL, nodemask);
-	read_unlock(&tasklist_lock);
 	panic("Out of memory: %s panic_on_oom is enabled\n",
 		sysctl_panic_on_oom == 2 ? "compulsory" : "system-wide");
 }
@@ -674,7 +609,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 		int order, nodemask_t *nodemask)
 {
 	const nodemask_t *mpol_mask;
-	struct task_struct *p;
 	unsigned long totalpages;
 	unsigned long freed = 0;
 	unsigned int uninitialized_var(points);
@@ -705,34 +639,17 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	mpol_mask = (constraint == CONSTRAINT_MEMORY_POLICY) ? nodemask : NULL;
 	check_panic_on_oom(constraint, gfp_mask, order, mpol_mask);
 
-	read_lock(&tasklist_lock);
 	if (sysctl_oom_kill_allocating_task && current->mm &&
 	    !oom_unkillable_task(current, NULL, nodemask) &&
 	    current->signal->oom_score_adj != OOM_SCORE_ADJ_MIN) {
+		get_task_struct(current);
 		oom_kill_process(current, gfp_mask, order, 0, totalpages, NULL,
 				 nodemask,
 				 "Out of memory (oom_kill_allocating_task)");
 		goto out;
 	}
 
-retry:
-	p = select_bad_process(&points, totalpages, mpol_mask, false);
-	if (PTR_ERR(p) == -1UL)
-		goto out;
-
-	/* Found nothing?!?! Either we hang forever, or we panic. */
-	if (!p) {
-		dump_header(NULL, gfp_mask, order, NULL, mpol_mask);
-		read_unlock(&tasklist_lock);
-		panic("Out of memory and no killable processes...\n");
-	}
-
-	oom_kill_process(p, gfp_mask, order, points, totalpages, NULL,
-				nodemask, "Out of memory");
-	killed = 1;
 out:
-	read_unlock(&tasklist_lock);
-
 	/*
 	 * Give the killed threads a good chance of exiting before trying to
 	 * allocate memory again.
