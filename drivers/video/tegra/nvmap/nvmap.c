@@ -3,7 +3,7 @@
  *
  * Memory manager for Tegra GPU
  *
- * Copyright (c) 2009-2011, NVIDIA Corporation.
+ * Copyright (c) 2009-2012, NVIDIA Corporation.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -273,7 +273,7 @@ int nvmap_pin_ids(struct nvmap_client *client,
 	 * if the caller crashes after pinning a global handle, the handle
 	 * will be permanently leaked. */
 	nvmap_ref_lock(client);
-	for (i = 0; i < nr && !ret; i++) {
+	for (i = 0; i < nr; i++) {
 		ref = _nvmap_validate_id_locked(client, ids[i]);
 		if (ref) {
 			atomic_inc(&ref->pin);
@@ -282,18 +282,18 @@ int nvmap_pin_ids(struct nvmap_client *client,
 			struct nvmap_handle *verify;
 			nvmap_ref_unlock(client);
 			verify = nvmap_validate_get(client, ids[i]);
-			if (verify)
+			if (verify) {
 				nvmap_warn(client, "%s pinning unreferenced "
 					   "handle %p\n",
 					   current->group_leader->comm, h[i]);
-			else
+			} else {
+				h[i] = NULL;
 				ret = -EPERM;
+			}
 			nvmap_ref_lock(client);
 		}
 	}
 	nvmap_ref_unlock(client);
-
-	nr = i;
 
 	if (ret)
 		goto out;
@@ -319,6 +319,9 @@ out:
 	if (ret) {
 		nvmap_ref_lock(client);
 		for (i = 0; i < nr; i++) {
+			if(!ids[i])
+				continue;
+
 			ref = _nvmap_validate_id_locked(client, ids[i]);
 			if (!ref) {
 				nvmap_warn(client, "%s freed handle %p "
@@ -332,7 +335,8 @@ out:
 		nvmap_ref_unlock(client);
 
 		for (i = 0; i < nr; i++)
-			nvmap_handle_put(h[i]);
+			if(h[i])
+				nvmap_handle_put(h[i]);
 	}
 
 	return ret;
