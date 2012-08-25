@@ -496,6 +496,12 @@ int __init n1_regulator_init(void)
 
 	i2c_register_board_info(4, n1_regulators, ARRAY_SIZE(n1_regulators));
 
+	/* invoke this regulator call so that the core regulator code
+	 * will automatically disable any regulators it finds that are
+	 * on but not referenced in late init.  that allows drivers to
+	 * control the regulators dynamically after cleaning up the
+	 * boot state of the regulators.
+	 */
 	regulator_has_full_constraints();
 	tegra_init_suspend(&n1_suspend_data);
 
