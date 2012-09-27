@@ -604,4 +604,11 @@ config MACH_VIBRATOR
 	  Say Y here to enable second timed_output device called vibrator_mach
 	  implemented in arch/arm/mach-tegra/.
 
+config RQ_STATS
+	bool "Enable Run queue statistics"
+	default n
+	help
+	  Select this to enable scheduler rune queue statistic
+	  collections
+
 endif
