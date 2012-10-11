@@ -152,6 +152,23 @@ struct tag_tegra {
 	char bootarg[1];
 };
 
+/* for automatic boot timing testcases */
+#define ATAG_BOOTTIME  0x41000403
+#define BOOTTIME_MAX_NAME_LEN 64
+#define BOOTTIME_MAX 10
+
+struct boottime_entry {
+	u32 time; /* in us */
+	u8  name[BOOTTIME_MAX_NAME_LEN];
+};
+
+struct tag_boottime {
+	struct boottime_entry entry[BOOTTIME_MAX];
+	u32 idle;  /* in us */
+	u32 total; /* in us */
+	u8 num;
+};
+
 struct tag {
 	struct tag_header hdr;
 	union {
@@ -176,6 +193,10 @@ struct tag {
 		struct tag_memclk	memclk;
 
 		struct tag_tegra	tegra;
+		/*
+		 * Boot time
+		 */
+		struct tag_boottime	boottime;
 	} u;
 };
 
