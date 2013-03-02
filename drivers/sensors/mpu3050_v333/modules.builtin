@@ -1,0 +1,3 @@
+kernel/drivers/sensors/mpu3050_v333/mpu3050.ko
+kernel/drivers/sensors/mpu3050_v333/sensors_core.ko
+kernel/drivers/sensors/mpu3050_v333/timerirq.ko

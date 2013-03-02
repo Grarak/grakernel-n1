@@ -1,0 +1,2 @@
+kernel/arch/arm/mach-tegra/syncpt.ko
+kernel/arch/arm/mach-tegra/pwm.ko

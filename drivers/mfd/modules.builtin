@@ -1,0 +1,4 @@
+kernel/drivers/mfd/mfd-core.ko
+kernel/drivers/mfd/max8907c.ko
+kernel/drivers/mfd/max8907c-irq.ko
+kernel/drivers/mfd/max8907c-adc.ko

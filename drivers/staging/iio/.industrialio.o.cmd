@@ -1,0 +1,1 @@
+cmd_drivers/staging/iio/industrialio.o := /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/staging/iio/industrialio.o drivers/staging/iio/industrialio-core.o 

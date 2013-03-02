@@ -1,0 +1,1 @@
+cmd_drivers/misc/fm_si4709/Si4709_driver.ko := /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL -r  -T /home/willi/android/kernel/n1_jb/scripts/module-common.lds --build-id  -o drivers/misc/fm_si4709/Si4709_driver.ko drivers/misc/fm_si4709/Si4709_driver.o drivers/misc/fm_si4709/Si4709_driver.mod.o

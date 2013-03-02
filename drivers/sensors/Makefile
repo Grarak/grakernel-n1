@@ -1,0 +1,11 @@
+#
+# Makefile for the kernel Sensor device drivers.
+#
+
+# Object files in subdirectories
+
+obj-$(CONFIG_SENSORS_KXTF9)		+= kxtf9.o
+
+obj-$(CONFIG_PROXLIGHT)			+= proxlight/
+obj-$(CONFIG_COMPASS)			+= compass/
+obj-$(CONFIG_MPU_SENSORS_MPU3050)	+= mpu3050_v333/

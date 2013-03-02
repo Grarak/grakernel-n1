@@ -1,0 +1,1 @@
+cmd_drivers/video/tegra/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/video/tegra/built-in.o drivers/video/tegra/host/built-in.o drivers/video/tegra/dc/built-in.o drivers/video/tegra/fb.o drivers/video/tegra/nvmap/built-in.o drivers/video/tegra/cmc623.o drivers/video/tegra/cmc623_svc.o 

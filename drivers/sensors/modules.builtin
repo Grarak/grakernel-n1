@@ -1,0 +1,6 @@
+kernel/drivers/sensors/kxtf9.ko
+kernel/drivers/sensors/compass/ak8975.ko
+kernel/drivers/sensors/mpu3050_v333/mpu3050.ko
+kernel/drivers/sensors/mpu3050_v333/sensors_core.ko
+kernel/drivers/sensors/mpu3050_v333/timerirq.ko
+kernel/drivers/sensors/proxlight/cm3663.ko

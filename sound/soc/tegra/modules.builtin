@@ -1,0 +1,7 @@
+kernel/sound/soc/tegra/snd-soc-tegra-pcm.ko
+kernel/sound/soc/tegra/snd-soc-tegra-utils.ko
+kernel/sound/soc/tegra/snd-soc-tegra-tdm-pcm.ko
+kernel/sound/soc/tegra/snd-soc-tegra20-das.ko
+kernel/sound/soc/tegra/snd-soc-tegra20-i2s.ko
+kernel/sound/soc/tegra/snd-soc-tegra20-spdif.ko
+kernel/sound/soc/tegra/snd-soc-tegra-wm8994.ko

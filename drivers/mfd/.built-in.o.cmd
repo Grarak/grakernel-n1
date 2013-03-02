@@ -1,0 +1,1 @@
+cmd_drivers/mfd/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/mfd/built-in.o drivers/mfd/mfd-core.o drivers/mfd/max8907c.o drivers/mfd/max8907c-irq.o drivers/mfd/max8907c-adc.o 

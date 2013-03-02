@@ -1,0 +1,1 @@
+cmd_drivers/sensors/compass/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/sensors/compass/built-in.o drivers/sensors/compass/ak8975.o 

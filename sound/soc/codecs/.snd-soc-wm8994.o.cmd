@@ -1,0 +1,1 @@
+cmd_sound/soc/codecs/snd-soc-wm8994.o := /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o sound/soc/codecs/snd-soc-wm8994.o sound/soc/codecs/wm8994_samsung.o sound/soc/codecs/wm8994_n1.o sound/soc/codecs/wm8994_voodoo.o 

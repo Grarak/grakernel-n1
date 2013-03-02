@@ -1,0 +1,5 @@
+kernel/drivers/power/power_supply.ko
+kernel/drivers/power/max17043_battery.ko
+kernel/drivers/power/max8907c-charger.ko
+kernel/drivers/power/max8922-charger.ko
+kernel/drivers/power/sec_battery.ko

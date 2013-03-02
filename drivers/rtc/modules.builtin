@@ -1,0 +1,2 @@
+kernel/drivers/rtc/rtc-max8907c.ko
+kernel/drivers/rtc/rtc-tegra.ko

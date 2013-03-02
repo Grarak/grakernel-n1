@@ -1,0 +1,1 @@
+cmd_drivers/sensors/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/sensors/built-in.o drivers/sensors/kxtf9.o drivers/sensors/proxlight/built-in.o drivers/sensors/compass/built-in.o drivers/sensors/mpu3050_v333/built-in.o 

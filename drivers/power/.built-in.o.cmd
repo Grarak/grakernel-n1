@@ -1,0 +1,1 @@
+cmd_drivers/power/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/power/built-in.o drivers/power/power_supply.o drivers/power/max17043_battery.o drivers/power/max8907c-charger.o drivers/power/max8922-charger.o drivers/power/sec_battery.o 
