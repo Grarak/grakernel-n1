@@ -1,4 +1,0 @@
-kernel/drivers/regulator/fixed.ko
-kernel/drivers/regulator/virtual.ko
-kernel/drivers/regulator/max8952n1.ko
-kernel/drivers/regulator/max8907c-regulator.ko

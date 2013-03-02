@@ -1,1 +1,0 @@
-cmd_net/bluetooth_mgmt/hidp/hidp.o := /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o net/bluetooth_mgmt/hidp/hidp.o net/bluetooth_mgmt/hidp/core.o net/bluetooth_mgmt/hidp/sock.o 

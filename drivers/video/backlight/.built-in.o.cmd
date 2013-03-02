@@ -1,1 +1,0 @@
-cmd_drivers/video/backlight/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/video/backlight/built-in.o drivers/video/backlight/lcd.o drivers/video/backlight/backlight.o drivers/video/backlight/cmc623_pwm_bl.o 

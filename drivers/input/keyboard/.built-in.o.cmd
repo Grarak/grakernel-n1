@@ -1,1 +1,0 @@
-cmd_drivers/input/keyboard/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/input/keyboard/built-in.o drivers/input/keyboard/gpio_keys.o drivers/input/keyboard/tegra-kbc.o 

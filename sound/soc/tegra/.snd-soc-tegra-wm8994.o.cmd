@@ -1,1 +1,0 @@
-cmd_sound/soc/tegra/snd-soc-tegra-wm8994.o := /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o sound/soc/tegra/snd-soc-tegra-wm8994.o sound/soc/tegra/tegra_wm8994.o 

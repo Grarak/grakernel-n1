@@ -1,1 +1,0 @@
-cmd_drivers/media/common/built-in.o :=  /home/willi/android/kernel/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-ld -EL    -r -o drivers/media/common/built-in.o drivers/media/common/tuners/built-in.o 
