@@ -68,6 +68,7 @@
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
 #include <linux/perf_event.h>
+#include <linux/fs.h>
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -643,6 +644,7 @@ asmlinkage void __init start_kernel(void)
 #ifdef CONFIG_KERNEL_DEBUG_SEC
 	kernel_sec_init();
 #endif
+	suspend_fstrim_init();
 
 	/* Do the rest non-__init'ed, we're now alive */
 	rest_init();
