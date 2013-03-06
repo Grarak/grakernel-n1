@@ -41,6 +41,8 @@ config IFB
 	  'ifb1' etc.
 	  Look at the iproute2 documentation directory for usage etc
 
+source "drivers/net/team/Kconfig"
+
 config DUMMY
 	tristate "Dummy net driver support"
 	---help---
