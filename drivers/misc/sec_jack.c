@@ -258,7 +258,7 @@ static void sec_jack_set_type(struct sec_jack_info *hi, int jack_type)
 	/* prevent suspend to allow user space to respond to switch */
 	wake_lock_timeout(&hi->det_wake_lock, WAKE_LOCK_TIME);
 
-	switch_set_state(&switch_jack_detection, jack_type);
+	//switch_set_state(&switch_jack_detection, jack_type);
 #if defined(CONFIG_MACH_N1_CHN)
 	g_headset_status = jack_type;
 	//pr_err("%s: g_headset_status =%d !!\n", __func__, g_headset_status);
@@ -463,7 +463,7 @@ void sec_jack_buttons_work(struct work_struct *work)
 	if (hi->pressed == 0) {
 		input_report_key(hi->input_dev, hi->pressed_code, 0);
 		if(hi->pressed_code == KEY_MEDIA)
-			switch_set_state(&switch_sendend, 0);
+			//switch_set_state(&switch_sendend, 0);
 		input_sync(hi->input_dev);
 		pr_info("%s: keycode=%d, is released\n", __func__,
 			hi->pressed_code);
@@ -479,7 +479,7 @@ void sec_jack_buttons_work(struct work_struct *work)
 			hi->pressed_code = btn_zones[i].code;
 			input_report_key(hi->input_dev, btn_zones[i].code, 1);
 			if(hi->pressed_code == KEY_MEDIA)
-				switch_set_state(&switch_sendend, 1);
+				//switch_set_state(&switch_sendend, 1);
 			input_sync(hi->input_dev);
 			pr_info("%s: keycode=%d, is pressed\n", __func__,
 				btn_zones[i].code);
@@ -613,16 +613,16 @@ static int sec_jack_probe(struct platform_device *pdev)
 		goto err_gpio_request;
 	}
 
-	ret = switch_dev_register(&switch_jack_detection);
+	//ret = switch_dev_register(&switch_jack_detection);
 	if (ret < 0) {
 		pr_err("%s : Failed to register switch device\n", __func__);
-		goto err_switch_dev_register;
+		//goto err_switch_dev_register;
 	}
 
-	ret = switch_dev_register(&switch_sendend);
+	//ret = switch_dev_register(&switch_sendend);
 	if (ret < 0) {
 		printk(KERN_ERR "SEC JACK: Failed to register switch device\n");
-		goto err_switch_dev_register_send_end;
+		//goto err_switch_dev_register_send_end;
 	}
 	wake_lock_init(&hi->det_wake_lock, WAKE_LOCK_SUSPEND, "sec_jack_det");
 #ifndef CONFIG_MACH_BOSE_ATT
@@ -739,10 +739,10 @@ err_register_input_handler:
 	destroy_workqueue(hi->queue);
 err_create_wq_failed:
 	wake_lock_destroy(&hi->det_wake_lock);
-	switch_dev_unregister(&switch_sendend);
-err_switch_dev_register_send_end:
-	switch_dev_unregister(&switch_jack_detection);
-err_switch_dev_register:
+	//switch_dev_unregister(&switch_sendend);
+//err_switch_dev_register_send_end:
+	//switch_dev_unregister(&switch_jack_detection);
+//err_switch_dev_register:
 	gpio_free(pdata->det_gpio);
 err_gpio_request:
 	kfree(hi);
@@ -772,8 +772,8 @@ static int sec_jack_remove(struct platform_device *pdev)
 	}
 	input_unregister_handler(&hi->handler);
 	wake_lock_destroy(&hi->det_wake_lock);
-	switch_dev_unregister(&switch_sendend);
-	switch_dev_unregister(&switch_jack_detection);
+	//switch_dev_unregister(&switch_sendend);
+	//switch_dev_unregister(&switch_jack_detection);
 	gpio_free(hi->pdata->det_gpio);
 	kfree(hi);
 	atomic_set(&instantiated, 0);

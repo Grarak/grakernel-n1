@@ -41,4 +41,3 @@ config NET_TEAM_MODE_ACTIVEBACKUP
 	  will be called team_mode_activebackup.
 
 endif # NET_TEAM
-</pre></body></html>

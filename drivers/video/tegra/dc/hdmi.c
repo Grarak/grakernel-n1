@@ -1650,7 +1650,7 @@ static int tegra_dc_hdmi_init(struct tegra_dc *dc)
 
 #ifdef CONFIG_SWITCH
 	hdmi->hpd_switch.name = "hdmi";
-	ret = switch_dev_register(&hdmi->hpd_switch);
+	//ret = switch_dev_register(&hdmi->hpd_switch);
 
 	if (!ret)
 		ret = device_create_file(hdmi->hpd_switch.dev,
@@ -1658,7 +1658,7 @@ static int tegra_dc_hdmi_init(struct tegra_dc *dc)
 	BUG_ON(ret != 0);
 #endif
 	rcp_switch.name = "MHL_RCP";
-	ret = switch_dev_register(&rcp_switch);
+	//ret = switch_dev_register(&rcp_switch);
 	if (!ret)
 		ret = device_create_file(rcp_switch.dev,
 			&dev_attr_underscan);
@@ -1731,9 +1731,9 @@ static void tegra_dc_hdmi_destroy(struct tegra_dc *dc)
 	free_irq(gpio_to_irq(dc->out->hotplug_gpio), dc);
 	cancel_delayed_work_sync(&hdmi->work);
 #ifdef CONFIG_SWITCH
-	switch_dev_unregister(&hdmi->hpd_switch);
+	//switch_dev_unregister(&hdmi->hpd_switch);
 #endif
-	switch_dev_unregister(&rcp_switch);
+	//switch_dev_unregister(&rcp_switch);
 	iounmap(hdmi->base);
 	release_resource(hdmi->base_res);
 #if !defined(CONFIG_ARCH_TEGRA_2x_SOC)

@@ -1064,7 +1064,7 @@ static int tegra_pm_enter_suspend(void)
 #ifdef CONFIG_MACH_N1
 	/* FIXME : set LP1 when the device is in call */
 	if (Is_call_active() || !gpio_get_value(GPIO_ALC_INT)
-				|| Is_proximitysensor_active())
+				/*|| Is_proximitysensor_active()*/)
 		current_suspend_mode = TEGRA_SUSPEND_LP1;
 	else
 		current_suspend_mode = pdata->suspend_mode;

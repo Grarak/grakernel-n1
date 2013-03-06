@@ -668,11 +668,11 @@ void tegra_vbus_detect_notify_batt(void)
 static void fsa9480_deskdock_cb(bool attached)
 {
 	if (attached) {
-		switch_set_state(&switch_dock, 1);
+		//switch_set_state(&switch_dock, 1);
 		dock_attached = 1;
 	}
 	else {
-		switch_set_state(&switch_dock, 0);
+		//switch_set_state(&switch_dock, 0);
 		dock_attached = 0;
 	}
 }
@@ -694,11 +694,11 @@ static void fsa9480_mhl_cb(bool attached)
 static void fsa9480_cardock_cb(bool attached)
 {
 	if (attached) {
-		switch_set_state(&switch_dock, 2);
+		//switch_set_state(&switch_dock, 2);
 		dock_attached = 1;
 	}
 	else {
-		switch_set_state(&switch_dock, 0);
+		//switch_set_state(&switch_dock, 0);
 		dock_attached = 0;
 	}
 }
@@ -708,7 +708,7 @@ static void fsa9480_reset_cb(void)
 	int ret;
 
 	/* for CarDock, DeskDock */
-	ret = switch_dev_register(&switch_dock);
+	//ret = switch_dev_register(&switch_dock);
 	if (ret < 0)
 		pr_err("Failed to register dock switch. %d\n", ret);
 
