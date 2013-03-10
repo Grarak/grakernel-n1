@@ -566,25 +566,30 @@ struct mass_storage_function_config {
 	struct fsg_common *common;
 };
 
+#if defined(CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE)
+# define UMS_WITH_MULTIPLE_LUNS
+#elif defined(CONFIG_MACH_N1) || defined(CONFIG_MACH_BOSE_ATT)
+# define UMS_WITH_MULTIPLE_LUNS
+#endif
+
 static int mass_storage_function_init(struct android_usb_function *f,
 					struct usb_composite_dev *cdev)
 {
 	struct mass_storage_function_config *config;
 	struct fsg_common *common;
 	int err;
-#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
-	int i;
-#endif
+
 	config = kzalloc(sizeof(struct mass_storage_function_config),
 								GFP_KERNEL);
 	if (!config)
 		return -ENOMEM;
 
-#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
+#ifdef UMS_WITH_MULTIPLE_LUNS
 	if (config) {
+		int i;
 		/* All of Nvidia device have SD card slot so we make 2 luns */
 		config->fsg.nluns = 2;
-		printk(KERN_DEBUG "usb: %s, nluns=%d\n", __func__,
+		pr_notice("usb: %s, nluns=%d\n", __func__,
 				config->fsg.nluns);
 
 		for (i = 0; i < config->fsg.nluns; i++) {
@@ -615,10 +620,12 @@ static int mass_storage_function_init(struct android_usb_function *f,
 				return err;
 			}
 		}
-	} else {
+	}
+	else
 #endif
+	{
 		/* original mainline code */
-		printk(KERN_DEBUG "usb: %s pdata is not available. nluns=1\n",
+		pr_notice("usb: %s pdata is not available. nluns=1\n",
 				__func__);
 		config->fsg.nluns = 1;
 		config->fsg.luns[0].removable = 1;
@@ -636,9 +643,8 @@ static int mass_storage_function_init(struct android_usb_function *f,
 			kfree(config);
 			return err;
 		}
-#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 	}
-#endif
+
 	config->common = common;
 	f->config = config;
 	return 0;
