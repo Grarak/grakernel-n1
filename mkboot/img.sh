@@ -4,6 +4,6 @@ chmod 750 init* charger
 chmod 644 default.prop
 chmod 640 fstab.n1
 chmod 644 ueventd*
-find . | cpio -o -H newc | gzip > ../newramdisk.cpio.gz
 cd ..
-./mkbootimg --cmdline 'no_console_suspend=1' --kernel zImage --ramdisk newramdisk.cpio.gz -o boot.img 
+./mkbootfs boot.img-ramdisk | gzip > ramdisk.gz
+./mkbootimg --kernel zImage --ramdisk ramdisk.gz -o boot.img --base 10000000 
