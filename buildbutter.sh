@@ -26,6 +26,7 @@ zip -r ButterKernel.zip cleaner META-INF system boot.img
 
 echo 'Cleaning up...'
 rm mkboot/boot.img
+rm mkboot/zImage
 rm out/ButterKernel/boot.img
 rm out/ButterKernel/ButterKernel.zip
 rm out/ButterKernel/system/lib/modules/*.ko
