@@ -6,7 +6,7 @@ ui_print("");
 ui_print("");
 ui_print("");
 ui_print("------------------------------------------------");
-ui_print("       ButterKernel Weekly v1.1 by Grarak       ");
+ui_print("             ButterKernel by Grarak             ");
 ui_print("        _____        _   _   _____              ");
 ui_print("       |  _  \     _| |_| |_| ____|             ");
 ui_print("       | |_| / _  |_   _   _| |_   _ __         ");
