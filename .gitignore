@@ -33,6 +33,9 @@ modules.builtin
 *.lzo
 *.patch
 *.gcno
+boot.img
+zImage
+ButterKernel.zip
 
 #
 # Top-level generic files
