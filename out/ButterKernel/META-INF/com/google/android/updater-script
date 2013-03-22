@@ -15,30 +15,12 @@ ui_print("       | |_|  | |_| | |_| |_| |___| |           ");
 ui_print("       |_____/ \___/\___\___|_____|_|           ");
 ui_print("------------------------------------------------");
 
-show_progress(0.100000, 0);
-
-assert(package_extract_file("boot.img", "/dev/block/mmcblk0p9"));
-
+show_progress(0.1, 0);
 mount("ext4", "EMMC", "/dev/block/mmcblk0p2", "/system");
-mount("ext4", "EMMC", "/dev/block/mmcblk0p6", "/data");
 package_extract_dir("system", "/system");
-
-set_perm_recursive(0, 0, 0755, 0644, "/system/lib/modules");
-
-package_extract_dir("cleaner", "/tmp");
-set_perm(0, 0, 0755, "/tmp/cleaner.sh");
-run_program("/tmp/cleaner.sh");
-
 unmount("/system");
-show_progress(0.500000, 0);
-delete_recursive("/data/dalvik-cache");
-
-run_program("/sbin/busybox", "sync");
-
-show_progress(0.300000, 0);
-
-unmount("/data");
-
-ui_print("Installation complete!");
-ui_print("");
-ui_print("Now you should freak out!");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p6", "/.secondrom");
+package_extract_dir("system", "/system");
+assert(package_extract_file("boot.img", "/dev/block/mmcblk0p9"));
+show_progress(0.2, 10);
+unmount("/system");
