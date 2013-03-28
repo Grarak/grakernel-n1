@@ -194,7 +194,7 @@ static void key_led_set(struct mxt_data *mxt, u32 val);
 
 static int key_led_timeout = 4000; /* 4 sec */
 static struct timer_list key_led_timer;
-static void key_led_timer_callback(unsigned long);
+static void key_led_timer_callback(unsigned long data);
 #endif
 
 #ifdef CONFIG_GENERIC_BLN
@@ -5411,12 +5411,12 @@ param_check_ok:
 	schedule_delayed_work(&mxt->dwork, 0);
 #endif
 
-
 	/* Allocate the interrupt */
 	mxt->irq = client->irq;
 	mxt->valid_irq_counter = 0;
 	mxt->invalid_irq_counter = 0;
 	mxt->irq_counter = 0;
+
 #if 0
 	if (mxt->irq) {
 	/* Try to request IRQ with falling edge first. This is

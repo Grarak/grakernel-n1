@@ -566,9 +566,7 @@ struct mass_storage_function_config {
 	struct fsg_common *common;
 };
 
-#if defined(CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE)
-# define UMS_WITH_MULTIPLE_LUNS
-#elif defined(CONFIG_MACH_N1) || defined(CONFIG_MACH_BOSE_ATT)
+#if defined(CONFIG_MACH_N1) || defined(CONFIG_MACH_BOSE_ATT)
 # define UMS_WITH_MULTIPLE_LUNS
 #endif
 

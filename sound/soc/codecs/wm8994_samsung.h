@@ -226,7 +226,7 @@ struct wm8994_priv {
 #endif
 	int mute_pop;
 	int boot_state;
-	enum  dap_connection_status dap_state;
+	enum dap_connection_status dap_state;
 };
 
 struct gain_info_t {
