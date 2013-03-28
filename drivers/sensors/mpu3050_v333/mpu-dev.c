@@ -1376,6 +1376,21 @@ int mpu3050_probe(struct i2c_client *client, const struct i2c_device_id *devid)
 		device_remove_file(sec_mpu3050_dev, &dev_attr_gyro_power_on);
 		return -1;
 	}
+	if (device_create_file(sec_mpu3050_dev, &dev_attr_calibration) < 0) {
+		printk(KERN_ERR "Failed to create device file(%s)!\n",
+		       dev_attr_calibration.attr.name);
+		device_remove_file(sec_mpu3050_dev, &dev_attr_gyro_power_on);
+		device_remove_file(sec_mpu3050_dev, &dev_attr_gyro_get_temp);
+		return -1;
+	}
+	if (device_create_file(sec_mpu3050_dev, &dev_attr_raw_data) < 0) {
+		printk(KERN_ERR "Failed to create device file(%s)!\n",
+		       dev_attr_raw_data.attr.name);
+		device_remove_file(sec_mpu3050_dev, &dev_attr_gyro_power_on);
+		device_remove_file(sec_mpu3050_dev, &dev_attr_gyro_get_temp);
+		device_remove_file(sec_mpu3050_dev, &dev_attr_calibration);
+		return -1;
+	}
 #endif
 	mpu = kzalloc(sizeof(struct mpu_private_data), GFP_KERNEL);
 	if (!mpu) {
