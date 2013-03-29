@@ -3,7 +3,7 @@
 echo 'Cleaning...'
 make clean
 echo 'Making config...'
-make butter_i9103_defconfig
+make butter_n1_defconfig
 echo 'Building zImage...'
 make -j4
 
