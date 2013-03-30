@@ -1862,7 +1862,6 @@ int cmc623_service_resume(void)
 
 	// restore mode & cabc status
 	/*cmc623_state.brightness = 0;*/
-	current_cmc623_Userselect = CMC623_USERSELECT_DYNAMIC_MODE;
 	cmc623_Set_UserSelect_Mode((enum Lcd_CMC623_USERSELECT_mode)current_cmc623_Userselect,current_cmc623_CABC_OnOff,0);
 	cmc623_cabc_enable_flag(cmc623_state.cabc_enabled, 0/*CMC_FLAG_SETTING_FIRST*/);
 	if(cmc623_state.cabc_enabled)
