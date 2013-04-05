@@ -27,6 +27,10 @@ on early-init
 
 on fs
     mount_all /fstab.n1
+    mkdir /1stdata/2nd 0775 system system
+    mkdir /1stdata/cache/
+    mkdir /1stdata/cache/2nd 0775 system cache
+    symlink /1stdata/media/0/ /data/media/0/1stmedia
 
     mkdir /efs/bluetooth
     mkdir /efs/wifi
