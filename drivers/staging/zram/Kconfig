@@ -1,11 +1,9 @@
-config XVMALLOC
-	bool
-	default n
-
 config ZRAM
 	tristate "Compressed RAM block device support"
-	depends on BLOCK && SYSFS
-	select XVMALLOC
+	# X86 dependency is because zsmalloc uses non-portable pte/tlb
+	# functions
+	# depends on BLOCK &amp;&amp; SYSFS &amp;&amp; X86
+	select ZSMALLOC
 	select LZO_COMPRESS
 	select LZO_DECOMPRESS
 	default n
@@ -28,3 +26,4 @@ config ZRAM_DEBUG
 	help
 	  This option adds additional debugging code to the compressed
 	  RAM block device driver.
+
