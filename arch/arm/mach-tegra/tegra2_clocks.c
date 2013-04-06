@@ -2726,9 +2726,6 @@ static struct cpufreq_frequency_table freq_table_1p32GHz[] = {
 	{ 5, 816000 },
 	{ 6, 912000 },
 	{ 7, 1000000 },
-	{ 8, 1100000 },
-	{ 9, 1200000 },
-	{ 10, 1320000 },
 	{ 11, CPUFREQ_TABLE_END },
 };
 
