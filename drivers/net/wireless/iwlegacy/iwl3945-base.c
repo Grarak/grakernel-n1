@@ -2657,13 +2657,14 @@ int iwl3945_request_scan(struct iwl_priv *priv, struct ieee80211_vif *vif)
 		IWL_WARN(priv, "Invalid scan band\n");
 		return -EIO;
 	}
+
 	/*
-	 * If active scaning is requested but a certain channel is marked
-	 * passive, we can do active scanning if we detect transmissions. For
-	 * passive only scanning disable switching to active on any channel.
+	 * If active scaning is requested but a certain channel
+	 * is marked passive, we can do active scanning if we
+	 * detect transmissions.
 	 */
 	scan->good_CRC_th = is_active ? IWL_GOOD_CRC_TH_DEFAULT :
-					IWL_GOOD_CRC_TH_NEVER;
+					IWL_GOOD_CRC_TH_DISABLED;
 
 	len = iwl_legacy_fill_probe_req(priv, (struct ieee80211_mgmt *)scan->data,
 					vif->addr, priv->scan_request->ie,

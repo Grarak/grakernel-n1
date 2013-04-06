@@ -3788,6 +3788,7 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
 			list_add(&s->list, &slab_caches);
 			if (sysfs_slab_add(s)) {
 				list_del(&s->list);
+				kfree(n);
 				kfree(s);
 				goto err;
 			}
@@ -3795,6 +3796,7 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
 			return s;
 		}
 		kfree(n);
+		kfree(s);
 	}
 err:
 	up_write(&slub_lock);

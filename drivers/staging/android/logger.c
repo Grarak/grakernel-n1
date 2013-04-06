@@ -29,64 +29,6 @@
 
 #include <asm/ioctls.h>
 
-#ifdef CONFIG_KERNEL_DEBUG_SEC
-//{{ Mark for GetLog -1/2
-struct struct_plat_log_mark {
-	u32 special_mark_1;
-	u32 special_mark_2;
-	u32 special_mark_3;
-	u32 special_mark_4;
-	void *p_main;
-	void *p_radio;
-	void *p_events;
-	void *p_system;
-};
-
-static struct struct_plat_log_mark plat_log_mark = {
-	.special_mark_1 = (('*' << 24) | ('^' << 16) | ('^' << 8) | ('*' << 0)),
-	.special_mark_2 = (('I' << 24) | ('n' << 16) | ('f' << 8) | ('o' << 0)),
-	.special_mark_3 = (('H' << 24) | ('e' << 16) | ('r' << 8) | ('e' << 0)),
-	.special_mark_4 = (('p' << 24) | ('l' << 16) | ('o' << 8) | ('g' << 0)),
-	.p_main = 0,
-	.p_radio = 0,
-	.p_events = 0,
-	.p_system = 0,
-};
-
-struct struct_marks_ver_mark {
-	u32 special_mark_1;
-	u32 special_mark_2;
-	u32 special_mark_3;
-	u32 special_mark_4;
-	u32 log_mark_version;
-	u32 framebuffer_mark_version;
-	void *this;		/* this is used for addressing log buffer in 2 dump files*/
-	u32 first_size;		/* first memory block's size */
-	u32 first_start_addr;	/* first memory block'sPhysical address */
-	u32 second_size;	/* second memory block's size */
-	u32 second_start_addr;	/* second memory block'sPhysical address */
-};
-
-static struct struct_marks_ver_mark marks_ver_mark = {
-	.special_mark_1 = (('*' << 24) | ('^' << 16) | ('^' << 8) | ('*' << 0)),
-	.special_mark_2 = (('I' << 24) | ('n' << 16) | ('f' << 8) | ('o' << 0)),
-	.special_mark_3 = (('H' << 24) | ('e' << 16) | ('r' << 8) | ('e' << 0)),
-	.special_mark_4 = (('v' << 24) | ('e' << 16) | ('r' << 8) | ('s' << 0)),
-	.log_mark_version = 1,
-	.framebuffer_mark_version = 1,
-	.this = &marks_ver_mark,
-	.first_size = 384*1024*1024, // it has dependency on h/w
-	.first_start_addr = 0x00000000,// it has dependency on h/w
-	.second_size = 512*1024*1024, // it has dependency on h/w
-	.second_start_addr = 0x20000000// it has dependency on h/w
-};
-//}} Mark for GetLog -1/2
-
-//{{ pass platform log to kernel -1/3
-static char klog_buf[256];
-//}} pass platform log to kernel -1/3
-#endif
-
 /*
  * struct logger_log - represents a specific log, such as 'main' or 'radio'
  *
@@ -95,7 +37,7 @@ static char klog_buf[256];
  * mutex 'mutex'.
  */
 struct logger_log {
-	unsigned char 		*buffer;/* the ring buffer itself */
+	unsigned char		*buffer;/* the ring buffer itself */
 	struct miscdevice	misc;	/* misc device representing the log */
 	wait_queue_head_t	wq;	/* wait queue for readers */
 	struct list_head	readers; /* this log's readers */
@@ -118,16 +60,20 @@ struct logger_reader {
 };
 
 /* logger_offset - returns index 'n' into the log via (optimized) modulus */
-#define logger_offset(n)	((n) & (log->size - 1))
+size_t logger_offset(struct logger_log *log, size_t n)
+{
+	return n & (log->size-1);
+}
+
 
 /*
  * file_get_log - Given a file structure, return the associated log
  *
  * This isn't aesthetic. We have several goals:
  *
- * 	1) Need to quickly obtain the associated log during an I/O operation
- * 	2) Readers need to maintain state (logger_reader)
- * 	3) Writers need to be very fast (open() should be a near no-op)
+ *	1) Need to quickly obtain the associated log during an I/O operation
+ *	2) Readers need to maintain state (logger_reader)
+ *	3) Writers need to be very fast (open() should be a near no-op)
  *
  * In the reader case, we can trivially go file->logger_reader->logger_log.
  * For a writer, we don't want to maintain a logger_reader, so we just go
@@ -147,20 +93,24 @@ static inline struct logger_log *file_get_log(struct file *file)
  * get_entry_len - Grabs the length of the payload of the next entry starting
  * from 'off'.
  *
+ * An entry length is 2 bytes (16 bits) in host endian order.
+ * In the log, the length does not include the size of the log entry structure.
+ * This function returns the size including the log entry structure.
+ *
  * Caller needs to hold log->mutex.
  */
 static __u32 get_entry_len(struct logger_log *log, size_t off)
 {
 	__u16 val;
 
-	switch (log->size - off) {
-	case 1:
-		memcpy(&val, log->buffer + off, 1);
-		memcpy(((char *) &val) + 1, log->buffer, 1);
-		break;
-	default:
-		memcpy(&val, log->buffer + off, 2);
-	}
+	/* copy 2 bytes from buffer, in memcpy order, */
+	/* handling possible wrap at end of buffer */
+
+	((__u8 *)&val)[0] = log->buffer[off];
+	if (likely(off+1 < log->size))
+		((__u8 *)&val)[1] = log->buffer[off+1];
+	else
+		((__u8 *)&val)[1] = log->buffer[0];
 
 	return sizeof(struct logger_entry) + val;
 }
@@ -195,7 +145,7 @@ static ssize_t do_read_log_to_user(struct logger_log *log,
 		if (copy_to_user(buf + len, log->buffer, count - len))
 			return -EFAULT;
 
-	reader->r_off = logger_offset(reader->r_off + count);
+	reader->r_off = logger_offset(log, reader->r_off + count);
 
 	return count;
 }
@@ -205,9 +155,9 @@ static ssize_t do_read_log_to_user(struct logger_log *log,
  *
  * Behavior:
  *
- * 	- O_NONBLOCK works
- * 	- If there are no log entries to read, blocks until log is written to
- * 	- Atomically reads exactly one log entry
+ *	- O_NONBLOCK works
+ *	- If there are no log entries to read, blocks until log is written to
+ *	- Atomically reads exactly one log entry
  *
  * Optimal read size is LOGGER_ENTRY_MAX_LEN. Will set errno to EINVAL if read
  * buffer is insufficient to hold next entry.
@@ -222,9 +172,10 @@ static ssize_t logger_read(struct file *file, char __user *buf,
 
 start:
 	while (1) {
+		mutex_lock(&log->mutex);
+
 		prepare_to_wait(&log->wq, &wait, TASK_INTERRUPTIBLE);
 
-		mutex_lock(&log->mutex);
 		ret = (log->w_off == reader->r_off);
 		mutex_unlock(&log->mutex);
 		if (!ret)
@@ -283,7 +234,7 @@ static size_t get_next_entry(struct logger_log *log, size_t off, size_t len)
 
 	do {
 		size_t nr = get_entry_len(log, off);
-		off = logger_offset(off + nr);
+		off = logger_offset(log, off + nr);
 		count += nr;
 	} while (count < len);
 
@@ -291,16 +242,28 @@ static size_t get_next_entry(struct logger_log *log, size_t off, size_t len)
 }
 
 /*
- * clock_interval - is a < c < b in mod-space? Put another way, does the line
- * from a to b cross c?
+ * is_between - is a < c < b, accounting for wrapping of a, b, and c
+ *    positions in the buffer
+ *
+ * That is, if a<b, check for c between a and b
+ * and if a>b, check for c outside (not between) a and b
+ *
+ * |------- a xxxxxxxx b --------|
+ *               c^
+ *
+ * |xxxxx b --------- a xxxxxxxxx|
+ *    c^
+ *  or                    c^
  */
-static inline int clock_interval(size_t a, size_t b, size_t c)
+static inline int is_between(size_t a, size_t b, size_t c)
 {
-	if (b < a) {
-		if (a < c || b >= c)
+	if (a < b) {
+		/* is c between a and b? */
+		if (a < c && c <= b)
 			return 1;
 	} else {
-		if (a < c && b >= c)
+		/* is c outside of b through a? */
+		if (c <= b || a < c)
 			return 1;
 	}
 
@@ -318,14 +281,14 @@ static inline int clock_interval(size_t a, size_t b, size_t c)
 static void fix_up_readers(struct logger_log *log, size_t len)
 {
 	size_t old = log->w_off;
-	size_t new = logger_offset(old + len);
+	size_t new = logger_offset(log, old + len);
 	struct logger_reader *reader;
 
-	if (clock_interval(old, new, log->head))
+	if (is_between(old, new, log->head))
 		log->head = get_next_entry(log, log->head, len);
 
 	list_for_each_entry(reader, &log->readers, list)
-		if (clock_interval(old, new, reader->r_off))
+		if (is_between(old, new, reader->r_off))
 			reader->r_off = get_next_entry(log, reader->r_off, len);
 }
 
@@ -344,7 +307,7 @@ static void do_write_log(struct logger_log *log, const void *buf, size_t count)
 	if (count != len)
 		memcpy(log->buffer, buf + len, count - len);
 
-	log->w_off = logger_offset(log->w_off + count);
+	log->w_off = logger_offset(log, log->w_off + count);
 
 }
 
@@ -367,23 +330,15 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 
 	if (count != len)
 		if (copy_from_user(log->buffer, buf + len, count - len))
+			/*
+			 * Note that by not updating w_off, this abandons the
+			 * portion of the new entry that *was* successfully
+			 * copied, just above.  This is intentional to avoid
+			 * message corruption from missing fragments.
+			 */
 			return -EFAULT;
 
-#ifdef CONFIG_KERNEL_DEBUG_SEC
-	//{{ pass platform log (!@hello) to kernel -2/3
-	memset(klog_buf,0,255);
-
-	if(strncmp(log->buffer + log->w_off, "!@", 2) == 0) {
-		if (count < 255)
-			memcpy(klog_buf,log->buffer + log->w_off, count);
-		else
-			memcpy(klog_buf,log->buffer + log->w_off, 255);
-		klog_buf[255]=0;
-	}
-	//}} pass platform log (!@hello) to kernel -2/3
-#endif
-
-	log->w_off = logger_offset(log->w_off + count);
+	log->w_off = logger_offset(log, log->w_off + count);
 
 	return count;
 }
@@ -450,14 +405,6 @@ ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 	/* wake up any blocked readers */
 	wake_up_interruptible(&log->wq);
 
-#ifdef CONFIG_KERNEL_DEBUG_SEC
-	//{{ pass platform log (!@hello) to kernel -3/3
-	if(strncmp(klog_buf, "!@", 2) == 0) {
-		printk("%s\n", klog_buf);
-	}
-	//}} pass platform log (!@hello) to kernel -3/3
-#endif
-
 	return ret;
 }
 
@@ -508,20 +455,17 @@ static int logger_open(struct inode *inode, struct file *file)
  *
  * Note this is a total no-op in the write-only case. Keep it that way!
  */
-static int logger_release(struct inode *inode, struct file *file)
+static int logger_release(struct inode *ignored, struct file *file)
 {
 	if (file->f_mode & FMODE_READ) {
 		struct logger_reader *reader = file->private_data;
-		struct logger_log *log;
-		unsigned long start = jiffies;
-		log = get_log_from_minor(MINOR(inode->i_rdev));
-		mutex_lock(&log->mutex);
+		struct logger_log *log = reader->log;
 
+		mutex_lock(&log->mutex);
 		list_del(&reader->list);
 		mutex_unlock(&log->mutex);
+
 		kfree(reader);
-		pr_info("%s: took %d msec\n", __func__,
-			jiffies_to_msecs(jiffies - start));
 	}
 
 	return 0;
@@ -643,17 +587,10 @@ static struct logger_log VAR = { \
 	.size = SIZE, \
 };
 
-#ifndef CONFIG_KERNEL_DEBUG_SEC
-DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, 64*1024)
-DEFINE_LOGGER_DEVICE(log_events, LOGGER_LOG_EVENTS, 256*1024)
-DEFINE_LOGGER_DEVICE(log_radio, LOGGER_LOG_RADIO, 64*1024)
-DEFINE_LOGGER_DEVICE(log_system, LOGGER_LOG_SYSTEM, 64*1024)
-#else
-DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, 512*1024)
+DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, 256*1024)
 DEFINE_LOGGER_DEVICE(log_events, LOGGER_LOG_EVENTS, 256*1024)
 DEFINE_LOGGER_DEVICE(log_radio, LOGGER_LOG_RADIO, 256*1024)
 DEFINE_LOGGER_DEVICE(log_system, LOGGER_LOG_SYSTEM, 256*1024)
-#endif
 
 static struct logger_log *get_log_from_minor(int minor)
 {
@@ -688,16 +625,6 @@ static int __init init_log(struct logger_log *log)
 static int __init logger_init(void)
 {
 	int ret;
-
-#ifdef CONFIG_KERNEL_DEBUG_SEC
-	//{{ Mark for GetLog -2/2
-	plat_log_mark.p_main = _buf_log_main;
-	plat_log_mark.p_radio = _buf_log_radio;
-	plat_log_mark.p_events = _buf_log_events;
-	plat_log_mark.p_system = _buf_log_system;
-	marks_ver_mark.log_mark_version = 1;
-	//}} Mark for GetLog -2/2
-#endif
 
 	ret = init_log(&log_main);
 	if (unlikely(ret))
