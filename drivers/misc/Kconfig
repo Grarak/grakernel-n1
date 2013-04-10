@@ -578,11 +578,11 @@ config SEC_MISC
     help
       Enable this to be able to support Samsung boards
 
-config VIBTONZ
-    tristate "Vibtonz"
-    default n
-    help
-      Say Y to enable Vibtonz support.
+#config VIBTONZ
+#    tristate "Vibtonz"
+#    default n
+#    help
+#      Say Y to enable Vibtonz support.
 
 config MAX1749_VIBRATOR
     bool "MAX1749 vibrator device driver"
@@ -597,6 +597,12 @@ config GENERIC_BLN
     help
       Say Y here to enable the backlight notification
       for Android led-notification (modified liblights needed)
+
+config BLX
+	bool "Support for Battery Life eXtender"
+	default y
+	help
+	  Say Y here to enable Battery Life eXtender
 
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
