@@ -85,6 +85,155 @@
 #include <linux/regulator/consumer.h>
 #include <linux/gpio.h>
 
+#ifdef KEY_LED_CONTROL
+#ifdef CONFIG_TOUCHKEY_BLN
+#include <linux/miscdevice.h>
+#define BLN_VERSION 9
+
+bool bln_enabled = false;
+bool BLN_ongoing = false;
+bool bln_blink_enabled = false;
+
+static void enable_led_notification(void);
+static void disable_led_notification(void);
+
+static struct mxt_data *global_mxt;
+
+static void enable_touchkey_backlights(void){
+        printk(KERN_DEBUG "[TouchKey] enable LED from BLN app\n");
+        key_led_on(global_mxt, 0xFF);
+}
+
+static void disable_touchkey_backlights(void){
+        printk(KERN_DEBUG "[TouchKey] disable LED from BLN app\n");
+        key_led_on(global_mxt, 0x00);
+}
+
+static void enable_led_notification(void){
+
+        if( bln_enabled ){
+                printk(KERN_DEBUG "[TouchKey] BLN_ongoing set to true\n");
+                BLN_ongoing = true;
+                enable_touchkey_backlights();
+        }
+}
+
+static void disable_led_notification(void){
+
+        bln_blink_enabled = false;
+        BLN_ongoing = false;
+        printk(KERN_DEBUG "[TouchKey] BLN_ongoing set to false\n");
+
+        disable_touchkey_backlights();
+}
+
+static ssize_t bln_status_read( struct device *dev, struct device_attribute *attr, char *buf ){
+        return sprintf(buf, "%u\n", (bln_enabled ? 1 : 0 ));
+}
+
+static ssize_t bln_status_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size ){
+        unsigned int data;
+
+        if(sscanf(buf, "%u\n", &data) == 1 ){
+            if( data == 0 || data == 1 ){
+
+                if( data == 1 ){
+                    bln_enabled = true;
+                }
+
+                if( data == 0 ){
+                    bln_enabled = false;
+                    if( BLN_ongoing )
+                        disable_led_notification();
+                }
+
+            }else{
+                /* error */
+            }
+        }else{
+            /* error */
+        }
+
+        return size;
+}
+
+static ssize_t notification_led_status_read( struct device *dev, struct device_attribute *attr, char *buf ){
+        return sprintf(buf, "%u\n", (BLN_ongoing ? 1 : 0 ));
+}
+
+static ssize_t notification_led_status_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size ){
+        unsigned int data;
+
+        if(sscanf(buf, "%u\n", &data ) == 1 ){
+            if( data == 0 || data == 1 ){
+                if( data == 1 )
+                    enable_led_notification();
+
+                if( data == 0 )
+                    disable_led_notification();
+            }else{
+                /* error */
+            }
+        }else{
+            /* error */
+        }
+
+        return size;
+}
+
+static ssize_t blink_control_read( struct device *dev, struct device_attribute *attr, char *buf ){
+        return sprintf( buf, "%u\n", (bln_blink_enabled ? 1 : 0 ) );
+}
+
+static ssize_t blink_control_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size ){
+        unsigned int data;
+
+        if( sscanf(buf, "%u\n", &data ) == 1 ){
+            if( data == 0 || data == 1 ){
+                if (data == 1){
+                    bln_blink_enabled = true;
+                    disable_touchkey_backlights();
+                }
+
+                if(data == 0){
+                    bln_blink_enabled = false;
+                    enable_touchkey_backlights();
+                }
+            }
+        }
+
+        return size;
+}
+
+static ssize_t bln_version( struct device *dev, struct device_attribute *attr, char *buf ){
+        return sprintf(buf, "%u\n", BLN_VERSION);
+}
+
+static DEVICE_ATTR(blink_control, S_IRUGO | S_IWUGO, blink_control_read, blink_control_write );
+static DEVICE_ATTR(enabled, S_IRUGO | S_IWUGO, bln_status_read, bln_status_write );
+static DEVICE_ATTR(notification_led, S_IRUGO | S_IWUGO, notification_led_status_read,  notification_led_status_write );
+static DEVICE_ATTR(version, S_IRUGO, bln_version, NULL );
+
+static struct attribute *bln_notification_attributes[] = {
+        &dev_attr_blink_control.attr,
+        &dev_attr_enabled.attr,
+        &dev_attr_notification_led.attr,
+        &dev_attr_version.attr,
+        NULL
+};
+
+static struct attribute_group bln_notification_group = {
+        .attrs = bln_notification_attributes,
+};
+
+static struct miscdevice bln_device = {
+        .minor = MISC_DYNAMIC_MINOR,
+        .name  = "backlightnotification",
+};
+
+#endif /* CONFIG_TOUCHKEY_BLN */
+#endif /* KEY_LED_CONTROL */
+
 /*
 * This is a driver for the Atmel maXTouch Object Protocol
 *
@@ -5267,7 +5416,18 @@ param_check_ok:
 		if (error < 0)
 			goto err_after_get_regulator;
 	}
-#endif
+
+#ifdef CONFIG_TOUCHKEY_BLN
+        error = misc_register( &bln_device );
+        if( error ){
+            printk(KERN_ERR "[BLN] sysfs misc_register failed.\n");
+        }else{
+            if( sysfs_create_group( &bln_device.this_device->kobj, &bln_notification_group) < 0){
+                printk(KERN_ERR "[BLN] sysfs create group failed.\n");
+            } 
+        }
+#endif /* CONFIG_TOUCHKEY_BLN */
+#endif /* KEY_LED_CONTROL */
 
 	/* Chip is valid and active. */
 	if (debug >= DEBUG_TRACE)
@@ -5530,6 +5690,10 @@ param_check_ok:
 	register_bln_implementation(&n1_touchkey_bln);
 #endif
 
+#ifdef CONFIG_TOUCHKEY_BLN
+	global_mxt = mxt;
+#endif /* CONFIG_TOUCHKEY_BLN */
+
 	/* after 15sec, start touch working */
 	schedule_delayed_work(&mxt->initial_dwork, 1500);
 	if (debug >= DEBUG_INFO)
@@ -5592,6 +5756,16 @@ static int __devexit mxt_remove(struct i2c_client *client)
 	class_destroy(leds_class);
 
 	del_timer(&key_led_timer);
+#endif /* KEY_LED_CONTROL */
+
+#ifdef KEY_LED_CONTROL
+	device_remove_file(led_dev, &dev_attr_brightness);
+	device_destroy(leds_class, 0);
+	class_destroy(leds_class);
+
+#ifdef CONFIG_TOUCHKEY_BLN
+        misc_deregister(&bln_device);
+#endif /* CONFIG_TOUCHKEY_BLN */
 #endif /* KEY_LED_CONTROL */
 
 	/* Release IRQ so no queue will be scheduled */
