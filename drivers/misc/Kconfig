@@ -578,11 +578,11 @@ config SEC_MISC
     help
       Enable this to be able to support Samsung boards
 
-#config VIBTONZ
-#    tristate "Vibtonz"
-#    default n
-#    help
-#      Say Y to enable Vibtonz support.
+config VIBTONZ
+    tristate "Vibtonz"
+    default n
+    help
+      Say Y to enable Vibtonz support.
 
 config MAX1749_VIBRATOR
     bool "MAX1749 vibrator device driver"
