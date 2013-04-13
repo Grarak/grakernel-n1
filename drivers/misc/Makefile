@@ -65,3 +65,4 @@ obj-$(CONFIG_VIBTONZ)           += vibetonz/
 obj-$(CONFIG_GENERIC_BLN)       += bln.o
 obj-$(CONFIG_BLX)		+= blx.o
 obj-$(CONFIG_FSYNC_CONTROL)	+= fsync_control.o
+obj-$(CONFIG_MALI_CONTROL)	+= mali_control.o

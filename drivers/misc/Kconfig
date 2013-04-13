@@ -598,6 +598,16 @@ config GENERIC_BLN
       Say Y here to enable the backlight notification
       for Android led-notification (modified liblights needed)
 
+source "drivers/misc/c2port/Kconfig"
+source "drivers/misc/eeprom/Kconfig"
+source "drivers/misc/cb710/Kconfig"
+source "drivers/misc/iwmc3200top/Kconfig"
+source "drivers/misc/ti-st/Kconfig"
+source "drivers/misc/lis3lv02d/Kconfig"
+source "drivers/misc/carma/Kconfig"
+source "drivers/misc/tegra-baseband/Kconfig"
+source "drivers/misc/modem_if/Kconfig"
+
 config BLX
 	bool "Support for Battery Life eXtender"
 	default y
@@ -610,14 +620,9 @@ config FSYNC_CONTROL
         help
           Say Y here to enable FSync Control
 
-source "drivers/misc/c2port/Kconfig"
-source "drivers/misc/eeprom/Kconfig"
-source "drivers/misc/cb710/Kconfig"
-source "drivers/misc/iwmc3200top/Kconfig"
-source "drivers/misc/ti-st/Kconfig"
-source "drivers/misc/lis3lv02d/Kconfig"
-source "drivers/misc/carma/Kconfig"
-source "drivers/misc/tegra-baseband/Kconfig"
-source "drivers/misc/modem_if/Kconfig"
+config MALI_CONTROL
+	tristate "mali gpu control interfaces"
+	depends on VIDEO_MALI400MP_UMP
+	default y
 
 endif # MISC_DEVICES
