@@ -3,26 +3,26 @@
 ** File:
 **     ImmVibeSPI.c
 **
-** Description:
+** Description: 
 **     Device-dependent functions called by Immersion TSP API
 **     to control PWM duty cycle, amp enable/disable, save IVT file, etc...
 **
-** Portions Copyright (c) 2008-2010 Immersion Corporation. All Rights Reserved.
+** Portions Copyright (c) 2008-2010 Immersion Corporation. All Rights Reserved. 
 **
-** This file contains Original Code and/or Modifications of Original Code
-** as defined in and that are subject to the GNU Public License v2 -
-** (the 'License'). You may not use this file except in compliance with the
-** License. You should have received a copy of the GNU General Public License
+** This file contains Original Code and/or Modifications of Original Code 
+** as defined in and that are subject to the GNU Public License v2 - 
+** (the 'License'). You may not use this file except in compliance with the 
+** License. You should have received a copy of the GNU General Public License 
 ** along with this program; if not, write to the Free Software Foundation, Inc.,
-** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or contact
+** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA or contact 
 ** TouchSenseSales@immersion.com.
 **
-** The Original Code and all software distributed under the License are
-** distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
-** EXPRESS OR IMPLIED, AND IMMERSION HEREBY DISCLAIMS ALL SUCH WARRANTIES,
-** INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS
-** FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT. Please see
-** the License for the specific language governing rights and limitations
+** The Original Code and all software distributed under the License are 
+** distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER 
+** EXPRESS OR IMPLIED, AND IMMERSION HEREBY DISCLAIMS ALL SUCH WARRANTIES, 
+** INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS 
+** FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT. Please see 
+** the License for the specific language governing rights and limitations 
 ** under the License.
 ** =========================================================================
 */
@@ -204,10 +204,10 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex
 */
 IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 {
-    int cnt = 0;
+    int cnt = 0;	
     unsigned char I2C_data[2];
     int ret = VIBE_S_SUCCESS;
-
+	
 #ifdef VIBETONZ_TUNING
     VibeUInt32 nPWM_PLLDiv_KernelParam = 0;
     VibeUInt32 nPWM_Freq_KernelParam = 0;
@@ -238,10 +238,10 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 #endif /* VIBETONZ_TUNING */
 
 	    /* Update current Period and Duty values if those from the Kernel Parameters table are acceptables (value != 0) */
-#ifdef ISA1200_GEN_MODE
+#ifdef ISA1200_GEN_MODE    
 	    {
 
-#ifdef VIBETONZ_TUNING
+#ifdef VIBETONZ_TUNING		
 	        g_nPWM_PLLDiv = nPWM_PLLDiv_KernelParam;
 	        g_nPWM_Freq = nPWM_Freq_KernelParam;
 	    if(nPWM_Update_KernelParam)
@@ -251,13 +251,13 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 
 
 			I2C_data[1] = g_nLDO_Voltage; // LDO Voltage
-			I2C_data[0]= SCTRL;
+			I2C_data[0]= SCTRL; 
 			do
 			{
 				ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,	2 /* data length*/,  I2C_data);
 				cnt++;
 			}while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-			if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+			if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 
 #ifdef MOTOR_TYPE_LRA
@@ -271,7 +271,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 	            ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
 	            cnt++;
 	        }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 	        I2C_data[1] = 0x00 ; // Disable Software Reset
 	        I2C_data[0]= HCTRL2;
@@ -280,43 +280,43 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 	            ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
 	            cnt++;
 	        }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 	        I2C_data[1] = 0x03 + ( g_nPWM_PLLDiv<<4); // PLLLDIV
-	        I2C_data[0]= HCTRL3;
+	        I2C_data[0]= HCTRL3; 
 	        do
 	        {
 	            ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
 	            cnt++;
 	        }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 	        I2C_data[1] = g_nPWM_Freq; // PWM control
-	        I2C_data[0]= HCTRL4;
+	        I2C_data[0]= HCTRL4; 
 	        do
 	        {
 	            ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
 	            cnt++;
 	        }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 	        I2C_data[1] = g_nPWM_Duty; // PWM High Duty
-	        I2C_data[0]= HCTRL5;
+	        I2C_data[0]= HCTRL5; 
 	        do
 	        {
 	            ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
 	            cnt++;
 	        }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 	        I2C_data[1] = g_nPWM_Period; // PWM Period
-	        I2C_data[0]= HCTRL6;
+	        I2C_data[0]= HCTRL6;	
 	        do
 	        {
 	            ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
 	            cnt++;
 	        }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+	        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 	    }
 #else
 	    if(nPWM_Update_KernelParam)
@@ -324,12 +324,12 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 	        g_nPWM_Freq = nPWM_Freq_KernelParam;
 	    }
 	    SYS_API_SET_PWM_FREQ(g_nPWM_Freq); // 22.4Khz
-	    SYS_API_SET_PWM_DUTY(500); // 50% Duty Cycle, 1000 ~ 0
+	    SYS_API_SET_PWM_DUTY(500); // 50% Duty Cycle, 1000 ~ 0    
 #endif
 
 
 
-#ifdef ISA1200_GEN_MODE
+#ifdef ISA1200_GEN_MODE    
 	    I2C_data[1] = 0x91; //Haptic Enable + PWM generation mode
 #else
 #ifdef ISA1200_PWM_256DIV_MODE
@@ -338,14 +338,13 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 	    I2C_data[1] = 0x88; // Haptic Drive Disable + PWM Input mode + 22.4Khz mode
 #endif
 #endif
-	    I2C_data[0]= HCTRL0;
+	    I2C_data[0]= HCTRL0;	
 	    do
 	    {
 	        ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
 	        cnt++;
-	    } while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-	    if( VIBE_S_SUCCESS != ret)
-	        DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+	    }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
+	    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_AmpEnable] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     }
 
@@ -357,38 +356,36 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 */
 IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
 {
-#if 0
-    int cnt = 0;
+    int cnt = 0;	
     unsigned char I2C_data[2];
     int ret = VIBE_S_SUCCESS;
-#endif
 
     DbgOut((KERN_DEBUG "ImmVibeSPI_ForceOut_Initialize.\n"));
 
 #if 0
     SYS_API_VDDP_ON;
     SYS_API_LEN_HIGH;
-
+	
     SLEEP(200 /*us*/);
 
     I2C_data[1] = g_nLDO_Voltage; // LDO Voltage
-    I2C_data[0]= SCTRL;
+    I2C_data[0]= SCTRL;	
     do
     {
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 #ifdef ISA1200_GEN_MODE
     I2C_data[1] = 0x11; //Haptic Drive Disable + PWM generation mode + 44.8Khz mode
-    I2C_data[0]= HCTRL0;
+    I2C_data[0]= HCTRL0;	
     do
     {
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 #ifdef MOTOR_TYPE_LRA
     I2C_data[1] = 0xC0 ; // EXT clock + DAC inversion + LRA
@@ -401,7 +398,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     I2C_data[1] = 0x00 ; // Disable Software Reset
     I2C_data[0]= HCTRL2;
@@ -410,43 +407,43 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     I2C_data[1] = 0x03 + ( g_nPWM_PLLDiv<<4); // PLLLDIV
-    I2C_data[0]= HCTRL3;
+    I2C_data[0]= HCTRL3; 
     do
     {
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     I2C_data[1] = g_nPWM_Freq; // PWM control
-    I2C_data[0]= HCTRL4;
+    I2C_data[0]= HCTRL4; 
     do
     {
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     I2C_data[1] = g_nPWM_Duty; // PWM High Duty
-    I2C_data[0]= HCTRL5;
+    I2C_data[0]= HCTRL5; 
     do
     {
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     I2C_data[1] = g_nPWM_Period; // PWM Period
-    I2C_data[0]= HCTRL6;
+    I2C_data[0]= HCTRL6;	
     do
     {
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 #else // PWM Input Mode
 
@@ -461,7 +458,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
 #ifdef MOTOR_TYPE_LRA
     I2C_data[1] = 0x43; // EXT clock + DAC inversion + LRA
@@ -474,7 +471,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     I2C_data[1] = 0x00; // Disable Software Reset
     I2C_data[0]= HCTRL2;
@@ -483,7 +480,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 
     I2C_data[1] = 0x00; // Default
     I2C_data[0]= HCTRL4;
@@ -492,7 +489,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
         ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
         cnt++;
     }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+    if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Initialize] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	
 #endif
 
 #endif
@@ -508,9 +505,9 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Terminate(void)
     DbgOut((KERN_DEBUG "ImmVibeSPI_ForceOut_Terminate.\n"));
 //    SYS_API_LEN_LOW;
     imm_vibrator_clk_disable();
-#ifdef ISA1200_HEN_ENABLE
+#ifdef ISA1200_HEN_ENABLE        
     SYS_API_HEN_LOW;
-#endif
+#endif	
     SYS_API_VDDP_OFF;
     return VIBE_S_SUCCESS;
 }
@@ -521,7 +518,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Terminate(void)
 IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_SetSamples(VibeUInt8 nActuatorIndex, VibeUInt16 nOutputSignalBitDepth, VibeUInt16 nBufferSizeInBytes, VibeInt8* pForceOutputBuffer)
 {
     VibeInt8 nForce;
-    int cnt = 0;
+    int cnt = 0;	
     unsigned char I2C_data[2];
     int ret = VIBE_S_SUCCESS;
 
@@ -552,17 +549,17 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_SetSamples(VibeUInt8 nActuatorIndex
 
     if(nForce == 0)
     {
-#ifdef ISA1200_GEN_MODE
+#ifdef ISA1200_GEN_MODE		
         I2C_data[1] = g_nPWM_Duty; // PWM High Duty 50%
-        I2C_data[0]= HCTRL5;
+        I2C_data[0]= HCTRL5; 
         do
         {
             ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
             cnt++;
         }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Set] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Set] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	    
 #else
-        SYS_API_SET_PWM_DUTY(500); //50%
+        SYS_API_SET_PWM_DUTY(500); //50%		
 #endif
 /*        if (g_bAmpEnabled == true)
         {
@@ -575,17 +572,17 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_SetSamples(VibeUInt8 nActuatorIndex
 /*        if (g_bAmpEnabled != true)
         {
             ImmVibeSPI_ForceOut_AmpEnable(0);
-        }
+        }	
 */
 #ifdef ISA1200_GEN_MODE
         I2C_data[1] = g_nPWM_Duty + ((g_nPWM_Duty-1)*nForce)/127;
-        I2C_data[0]= HCTRL5;
+        I2C_data[0]= HCTRL5; 
         do
         {
             ret = SYS_API__I2C__Write(ISA1200_I2C_ADDRESS,  2 /* data length*/,  I2C_data);
             cnt++;
         }while(VIBE_S_SUCCESS != ret && cnt < RETRY_CNT);
-        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Set] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);
+        if( VIBE_S_SUCCESS != ret) DEBUG_MSG("[ImmVibeSPI_ForceOut_Set] I2C_Write Error,  Slave Address = [%d], ret = [%d]\n", I2C_data[0], ret);	    
 #else
         SYS_API_SET_PWM_DUTY(500 - (490 * nForce)/127);
 #endif
@@ -595,12 +592,10 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_SetSamples(VibeUInt8 nActuatorIndex
 /*
 ** Called to set force output frequency parameters
 */
-#if 0
 IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_SetFrequency(VibeUInt8 nActuatorIndex, VibeUInt16 nFrequencyParameterID, VibeUInt32 nFrequencyParameterValue)
 {
     return VIBE_S_SUCCESS;
 }
-#endif
 
 /*
 ** Called to get the device name (device name must be returned as ANSI char)
