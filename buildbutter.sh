@@ -15,9 +15,8 @@ echo "Making Boot.img..."
 
 echo 'Moving modules and boot.img...'
 cd ..
-cp drivers/scsi/scsi_wait_scan.ko out/ButterKernel/system/lib/modules
-cp drivers/misc/fm_si4709/Si4709_driver.ko out/ButterKernel/system/lib/modules
-cp drivers/net/wireless/bcmdhd/dhd.ko out/ButterKernel/system/lib/modules
+rm -rfv out/ButterKernel/system/lib/modules/*
+find -name '*.ko' -exec cp -v {} out/ButterKernel/system/lib/modules \;
 cp mkboot/boot.img out/ButterKernel
 
 echo 'Zipping...'
