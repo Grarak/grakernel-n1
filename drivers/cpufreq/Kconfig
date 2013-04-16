@@ -115,6 +115,12 @@ config CPU_FREQ_DEFAULT_GOV_SMARTASS2
 	---help---
 	  Use the CPUFreq governor 'smartassV2' as default.
 
+config CPU_FREQ_DEFAULT_GOV_HYPER
+        bool "hyper"
+        select CPU_FREQ_GOV_HYPER
+        help
+          Use the CPUFreq governor 'hyper' as default.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -217,6 +223,14 @@ config CPU_FREQ_GOV_SMARTASS2
 	depends on CPU_FREQ
 	---help---
 	  'smartassV2' - a "smart" governor
+
+config CPU_FREQ_GOV_HYPER
+        tristate "'hyper' cpufreq governor"
+        depends on CPU_FREQ
+        help
+          'hyper' - a tweaked "ondemand" based smart and smooth optimized governor!
+
+           If in doubt, say Y.
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
