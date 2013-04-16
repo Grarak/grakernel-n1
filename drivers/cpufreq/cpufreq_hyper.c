@@ -45,7 +45,7 @@
 #define MAX_SAMPLING_DOWN_FACTOR                (100000)
 #define MICRO_FREQUENCY_DOWN_DIFFERENTIAL       (1)
 #define MICRO_FREQUENCY_UP_THRESHOLD            (60)
-#define MICRO_FREQUENCY_MIN_SAMPLE_RATE         (10000)
+#define MICRO_FREQUENCY_MIN_SAMPLE_RATE         (20000)
 #define MIN_FREQUENCY_UP_THRESHOLD              (10)
 #define MAX_FREQUENCY_UP_THRESHOLD              (100)
 #define FREQ_STEP                               (40)
