@@ -341,7 +341,7 @@ static u16 tsp_keystatus;
 #ifdef KEY_LED_CONTROL
 static void key_led_set(struct mxt_data *mxt, u32 val);
 
-static int key_led_timeout = 4000; /* 4 sec */
+static int key_led_timeout = 3000; /* 3 sec */
 static struct timer_list key_led_timer;
 static void key_led_timer_callback(unsigned long data);
 #endif
