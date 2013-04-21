@@ -218,9 +218,6 @@ config ARM_PATCH_PHYS_VIRT_16BIT
 	  to allow physical memory down to a theoretical minimum of 64K
 	  boundaries.
 
-config ARCH_HIBERNATION_POSSIBLE
-	def_bool y
-
 config GENERIC_TIME_VSYSCALL
 	bool "Enable gettimeofday updates"
 	depends on CPU_V7
