@@ -56,11 +56,16 @@ if [ -e .version ]; then
 	rm .version
 fi
 
-echo -e "${bldcya} What version has your kernel? ${txtrst}"
-echo "${bldred} NUMBERS ONLY! ${txtrst}"
-read version
+echo -e "${bldcya} Do you want to edit the kernel version? ${txtrst} [N/y]"
+read kernelversion
 
-echo $version >> .version
+if [ "$kernelversion" == "y" ]; then
+        echo -e "${bldcya} What version has your kernel? ${txtrst}"
+        echo "${bldred} NUMBERS ONLY! ${txtrst}"
+        read version
+ 
+        echo $version >> .version
+fi
 ###########################################################################
 
 ###########################################################################
@@ -120,6 +125,7 @@ if [ -e arch/arm/boot/zImage ]; then
         DIFF=$(($DATE_END - $DATE_START))
         echo "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
         date '+%a, %d %b %Y %H:%M:%S'
+        echo -e "${bldcya} ButterKernel.zip is in /out/ButterKernel ${txtrst}"
 
 else
 	        echo "${bldred} KERNEL DID NOT BUILD! ${txtrst}"
