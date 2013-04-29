@@ -11,7 +11,7 @@ bldcya=${txtbld}$(tput setaf 6) # cyan
 
 txtrst=$(tput sgr0) # Reset
 
-butterversion=exp
+butterversion=v2.1.3
 tcf=~/android/kernel/toolchains/
 
 DATE_START=$(date +"%s")
@@ -104,7 +104,7 @@ if [ -e arch/arm/boot/zImage ]; then
                 find -name '*.ko' -exec cp -v {} out/ButterKernel/system/lib/modules \;
 
                 cd out/ButterKernel
-                zip -r ButterKernel.zip cleaner META-INF system boot.img
+                zip -r ButterKernel_Weekly_${butterversion}.zip cleaner META-INF system boot.img
         else
                 cp arch/arm/boot/zImage mkbootdual/
                 cd mkbootdual
@@ -117,7 +117,7 @@ if [ -e arch/arm/boot/zImage ]; then
                 find -name '*.ko' -exec cp -v {} out/ButterKernelDual/system/lib/modules \;
 
                 cd out/ButterKernelDual
-                zip -r ButterKernelDual.zip META-INF system boot.img
+                zip -r ButterKernel_Weekly_${butterversion}_dual.zip META-INF system boot.img
         fi
    
         echo -e "${bldcya} Finished!! ${txtrst}"

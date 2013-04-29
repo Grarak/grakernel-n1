@@ -1,12 +1,9 @@
-assert(getprop("ro.product.device") == "galaxyr" || getprop("ro.build.product") == "galaxyr" ||
-       getprop("ro.product.device") == "i9103" || getprop("ro.build.product") == "i9103" ||
-       getprop("ro.product.device") == "GT-I9103" || getprop("ro.build.product") == "GT-I9103");
 ui_print("");
 ui_print("");
 ui_print("");
 ui_print("");
 ui_print("------------------------------------------------");
-ui_print("      ButterKernel Experimental by Grarak       ");
+ui_print("      ButterKernel Weekly v2.1.3 by Grarak      ");
 ui_print("        _____        _   _   _____              ");
 ui_print("       |  _  \     _| |_| |_| ____|             ");
 ui_print("       | |_| / _  |_   _   _| |_   _ __         ");
