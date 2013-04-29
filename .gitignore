@@ -36,6 +36,7 @@ modules.builtin
 boot.img
 zImage
 ButterKernel.zip
+out/ButterKernel/*.zip
 
 #
 # Top-level generic files

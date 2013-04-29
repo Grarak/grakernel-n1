@@ -75,13 +75,13 @@ read frage
 if [ "$frage" == "n" ] || [ "$frage" == "N" ]; then
 	echo -e "${bldcya} Build singleboot kernel ${txtrst}"
         make butter_n1_defconfig
-        sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-Butter_${butterversion}_4.2.+\"/ .config
+        sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-Butter_Weekly_${butterversion}_4.2.+\"/ .config
 fi
 
 if [ "$frage" == "y" ]; then
         echo -e "${bldcya} Build dualboot kernel ${txtrst}"
         make butter_n1_dual_defconfig
-        sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-Butter_${butterversion}_Dual_4.2.+\"/ .config
+        sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-Butter_Weekly_${butterversion}_Dual_4.2.+\"/ .config
 fi
 ###########################################################################
 echo -e "${bldcya} This could take a while .... ${txtrst}"
@@ -103,8 +103,11 @@ if [ -e arch/arm/boot/zImage ]; then
                 rm -rfv out/ButterKernel/system/lib/modules/*
                 find -name '*.ko' -exec cp -v {} out/ButterKernel/system/lib/modules \;
 
-                cd out/ButterKernel
+                cd out/ButterKernel/META-INF/com/google/android
+                sed -i 's/buildscriptline/ui_print("      ButterKernel Weekly ${butterversion} by Grarak      ");/g' updater-script
+                cd ../../../..
                 zip -r ButterKernel_Weekly_${butterversion}.zip cleaner META-INF system boot.img
+                cp updater-script-original META-INF/com/google/android/updater-script
         else
                 cp arch/arm/boot/zImage mkbootdual/
                 cd mkbootdual
@@ -116,8 +119,11 @@ if [ -e arch/arm/boot/zImage ]; then
                 rm -rfv out/ButterKernelDual/system/lib/modules/*
                 find -name '*.ko' -exec cp -v {} out/ButterKernelDual/system/lib/modules \;
 
-                cd out/ButterKernelDual
+                cd out/ButterKernel/META-INF/com/google/android
+                sed -i 's/buildscriptline/ui_print("      ButterKernel Weekly ${butterversion} by Grarak      ");/g' updater-script
+                cd ../../../..
                 zip -r ButterKernel_Weekly_${butterversion}_dual.zip META-INF system boot.img
+                cp updater-script-original META-INF/com/google/android/updater-script
         fi
    
         echo -e "${bldcya} Finished!! ${txtrst}"
