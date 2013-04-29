@@ -31,17 +31,22 @@ fi
 echo -e "${bldcya} Cleaning .... ${txtrst}"
 
 ##########################################################################
-echo -e "Complete Clean? [N/y]"
-read cleanoption
+echo -e "Do you want to clean up? [N/y]"
+read cleanup
 
-if [ "$cleanoption" == "n" ] || [ "$cleanoption" == "N" ]; then
-        echo -e "${bldcya} make clean ${txtrst}"
-	make clean
-fi
+if [ "$cleanup" == "y" ]; then
+        echo -e "Complete Clean? [N/y]"
+        read cleanoption
 
-if [ "$cleanoption" == "y" ]; then
-        echo -e "${bldcya} make clean mrproper ${txtrst}"
-	make clean mrproper
+        if [ "$cleanoption" == "n" ] || [ "$cleanoption" == "N" ]; then
+                echo -e "${bldcya} make clean ${txtrst}"
+        	make clean
+        fi
+
+        if [ "$cleanoption" == "y" ]; then
+                echo -e "${bldcya} make clean mrproper ${txtrst}"
+	        make clean mrproper
+        fi
 fi
 ###########################################################################
 
