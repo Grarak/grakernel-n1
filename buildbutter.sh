@@ -104,7 +104,7 @@ if [ -e arch/arm/boot/zImage ]; then
                 find -name '*.ko' -exec cp -v {} out/ButterKernel/system/lib/modules \;
 
                 cd out/ButterKernel/META-INF/com/google/android
-                sed -i 's/buildscriptline/ui_print("      ButterKernel Weekly ${butterversion} by Grarak      ");/g' updater-script
+                sed -i s/buildscriptline/schei0e/ updater-script
                 cd ../../../..
                 zip -r ButterKernel_Weekly_${butterversion}.zip cleaner META-INF system boot.img
                 cp updater-script-original META-INF/com/google/android/updater-script
@@ -120,7 +120,7 @@ if [ -e arch/arm/boot/zImage ]; then
                 find -name '*.ko' -exec cp -v {} out/ButterKernelDual/system/lib/modules \;
 
                 cd out/ButterKernel/META-INF/com/google/android
-                sed -i 's/buildscriptline/ui_print("      ButterKernel Weekly ${butterversion} by Grarak      ");/g' updater-script
+                sed -i s/buildscriptline/schei0e/ updater-script
                 cd ../../../..
                 zip -r ButterKernel_Weekly_${butterversion}_dual.zip META-INF system boot.img
                 cp updater-script-original META-INF/com/google/android/updater-script
