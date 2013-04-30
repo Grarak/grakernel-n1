@@ -119,7 +119,7 @@ if [ -e arch/arm/boot/zImage ]; then
                 rm -rfv out/ButterKernelDual/system/lib/modules/*
                 find -name '*.ko' -exec cp -v {} out/ButterKernelDual/system/lib/modules \;
 
-                cd out/ButterKernel/META-INF/com/google/android
+                cd out/ButterKernelDual/META-INF/com/google/android
                 sed -i s/buildscriptline/${butterversion}/ updater-script
                 cd ../../../..
                 zip -r ButterKernel_Weekly_${butterversion}_dual.zip META-INF system boot.img
