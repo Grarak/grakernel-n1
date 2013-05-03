@@ -19,17 +19,24 @@ show_progress(0.100000, 0);
 assert(package_extract_file("boot.img", "/dev/block/mmcblk0p9"));
 
 mount("ext4", "EMMC", "/dev/block/mmcblk0p2", "/system");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p6", "/data");
+package_extract_dir("system", "/system");
+
+set_perm_recursive(0, 0, 0755, 0644, "/system/lib/modules");
 
 package_extract_dir("cleaner", "/tmp");
 set_perm(0, 0, 0755, "/tmp/cleaner.sh");
 run_program("/tmp/cleaner.sh");
 
-package_extract_dir("system", "/system");
-
-set_perm_recursive(0, 0, 0755, 0644, "/system/lib/modules");
-
 unmount("/system");
 show_progress(0.500000, 0);
+delete_recursive("/data/dalvik-cache");
+
+run_program("/sbin/busybox", "sync");
+
+show_progress(0.300000, 0);
+
+unmount("/data");
 
 ui_print("Installation complete!");
 ui_print("");
