@@ -28,7 +28,9 @@
 #include <linux/memblock.h>
 #include <linux/bitops.h>
 #include <linux/sched.h>
+#if 0 /* ardatdat */
 #include <linux/cpufreq.h>
+#endif
 
 #include <asm/hardware/cache-l2x0.h>
 #include <asm/system.h>
@@ -990,8 +992,9 @@ void __init tegra_release_bootloader_fb(void)
 			pr_err("Failed to free bootloader fb.\n");
 }
 
-#ifdef CONFIG_TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND
-// N1
+#ifdef CONFIG_TEGRA_CONSERVATIVE_GOV_ON_EARLYSUPSEND
+
+#if 0 /* ardatdat */
 char cpufreq_default_gov[CONFIG_NR_CPUS][MAX_GOV_NAME_LEN];
 char *cpufreq_conservative_gov = "conservative";
 
@@ -1043,8 +1046,8 @@ int cpufreq_restore_default_gov(void)
 	}
 	return ret;
 }
+#endif
 
-// Bose
 static char cpufreq_gov_default[32];
 static char *cpufreq_gov_conservative = "conservative";
 static char *cpufreq_sysfs_place_holder="/sys/devices/system/cpu/cpu%i/cpufreq/scaling_governor";
@@ -1106,9 +1109,9 @@ void cpufreq_save_default_governor(void)
 		if (scaling_gov->f_op != NULL &&
 			scaling_gov->f_op->read != NULL)
 			scaling_gov->f_op->read(scaling_gov,
-				cpufreq_gov_default,
-				32,
-				&offset);
+					cpufreq_gov_default,
+					32,
+					&offset);
 		else
 			pr_err("f_op might be null\n");
 
@@ -1159,4 +1162,4 @@ void cpufreq_set_conservative_governor(void)
 {
 	cpufreq_set_governor(cpufreq_gov_conservative);
 }
-#endif /* CONFIG_TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND */
+#endif /* CONFIG_TEGRA_CONSERVATIVE_GOV_ON_EARLYSUPSEND */

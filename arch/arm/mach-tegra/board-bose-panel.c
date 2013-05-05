@@ -402,7 +402,7 @@ static void n1_panel_early_suspend(struct early_suspend *h)
 		fb_blank(registered_fb[i], FB_BLANK_POWERDOWN);
 
 /* Do not apply governor change on earlysuspend. LCD resume speed.*/
-#ifdef CONFIG_TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND
+#ifdef CONFIG_TEGRA_CONSERVATIVE_GOV_ON_EARLYSUPSEND
 	cpufreq_save_default_governor();
 	cpufreq_set_conservative_governor();
 	cpufreq_set_conservative_governor_param("up_threshold", \
@@ -420,7 +420,7 @@ static void n1_panel_late_resume(struct early_suspend *h)
 
 	printk(KERN_INFO "\n ************ %s : %d\n", __func__, __LINE__);
 /* Do not apply governor change on earlysuspend. LCD resume speed.*/
-#ifdef CONFIG_TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND
+#ifdef CONFIG_TEGRA_CONSERVATIVE_GOV_ON_EARLYSUPSEND
 	cpufreq_restore_default_governor();
 #endif
 	for (i = 0; i < num_registered_fb; i++)

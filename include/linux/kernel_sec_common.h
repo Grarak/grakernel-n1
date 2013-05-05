@@ -78,7 +78,7 @@ typedef struct tag_mmu_info
 	int POTPIDR;
 }t_kernel_sec_mmu_info;
 
-/*ARM CORE regs mapping structure*/
+/* ARM CORE regs mapping structure */
 typedef struct
 {
 	/* COMMON */

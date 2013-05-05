@@ -13,7 +13,9 @@
  *
  */
 
+#if CONFIG_FB_EARLYSUSPEND_DELAY > 0
 #include <linux/delay.h>
+#endif
 #include <linux/earlysuspend.h>
 #include <linux/module.h>
 #include <linux/wait.h>
@@ -36,7 +38,9 @@ static void stop_drawing_early_suspend(struct early_suspend *h)
 
 	/* FIXME: earlysuspend breaks Android's CRT-off animation.
 	 * Sleep a little bit to get it played properly. */
+#if CONFIG_FB_EARLYSUSPEND_DELAY > 0
 	msleep(CONFIG_FB_EARLYSUSPEND_DELAY);
+#endif
 
 	spin_lock_irqsave(&fb_state_lock, irq_flags);
 	fb_state = FB_STATE_REQUEST_STOP_DRAWING;

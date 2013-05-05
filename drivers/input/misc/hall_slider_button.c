@@ -449,4 +449,3 @@ module_exit(hall_exit);
 MODULE_AUTHOR("Aakash Manik");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Slider interface for Hall IC");
-

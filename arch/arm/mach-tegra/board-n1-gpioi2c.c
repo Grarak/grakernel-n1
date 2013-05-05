@@ -651,7 +651,7 @@ static void fsa9480_dock_charger_cb(bool attached)
 }
 EXPORT_SYMBOL(fsa9480_dock_charger_cb);
 
-#if 0
+#ifdef CONFIG_MHL_SII9234
 static struct switch_dev switch_mhl = {
 	.name = "mhl",
 };
@@ -712,7 +712,7 @@ static void fsa9480_reset_cb(void)
 	if (ret < 0)
 		pr_err("Failed to register dock switch. %d\n", ret);
 
-#if 0
+#ifdef CONFIG_MHL_SII9234
 	/* for MHL */
 	ret = switch_dev_register(&switch_mhl);
 	if (ret < 0)

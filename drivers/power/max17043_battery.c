@@ -550,4 +550,3 @@ module_exit(max17043_exit);
 MODULE_AUTHOR("Minkyu Kang <mk7.kang@samsung.com>");
 MODULE_DESCRIPTION("MAX17043 Fuel Gauge");
 MODULE_LICENSE("GPL");
-

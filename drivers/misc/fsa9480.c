@@ -268,7 +268,7 @@ void FSA9480_MhlSwitchSel(bool sw)
 			printk("[FSA] Turn off hdmi\n");
 			mhl_hpd_handler(false);
 		}
-                if(mhl_power_supply==1)
+		if(mhl_power_supply==1)
 		{
 			mhl_power_supply=0;
 			local_pdata->charger_cb(FSA9480_DETACHED);

@@ -1181,10 +1181,10 @@ static struct sec_bat_platform_data sec_bat_pdata = {
 	.sub_charger_name	= "max8922-charger",
 #endif
 	.adc_arr_size		= 0,
-	.adc_table		= NULL,
+	.adc_table			= NULL,
 	.adc_channel		= 0,
 	.get_init_cable_state	= sec_bat_get_init_cable_state,
-	.get_temperature	= sec_bat_get_temperature,
+	.get_temperature		= sec_bat_get_temperature,
 	.get_batt_level	        = sec_bat_get_level,
 };
 
@@ -1615,7 +1615,7 @@ static const struct s5k6aafx_reg s5k6aafx_stby_reg2[] = {
 struct i2c_client *i2c_client_pmic;
 struct i2c_client *i2c_client_camera;
 
-static void n1_s5k4ecgx_power_on()
+static void n1_s5k4ecgx_power_on(void)
 {
 	pr_err("%s,\n", __func__);
 
@@ -1684,7 +1684,7 @@ static struct s5k4ecgx_reg_8 s5k4ecgx_power_off_2[] = {
 	{S5K4ECGX_TABLE_END_8, 0x0},
 };
 
-static void n1_s5k4ecgx_power_off()
+static void n1_s5k4ecgx_power_off(void)
 {
 	pr_err("%s,\n", __func__);
 
@@ -1723,30 +1723,30 @@ static void n1_s5k4ecgx_power_off()
 
 }
 
-static int n1_s5k4ecgx_flash(int enable)
+static void n1_s5k4ecgx_flash(int enable)
 {
 	/* Turn main flash on or off by asserting a value on the EN line. */
 	printk(KERN_INFO "========== flash enable = %d \n", enable);
 	gpio_set_value(GPIO_CAM_FLASH_EN, enable);
-
-	return 0;
 }
 
-static int n1_s5k4ecgx_torch(int enable)
+static struct wake_lock torch_wake_lock;
+	
+static void n1_s5k4ecgx_torch(int enable)
 {
 	printk(KERN_INFO "========== torch enable = %d \n", enable);
 	switch(enable) {
 		case 0:
 			gpio_set_value(GPIO_CAM_FLASH_EN, 0);
 			gpio_set_value(GPIO_CAM_FLASH_SET, 0);
+			wake_unlock(&torch_wake_lock);
 			break;
 		case 1:
 			gpio_set_value(GPIO_CAM_FLASH_EN, 1);
 			gpio_set_value(GPIO_CAM_FLASH_SET, 1);
+			wake_lock(&torch_wake_lock);
 			break;
 	}
-
-	return 0;
 }
 
 struct s5k4ecgx_platform_data n1_s5k4ecgx_data = {
@@ -1980,6 +1980,9 @@ static int __init camera_init(void)
 	}
 #endif
 #endif
+
+	/* Initialize wakelock */
+	wake_lock_init(&torch_wake_lock, WAKE_LOCK_SUSPEND, "torch_wake");
 
 	return 0;
 }
@@ -2462,11 +2465,11 @@ void __init tegra_n1_reserve(void)
 }
 
 MACHINE_START(SAMSUNG_N1, "n1")
-	.boot_params    = 0x00000100,
-	.map_io         = tegra_map_common_io,
-	.reserve        = tegra_n1_reserve,
-	.init_early	= tegra_init_early,
-	.init_irq       = tegra_init_irq,
-	.timer          = &tegra_timer,
-	.init_machine   = tegra_n1_init,
+	.boot_params		= 0x00000100,
+	.map_io			= tegra_map_common_io,
+	.reserve		= tegra_n1_reserve,
+	.init_early		= tegra_init_early,
+	.init_irq		= tegra_init_irq,
+	.timer			= &tegra_timer,
+	.init_machine		= tegra_n1_init,
 MACHINE_END

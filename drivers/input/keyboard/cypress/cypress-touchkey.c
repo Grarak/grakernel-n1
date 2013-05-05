@@ -1581,7 +1581,6 @@ static int __init touchkey_init(void)
 	}
 
 	return ret;
-
 }
 
 static void __exit touchkey_exit(void)

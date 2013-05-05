@@ -72,9 +72,9 @@ static void enable_led_notification(void)
 	if (!bln_enabled)
 		return;
 
-	if (in_kernel_blink) {
-		wake_lock(&bln_wake_lock);
+	wake_lock(&bln_wake_lock);
 
+	if (in_kernel_blink) {
 		/* Start timer */
 		blink_timer.expires = jiffies +
 				msecs_to_jiffies(blink_interval);
@@ -101,7 +101,6 @@ static void disable_led_notification(void)
 		del_timer(&blink_timer);
 
 	wake_unlock(&bln_wake_lock);
-
 }
 
 static ssize_t backlightnotification_status_read(struct device *dev,
@@ -352,7 +351,7 @@ static int __init bln_control_init(void)
 
 	register_early_suspend(&bln_suspend_data);
 
-    /* Initialize wake locks */
+	/* Initialize wakelock */
 	wake_lock_init(&bln_wake_lock, WAKE_LOCK_SUSPEND, "bln_wake");
 
 	return 0;

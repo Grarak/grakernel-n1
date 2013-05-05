@@ -329,7 +329,7 @@ static int __init n1_init_vibrator(void)
 	int ret;
 
 	if (system_rev < 0x5){
-		pr_notice("%s : Vibrator  not support HW Rev = [%d] !!!\n", __func__, system_rev);
+		pr_notice("%s : Vibrator does not support HW Rev = [%d] !!!\n", __func__, system_rev);
 		return 0;
 	}
 

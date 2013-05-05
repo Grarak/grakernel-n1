@@ -26,7 +26,9 @@
 #include <linux/platform_device.h>
 #include <linux/pwm_backlight.h>
 #include <linux/spi/spi.h>
+#if 0
 #include <linux/earlysuspend.h>
+#endif
 #include <linux/nvhost.h>
 #include <mach/nvmap.h>
 #include <mach/irqs.h>
@@ -404,6 +406,7 @@ static int panel_n1_spi_probe(struct spi_device *spi)
 	n1_panel_early_suspend.resume = panel_n1_spi_resume;
 	register_early_suspend(&n1_panel_early_suspend);
 #endif
+
 	n1_panel_enable();
 	initialized = 1;
 

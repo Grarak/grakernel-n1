@@ -232,7 +232,6 @@ static long akmd_ioctl(struct file *file, unsigned int cmd,
 	if (ret)
 		return ret;
 
-
 	switch (cmd) {
 	case ECS_IOCTL_WRITE:
 		if ((rwbuf.raw[0] < 2) || (rwbuf.raw[0] > (RWBUF_SIZE - 1)))

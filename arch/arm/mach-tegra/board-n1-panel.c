@@ -43,8 +43,7 @@
 #define n1_hdmi_hpd	TEGRA_GPIO_PN7
 #endif
 
-#ifdef CONFIG_TEGRA_DC
-#ifdef CONFIG_MHL_SII9234
+#if defined (CONFIG_TEGRA_DC) && defined (CONFIG_MHL_SII9234)
 static struct regulator *n1_hdmi_reg = NULL;
 static struct regulator *n1_hdmi_pll = NULL;
 
@@ -259,8 +258,7 @@ static struct nvhost_device n1_disp2_device = {
 		.platform_data = &n1_disp2_pdata,
 	},
 };
-#endif /* CONFIG_MHL_SII9234 */
-#endif /* CONFIG_TEGRA_DC */
+#endif /* CONFIG_TEGRA_DC && CONFIG_MHL_SII9234 */
 
 static struct nvmap_platform_carveout n1_carveouts[] = {
 	[0] = NVMAP_HEAP_CARVEOUT_IRAM_INIT,
@@ -328,11 +326,25 @@ static void n1_panel_early_suspend(struct early_suspend *h)
 	if (num_registered_fb > 1)
 		fb_blank(registered_fb[1], FB_BLANK_NORMAL);
 
-#ifdef CONFIG_TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND
+#ifdef CONFIG_TEGRA_CONSERVATIVE_GOV_ON_EARLYSUPSEND
+	cpufreq_save_default_governor();
+	cpufreq_set_conservative_governor();
+        cpufreq_set_conservative_governor_param("up_threshold",
+			SET_CONSERVATIVE_GOVERNOR_UP_THRESHOLD);
+
+	cpufreq_set_conservative_governor_param("down_threshold",
+			SET_CONSERVATIVE_GOVERNOR_DOWN_THRESHOLD);
+
+	cpufreq_set_conservative_governor_param("freq_step",
+		SET_CONSERVATIVE_GOVERNOR_FREQ_STEP);
+
+#if 0 /* ardatdat */
 	cpufreq_store_default_gov();
 	if (cpufreq_change_gov(cpufreq_conservative_gov))
 		 pr_err("Early_suspend: Error changing governor to %s\n",
 			cpufreq_conservative_gov);
+#endif
+
 #endif
 
 	cmc623_suspend(NULL);
@@ -343,9 +355,14 @@ static void n1_panel_late_resume(struct early_suspend *h)
 	unsigned i;
 	printk(KERN_INFO "-- start of  %s : %d\n", __func__, __LINE__);
 
-#ifdef CONFIG_TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND
+#ifdef CONFIG_TEGRA_CONSERVATIVE_GOV_ON_EARLYSUPSEND
+	cpufreq_restore_default_governor();
+
+#if 0 /* ardatdat */
 	if (cpufreq_restore_default_gov())
 		pr_err("Early_suspend: Unable to restore governor\n");
+#endif
+
 #endif
 	for (i = 0; i < num_registered_fb; i++)
 		fb_blank(registered_fb[i], FB_BLANK_UNBLANK);

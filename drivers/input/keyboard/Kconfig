@@ -563,22 +563,7 @@ config KEYBOARD_W90P910
 	  To compile this driver as a module, choose M here: the
 	  module will be called w90p910_keypad.
 
-config KEYBOARD_CYPRESS_TOUCH
-    tristate "CYPRESS Touchkey"
-    depends on I2C
-    help
-      Say Y here if you have the CYPRESS touchkey controller
-      chip in your system.
-
-      If unsure, say N.
-
-      To compile this driver as a module, choose M here: the
-      module will be called mcs_touchkey.
-
-config TOUCHKEY_BLN_CYPRESS
-	bool "BLN Support for Cypress touchkeys."
-	depends on KEYBOARD_CYPRESS_TOUCH
-	help
-	  BLN support.
+source "drivers/input/keyboard/cypress/Kconfig"
 
 endif
+

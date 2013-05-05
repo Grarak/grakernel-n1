@@ -3,11 +3,16 @@
 #
 
 config KEYBOARD_CYPRESS_TOUCH
-	tristate "Cypress touchkey support"
-	help
-	  Say Y here to enable the cypress touchkey.
+    tristate "CYPRESS Touchkey"
+    depends on I2C
+    help
+      Say Y here if you have the CYPRESS touchkey controller
+      chip in your system.
 
-	  To compile this driver as a module, choose M here.
+      If unsure, say N.
+
+      To compile this driver as a module, choose M here: the
+      module will be called mcs_touchkey.
 
 config TOUCHKEY_BLN_CYPRESS
 	bool "BLN Support for Cypress touchkeys."

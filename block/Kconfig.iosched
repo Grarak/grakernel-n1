@@ -34,6 +34,8 @@ config IOSCHED_CFQ
 
 	  This is the default I/O scheduler.
 
+	  Note: If BLK_CGROUP=m, then CFQ can be built only as module.
+
 config CFQ_GROUP_IOSCHED
 	bool "CFQ Group Scheduling support"
 	depends on IOSCHED_CFQ && BLK_CGROUP

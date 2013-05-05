@@ -18,3 +18,4 @@ source "drivers/sensors/compass/Kconfig"
 source "drivers/sensors/mpu3050_v333/Kconfig"
 
 endif # SENSORS
+

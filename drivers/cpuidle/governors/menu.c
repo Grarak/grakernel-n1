@@ -109,7 +109,7 @@
 
 struct menu_device {
 	int		last_state_idx;
-	int             needs_update;
+	int		needs_update;
 
 	unsigned int	expected_us;
 	u64		predicted_us;
@@ -128,7 +128,6 @@ struct menu_device {
 static int get_loadavg(void)
 {
 	unsigned long this = this_cpu_load();
-
 
 	return LOAD_INT(this) * 10 + LOAD_FRAC(this) / 10;
 }

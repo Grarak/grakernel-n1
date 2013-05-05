@@ -104,7 +104,7 @@
 #define MXT_PROCI_STYLUS_T47                            47u  /* added MXT224E */
 #define MXT_PROCG_NOISESUPPRESSION_T48                  48u  /* added MXT224E */
 #define MXT_GEN_INFOBLOCK16BIT_T254                     254u /*added MXT224E */
-#define	MXT_MAX_OBJECT_TYPES				50u  /* temporary */
+#define	MXT_MAX_OBJECT_TYPES							50u  /* temporary */
 
 
 #define MXT_END_OF_MESSAGES                             255u
@@ -602,7 +602,7 @@
 
 #define MXT_MAX_FRAME_SIZE                              532
 
-#define MXT_ADR_T38_CFG_CTRL 				0x00
+#define MXT_ADR_T38_CFG_CTRL 			0x00
 #define MXT_CFG_OVERWRITE				0x00
 #define MXT_CFG_DEBUG					0xA5
 
@@ -775,7 +775,7 @@ struct mxt_data {
 	u16			mxt_status;
 
 	u16			keyled;
-	bool			keyled_sleep;
+	bool		keyled_sleep;
 
 	struct mxt_callbacks callbacks;
 };

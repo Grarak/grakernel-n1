@@ -563,7 +563,7 @@ struct sec_init_gpio_cfg_st {
 	char *name;
 };
 
-#define SPIO 0
+//#define SPIO 0
 #define GPIO 1
 static struct sec_init_gpio_cfg_st n1_gpio_table[] = {
 	/* set NC Pin to input or output when no pull */

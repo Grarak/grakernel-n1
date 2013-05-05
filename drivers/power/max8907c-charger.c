@@ -482,4 +482,3 @@ module_exit(max8907c_charger_exit);
 MODULE_DESCRIPTION("Charger driver for MAX8907C");
 MODULE_AUTHOR("Gyungoh Yoo <jack.yoo@maxim-ic.com>");
 MODULE_LICENSE("GPL");
-

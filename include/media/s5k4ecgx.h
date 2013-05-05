@@ -34,12 +34,12 @@
 #define S5K4ECGX_IOCTL_AF_CONTROL		_IOW('o', 9, s5k4ecgx_autofocus_control)
 #define S5K4ECGX_IOCTL_AF_RESULT		_IOR('o', 10, struct s5k4ecgx_autofocus_result)
 #define S5K4ECGX_IOCTL_ESD_RESET		_IOR('o', 11, s5k4ecgx_esd_reset)
-#define S5K4ECGX_IOCTL_LENS_SOFT_LANDING	_IOW('o', 12, unsigned int)	//not use
-#define S5K4ECGX_IOCTL_RECORDING_FRAME		_IOW('o', 13, s5k4ecgx_recording_frame)	//not use
+#define S5K4ECGX_IOCTL_LENS_SOFT_LANDING	_IOW('o', 12, unsigned int)	// not used
+#define S5K4ECGX_IOCTL_RECORDING_FRAME		_IOW('o', 13, s5k4ecgx_recording_frame)	// not used
 #define S5K4ECGX_IOCTL_EXIF_INFO		_IOW('o', 14, struct s5k4ecgx_exif_info)
 #define S5K4ECGX_IOCTL_EXPOSURE_METER		_IOW('o', 15, s5k4ecgx_exposure_meter)
 #define S5K4ECGX_IOCTL_ISO			_IOW('o', 16, s5k4ecgx_iso)
-#define S5K4ECGX_IOCTL_ANTISHAKE		_IOW('o', 17, s5k4ecgx_antishake)	//not use
+#define S5K4ECGX_IOCTL_ANTISHAKE		_IOW('o', 17, s5k4ecgx_antishake)	// not used
 #define S5K4ECGX_IOCTL_AUTO_CONTRAST		_IOW('o', 18, s5k4ecgx_auto_contrast)
 #define S5K4ECGX_IOCTL_TOUCHAF			_IOW('o', 19, struct s5k4ecgx_touchaf_pos)
 #ifdef FACTORY_TEST
