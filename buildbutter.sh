@@ -68,19 +68,21 @@ if [ "$kernelversion" == "y" ]; then
 fi
 ###########################################################################
 
+make tegra_n1_defconfig
+
 ###########################################################################
 echo -e "${bldcya} Build Dualboot? ${txtrst} [N/y]"
 read frage
 
 if [ "$frage" == "n" ] || [ "$frage" == "N" ]; then
 	echo -e "${bldcya} Build singleboot kernel ${txtrst}"
-        make butter_n1_defconfig
+        cp arch/arm/configs/butter_n1_defconfig .config
         sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-Butter_Weekly_${butterversion}_4.2.+\"/ .config
 fi
 
 if [ "$frage" == "y" ]; then
         echo -e "${bldcya} Build dualboot kernel ${txtrst}"
-        make butter_n1_dual_defconfig
+        cp arch/arm/configs/butter_n1_dual_defconfig .config
         sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-Butter_Weekly_${butterversion}_Dual_4.2.+\"/ .config
 fi
 ###########################################################################
