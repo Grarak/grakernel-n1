@@ -2,7 +2,7 @@ ui_print("");
 ui_print("");
 ui_print("");
 ui_print("");
-ui_print("-------------------------------------------------");
+ui_print("------------------------------------------------");
 ui_print("      ButterKernel Weekly 
 buildscriptline
  by Grarak            ");
