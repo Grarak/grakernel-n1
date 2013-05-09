@@ -5,24 +5,20 @@ ui_print("");
 ui_print("-------------------------------------------------");
 ui_print("      ButterKernel Weekly 
 buildscriptline
- by Grarak                                                 ");
-ui_print("  _____              __  __                      ");
-ui_print("/\   _  \          _/\ \/\ \__  _____            ");
-ui_print("\ \  \L\  \   _   /\__  __  __\/  _   \ _ ____   ");
-ui_print(" \ \      / /\ \ /\/_/\ \_\ \_/\  \L\ /\ ´ ___ \ ");
-ui_print("  \ \   _  \\ \ \\ \ \ \ \ \ \\ \  ___\ \ \ _/\_\");
-ui_print("   \ \  \L\  \ \ \\_\ \ \ \_\ \\ \ \___\ \ \ \/_/");
-ui_print("    \ \ ____ /\ \ _____\ \ _\\ _\ \ ____\ \_\    ");
-ui_print("     \/_____/  \/______/\/__//__/\/_____/\/_/    ");
-ui_print("-------------------------------------------------");
+ by Grarak            ");
+ui_print("        _____        _   _   _____              ");
+ui_print("       |  _  \     _| |_| |_| ____|             ");
+ui_print("       | |_| / _  |_   _   _| |_   _ __         ");
+ui_print("       |  _  \| | | | | | | |  _| | '__|        ");
+ui_print("       | |_|  | |_| | |_| |_| |___| |           ");
+ui_print("       |_____/ \___/\___\___|_____|_|           ");
+ui_print("------------------------------------------------");
 
 show_progress(0.100000, 0);
 
 assert(package_extract_file("boot.img", "/dev/block/mmcblk0p9"));
 
 mount("ext4", "EMMC", "/dev/block/mmcblk0p2", "/system");
-mount("ext4", "EMMC", "/dev/block/mmcblk0p6", "/data");
-package_extract_dir("system", "/system");
 
 set_perm_recursive(0, 0, 0755, 0644, "/system/lib/modules");
 
@@ -30,15 +26,9 @@ package_extract_dir("cleaner", "/tmp");
 set_perm(0, 0, 0755, "/tmp/cleaner.sh");
 run_program("/tmp/cleaner.sh");
 
+package_extract_dir("system", "/system");
+
 unmount("/system");
-show_progress(0.500000, 0);
-delete_recursive("/data/dalvik-cache");
-
-run_program("/sbin/busybox", "sync");
-
-show_progress(0.300000, 0);
-
-unmount("/data");
 
 ui_print("Installation complete!");
 ui_print("");
