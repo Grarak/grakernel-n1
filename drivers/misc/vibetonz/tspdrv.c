@@ -38,8 +38,11 @@
 #include <linux/miscdevice.h>
 #include <linux/platform_device.h>
 #include <asm/uaccess.h>
+#include "../../staging/android/timed_output.h"
+
 #include "tspdrv.h"
 #include "ImmVibeSPI.c"
+
 #if defined(VIBE_DEBUG) && defined(VIBE_RECORD)
 #include <tspdrvRecorder.c>
 #endif
@@ -92,6 +95,138 @@ static int g_nMajor;
 #else
 #include "VibeOSKernelLinuxTime.c"
 #endif
+
+/* strength modification */
+unsigned short int pwm_val = 50;
+
+static ssize_t pwm_val_show(struct device *dev, struct device_attribute *attr,
+                              char *buf)
+{
+	int count;
+
+	count = sprintf(buf, "%hu\n", pwm_val);
+	pr_debug("[VIB] pwm_val: %hu\n", pwm_val);
+
+	return count;
+}
+
+ssize_t pwm_val_store(struct device *dev, struct device_attribute *attr,
+                        const char *buf, size_t size)
+{
+	if (kstrtoul(buf, 0, (unsigned long int*)&pwm_val))
+		pr_err("[VIB] %s: error on storing pwm_val\n", __func__);
+
+	pr_info("[VIB] %s: pwm_val=%hu\n", __func__, pwm_val);
+
+	/* make sure new pwm duty is in range */
+	if (pwm_val > 100)
+		pwm_val = 100;
+	else if (pwm_val < 0)
+		pwm_val = 0;
+
+	return size;
+}
+
+static DEVICE_ATTR(pwm_val, S_IRUGO | S_IWUSR, pwm_val_show, pwm_val_store);
+
+static int create_vibrator_sysfs(void)
+{
+	int ret;
+	struct kobject *vibrator_kobj;
+	vibrator_kobj = kobject_create_and_add("vibrator", NULL);
+	if (unlikely(!vibrator_kobj))
+		return -ENOMEM;
+
+	ret = sysfs_create_file(vibrator_kobj, &dev_attr_pwm_val.attr);
+	if (unlikely(ret < 0)) {
+		pr_err("[VIB] sysfs_create_file failed: %d\n", ret);
+		return ret;
+	}
+
+	return 0;
+}
+
+/* timed_output */
+static struct hrtimer g_autoTimer;
+static struct work_struct vibrator_timeout;
+
+#define MAX_TIMEOUT		10000	/* 10 sec */
+#define DEFAULT_STRENGTH	119	/* 90% */
+
+static enum hrtimer_restart autotimer_stop(struct hrtimer *timer)
+{
+	g_bStopRequested = true;
+	schedule_work(&vibrator_timeout);
+
+	return HRTIMER_NORESTART;
+}
+
+static void vibrator_timeout_work(struct work_struct *wq)
+{
+	ImmVibeSPI_ForceOut_AmpDisable(0);
+}
+
+static int get_time_for_vibetonz(struct timed_output_dev *dev)
+{
+	int remaining;
+
+	if (hrtimer_active(&g_autoTimer)) {
+		ktime_t r = hrtimer_get_remaining(&g_autoTimer);
+		remaining = ktime_to_ms(r); /* returning time in ms */
+	} else {
+		remaining = 0;
+	}
+
+	return remaining;
+}
+
+static inline void VibeOSKernelLinuxAutoTimer(int timeout)
+{
+	hrtimer_cancel(&g_autoTimer);
+	hrtimer_start(&g_autoTimer, ktime_set(timeout / 1000, (timeout % 1000) * 1000000), HRTIMER_MODE_REL);
+}
+
+static void enable_vibetonz_from_user(struct timed_output_dev *dev, int value)
+{
+	VibeInt8 strength;
+
+	printk(KERN_DEBUG "tspdrv: Enable time = %d msec\n", value);
+
+	if (value > 0) {
+		if (value > MAX_TIMEOUT)
+			value = MAX_TIMEOUT;
+
+		strength = DEFAULT_STRENGTH * pwm_val / 100;
+
+		if (strength != 0) {
+			ImmVibeSPI_ForceOut_AmpEnable(0);
+			ImmVibeSPI_ForceOut_SetSamples(0, 8, 1, &strength);
+			VibeOSKernelLinuxAutoTimer(value);
+		}
+	}
+}
+
+static struct timed_output_dev timed_output_vt = {
+	.name = "vibrator",
+	.get_time = get_time_for_vibetonz,
+	.enable = enable_vibetonz_from_user,
+};
+
+static void vibetonz_start(void)
+{
+	int ret = 0;
+
+	/* Extend timers to enable a timed vibration */
+	hrtimer_init(&g_autoTimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	g_autoTimer.function = autotimer_stop;
+
+	INIT_WORK(&vibrator_timeout, vibrator_timeout_work);
+
+	ret = timed_output_dev_register(&timed_output_vt);
+
+	if (ret)
+		DbgOut((KERN_ERR "tspdrv: timed_output_dev_register failed\n"));
+}
 
 /* File IO */
 static int open(struct inode *inode, struct file *file);
@@ -150,7 +285,7 @@ MODULE_LICENSE("GPL v2");
 int vibetonz_clk_on(struct device *dev)
 {
 	struct clk *vibetonz_clk = NULL;
-    /*printk(KERN_ERR"[VIBRATOR]vibetonz_clk_on is called\n");*/
+	/*printk(KERN_ERR"[VIBRATOR]vibetonz_clk_on is called\n");*/
 	vibetonz_clk = clk_get(dev, "timers");
 	if (IS_ERR(vibetonz_clk)) {
 		printk(KERN_ERR "tspdrv: failed to get clock for vibetonz\n");
@@ -204,7 +339,7 @@ int init_module(void)
 	nRet = 0;
 
 	if (system_rev < 0x5){
-		pr_notice("%s : Vibrator  not support HW Rev =[%d] !!!\n",__func__,system_rev);
+		pr_notice("%s : Vibrator not supported. HW Rev = [%d] !!!\n",__func__,system_rev);
 		return 0;
 	}
 
@@ -261,7 +396,10 @@ int init_module(void)
 		g_SamplesBuffer[i].actuatorSamples[1].nBufferSize = 0;
 	}
 
-    return 0;
+	vibetonz_start();
+	create_vibrator_sysfs();
+
+	return 0;
 err_platform_drv_reg:
 	platform_device_unregister(&platdev);
 err_platform_dev_reg:
