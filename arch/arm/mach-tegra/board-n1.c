@@ -372,6 +372,7 @@ static int n1_notifier_call(struct notifier_block *this,
 static struct notifier_block n1_reboot_notifier = {
 	.notifier_call = n1_notifier_call,
 };
+
 static struct plat_serial8250_port debug_uartb_platform_data[] = {
 	{
 		.membase	= IO_ADDRESS(TEGRA_UARTB_BASE),

@@ -116,7 +116,6 @@ choice
 	config DEFAULT_BFQ
 		bool "BFQ" if IOSCHED_BFQ=y
 
-
 endchoice
 
 config DEFAULT_IOSCHED

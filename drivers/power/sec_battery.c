@@ -119,7 +119,9 @@ struct sec_bat_info {
 	unsigned int		batt_vcell;
 	unsigned int		batt_soc;
 	unsigned int		charging_status;
+#ifdef CONFIG_SAMSUNG_LPM_MODE
 	unsigned int 		batt_lp_charging;
+#endif
 	struct s3c_adc_client	*padc;
 
 	struct workqueue_struct *monitor_wqueue;
@@ -1097,7 +1099,9 @@ static struct device_attribute sec_battery_attrs[] = {
 	SEC_BATTERY_ATTR(batt_temp),
 	SEC_BATTERY_ATTR(batt_temp_adc),
 	SEC_BATTERY_ATTR(batt_charging_source),
+#ifdef CONFIG_SAMSUNG_LPM_MODE
 	SEC_BATTERY_ATTR(batt_lp_charging),
+#endif
 	SEC_BATTERY_ATTR(video),
 	SEC_BATTERY_ATTR(mp3),
 	SEC_BATTERY_ATTR(batt_type),
@@ -1110,7 +1114,9 @@ enum {
 	BATT_TEMP,
 	BATT_TEMP_ADC,
 	BATT_CHARGING_SOURCE,
+#ifdef CONFIG_SAMSUNG_LPM_MODE
 	BATT_LP_CHARGING,
+#endif
 	BATT_VIDEO,
 	BATT_MP3,
 	BATT_TYPE,
@@ -1146,11 +1152,12 @@ static ssize_t sec_bat_show_property(struct device *dev,
 		i += scnprintf(buf + i, PAGE_SIZE - i, "%d\n",
 				info->cable_type);
 		break;
-
+#ifdef CONFIG_SAMSUNG_LPM_MODE
 	case BATT_LP_CHARGING:
 		i += scnprintf(buf + i, PAGE_SIZE - i, "%d\n",
 				info->batt_lp_charging);
 		break;
+#endif
 	case BATT_VIDEO:
 		/* TODO */
 		i += scnprintf(buf + i, PAGE_SIZE - i, "%d\n", 0);
@@ -1188,6 +1195,7 @@ static ssize_t sec_bat_store(struct device *dev,
 			ret = count;
 		}
 		break;
+#ifdef CONFIG_SAMSUNG_LPM_MODE
 	case BATT_LP_CHARGING:
 		if (sscanf(buf, "%d\n", &x) == 1) {
 			if (x == 1) {
@@ -1201,6 +1209,7 @@ static ssize_t sec_bat_store(struct device *dev,
 		}
 		printk("%s : batt_lp_charging = %d\n",__func__, info->batt_lp_charging);
 		break;
+#endif
 	default:
 		ret = -EINVAL;
 	}
@@ -1379,7 +1388,9 @@ static __devinit int sec_bat_probe(struct platform_device *pdev)
 
 	info->batt_health = POWER_SUPPLY_HEALTH_GOOD;
 	info->charging_start_time = 0;
+#ifdef CONFIG_SAMSUNG_LPM_MODE
 	info->batt_lp_charging = 0;
+#endif
 
 	/* init power supplier framework */
 	ret = power_supply_register(&pdev->dev, &info->psy_bat);

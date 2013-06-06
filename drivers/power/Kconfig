@@ -37,16 +37,16 @@ config MAX8925_POWER
 	  MAX8925 PMIC.
 
 config BATTERY_SEC
-    tristate "SAMSUNG battery driver"
-    depends on ARCH_TEGRA
-    help
-      Say Y to enable samsung battery driver for devices with TEGRA chip.
+	tristate "SAMSUNG battery driver"
+	depends on ARCH_TEGRA
+	help
+	  Say Y to enable samsung battery driver for devices with TEGRA chip.
 
 config SAMSUNG_LPM_MODE
-    bool "Off charging mode support in sec battery driver"
-    depends on BATTERY_SEC
-    help
-     Say Y to include support for sec off charging support
+	bool "Off charging mode support in sec battery driver"
+	depends on BATTERY_SEC
+	help
+	  Say Y to include support for sec off charging support
 
 config MAX8907C_CHARGER
 	tristate "MAX8907c charger support"

@@ -22,12 +22,12 @@
 #define MAX8907C_CHK_TMR_FAULT		(1 << 15)
 
 /* MAX8907C_REG_CHGCNTL1 */
-#define CHGCNTL1_FCHG_SHIFT         0
-#define CHGCNTL1_CHG_TOPFF_SHIFT    5
-#define CHGCNTL1_NCHGEN_SHIFT	    7
+#define CHGCNTL1_FCHG_SHIFT		0
+#define CHGCNTL1_CHG_TOPFF_SHIFT	5
+#define CHGCNTL1_NCHGEN_SHIFT		7
 #define CHGCNTL1_FCHG_MASK		(0x7 << CHGCNTL1_FCHG_SHIFT)
-#define CHGCNTL1_NCHGEN_MASK	(0x1 << CHGCNTL1_NCHGEN_SHIFT)
-#define CHGCNTL1_CHG_TOPFF_MASK	(0x3 << CHGCNTL1_CHG_TOPFF_SHIFT)
+#define CHGCNTL1_NCHGEN_MASK		(0x1 << CHGCNTL1_NCHGEN_SHIFT)
+#define CHGCNTL1_CHG_TOPFF_MASK		(0x3 << CHGCNTL1_CHG_TOPFF_SHIFT)
 
 /* MAX8907C_REG_CHGCNTL2 */
 #define CHGCNTL2_FCHG_TMR_SHIFT		4
@@ -36,11 +36,11 @@
 #define CHGCNTL2_MBAT_REG_MASK		(0x1 << CHGCNTL2_MBAT_REG_SHIFT)
 
 /* MAX8907C_CHG_STAT */
-#define CHGSTAT_MBDET_SHIFT			1
+#define CHGSTAT_MBDET_SHIFT		1
 #define CHGSTAT_CHG_MODE_SHIFT		2
 #define CHGSTAT_VCHG_OK_SHIFT		7
 
-#define CHGSTAT_MBDET_MASK			(1 << CHGSTAT_MBDET_SHIFT)
+#define CHGSTAT_MBDET_MASK		(1 << CHGSTAT_MBDET_SHIFT)
 #define CHGSTAT_CHG_MODE_MASK		(3 << CHGSTAT_CHG_MODE_SHIFT)
 #define CHGSTAT_VCHG_OK_MASK		(1 << CHGSTAT_VCHG_OK_SHIFT)
 
@@ -51,8 +51,8 @@ enum {
 
 enum max8907c_chager_mode {
 	MAX8907C_PREQUALIFICATION	= 0x00,
-	max8907c_FAST_CHARGE			= 0x01,
-	MAX8907C_TOP_OFF				= 0x02,
+	max8907c_FAST_CHARGE		= 0x01,
+	MAX8907C_TOP_OFF		= 0x02,
 	MAX8907C_CHARGE_DONE		= 0x03,
 };
 
@@ -91,9 +91,9 @@ enum max8907c_fast_charger_time {
 struct max8907c_charger_pdata {
 	int irq;
 #ifdef CONFIG_MACH_N1
-    int (*topoff_cb) (void);
-    int (*vchg_f_cb) (int);
-    int (*vchg_r_f_cb) (int); /* FACTORY TEST BINARY */
+	int (*topoff_cb) (void);
+	int (*vchg_f_cb) (int);
+	int (*vchg_r_f_cb) (int); /* FACTORY TEST BINARY */
 #endif
 	enum max8907c_charger_topoff_threshold topoff_threshold;
 	enum max8907c_charger_restart_hysteresis restart_hysteresis;

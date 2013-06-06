@@ -796,7 +796,17 @@ static int tegra_cpu_init(struct cpufreq_policy *policy)
 	cpufreq_frequency_table_cpuinfo(policy, freq_table);
 	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
 
-	policy->max = 1000000;
+	if (cpufreq_frequency_table_cpuinfo(policy, freq_table)) {
+#ifdef CONFIG_TEGRA_CPU_FREQ_SET_MIN_MAX
+            policy->cpuinfo.min_freq = CONFIG_TEGRA_CPU_FREQ_MIN;
+            policy->cpuinfo.max_freq = CONFIG_TEGRA_CPU_FREQ_MAX;
+#endif
+}
+#ifdef CONFIG_TEGRA_CPU_FREQ_SET_MIN_MAX
+           policy->min = CONFIG_TEGRA_CPU_FREQ_MIN;
+           policy->max = CONFIG_TEGRA_CPU_FREQ_MAX;
+#endif
+
 	policy->cur = tegra_getspeed(policy->cpu);
 	target_cpu_speed[policy->cpu] = policy->cur;
 
