@@ -1267,11 +1267,7 @@ static int dpram_download
 		header.curframe = curframe;
 		header.len = plen;
 
-#ifdef CONFIG_ARCH_TEGRA
-		_memcpy(dest, &header, sizeof(header));
-#else
 		memcpy(dest, &header, sizeof(header));
-#endif
 		dest += sizeof(header);
 
 #ifdef CONFIG_ARCH_TEGRA

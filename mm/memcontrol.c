@@ -990,6 +990,16 @@ void mem_cgroup_add_lru_list(struct page *page, enum lru_list lru)
 		return;
 	pc = lookup_page_cgroup(page);
 	VM_BUG_ON(PageCgroupAcctLRU(pc));
+	/*
+	 * putback:				charge:
+	 * SetPageLRU				SetPageCgroupUsed
+	 * smp_mb				smp_mb
+	 * PageCgroupUsed && add to memcg LRU	PageLRU && add to memcg LRU
+	 *
+	 * Ensure that one of the two sides adds the page to the memcg
+	 * LRU during a race.
+	 */
+	smp_mb();
 	if (!PageCgroupUsed(pc))
 		return;
 	/* Ensure pc->mem_cgroup is visible after reading PCG_USED. */
@@ -1041,7 +1051,16 @@ static void mem_cgroup_lru_add_after_commit(struct page *page)
 	unsigned long flags;
 	struct zone *zone = page_zone(page);
 	struct page_cgroup *pc = lookup_page_cgroup(page);
-
+	/*
+	 * putback:				charge:
+	 * SetPageLRU				SetPageCgroupUsed
+	 * smp_mb				smp_mb
+	 * PageCgroupUsed && add to memcg LRU	PageLRU && add to memcg LRU
+	 *
+	 * Ensure that one of the two sides adds the page to the memcg
+	 * LRU during a race.
+	 */
+	smp_mb();
 	/* taking care of that the page is added to LRU while we commit it */
 	if (likely(!PageLRU(page)))
 		return;
@@ -1101,15 +1120,19 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
 	return ret;
 }
 
-static int calc_inactive_ratio(struct mem_cgroup *memcg, unsigned long *present_pages)
+int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg, struct zone *zone)
 {
-	unsigned long active;
-	unsigned long inactive;
-	unsigned long gb;
 	unsigned long inactive_ratio;
+	int nid = zone_to_nid(zone);
+	int zid = zone_idx(zone);
+	unsigned long inactive;
+	unsigned long active;
+	unsigned long gb;
 
-	inactive = mem_cgroup_nr_lru_pages(memcg, BIT(LRU_INACTIVE_ANON));
-	active = mem_cgroup_nr_lru_pages(memcg, BIT(LRU_ACTIVE_ANON));
+	inactive = mem_cgroup_zone_nr_lru_pages(memcg, nid, zid,
+						BIT(LRU_INACTIVE_ANON));
+	active = mem_cgroup_zone_nr_lru_pages(memcg, nid, zid,
+					      BIT(LRU_ACTIVE_ANON));
 
 	gb = (inactive + active) >> (30 - PAGE_SHIFT);
 	if (gb)
@@ -1117,39 +1140,20 @@ static int calc_inactive_ratio(struct mem_cgroup *memcg, unsigned long *present_
 	else
 		inactive_ratio = 1;
 
-	if (present_pages) {
-		present_pages[0] = inactive;
-		present_pages[1] = active;
-	}
-
-	return inactive_ratio;
+	return inactive * inactive_ratio < active;
 }
 
-int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg)
+int mem_cgroup_inactive_file_is_low(struct mem_cgroup *memcg, struct zone *zone)
 {
 	unsigned long active;
 	unsigned long inactive;
-	unsigned long present_pages[2];
-	unsigned long inactive_ratio;
+	int zid = zone_idx(zone);
+	int nid = zone_to_nid(zone);
 
-	inactive_ratio = calc_inactive_ratio(memcg, present_pages);
-
-	inactive = present_pages[0];
-	active = present_pages[1];
-
-	if (inactive * inactive_ratio < active)
-		return 1;
-
-	return 0;
-}
-
-int mem_cgroup_inactive_file_is_low(struct mem_cgroup *memcg)
-{
-	unsigned long active;
-	unsigned long inactive;
-
-	inactive = mem_cgroup_nr_lru_pages(memcg, BIT(LRU_INACTIVE_FILE));
-	active = mem_cgroup_nr_lru_pages(memcg, BIT(LRU_ACTIVE_FILE));
+	inactive = mem_cgroup_zone_nr_lru_pages(memcg, nid, zid,
+						BIT(LRU_INACTIVE_FILE));
+	active = mem_cgroup_zone_nr_lru_pages(memcg, nid, zid,
+					      BIT(LRU_ACTIVE_FILE));
 
 	return (active > inactive);
 }
@@ -1894,7 +1898,7 @@ bool mem_cgroup_handle_oom(struct mem_cgroup *mem, gfp_t mask)
 	if (test_thread_flag(TIF_MEMDIE) || fatal_signal_pending(current))
 		return false;
 	/* Give chance to dying process */
-	schedule_timeout(1);
+	schedule_timeout_uninterruptible(1);
 	return true;
 }
 
@@ -4232,8 +4236,6 @@ static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
 	}
 
 #ifdef CONFIG_DEBUG_VM
-	cb->fill(cb, "inactive_ratio", calc_inactive_ratio(mem_cont, NULL));
-
 	{
 		int nid, zid;
 		struct mem_cgroup_per_zone *mz;
@@ -4493,6 +4495,9 @@ static void mem_cgroup_usage_unregister_event(struct cgroup *cgrp,
 	 */
 	BUG_ON(!thresholds);
 
+	if (!thresholds->primary)
+		goto unlock;
+
 	usage = mem_cgroup_usage(memcg, type == _MEMSWAP);
 
 	/* Check if a threshold crossed before removing */
@@ -4537,11 +4542,17 @@ static void mem_cgroup_usage_unregister_event(struct cgroup *cgrp,
 swap_buffers:
 	/* Swap primary and spare array */
 	thresholds->spare = thresholds->primary;
+	/* If all events are unregistered, free the spare array */
+	if (!new) {
+		kfree(thresholds->spare);
+		thresholds->spare = NULL;
+	}
+
 	rcu_assign_pointer(thresholds->primary, new);
 
 	/* To be sure that nobody uses thresholds */
 	synchronize_rcu();
-
+unlock:
 	mutex_unlock(&memcg->thresholds_lock);
 }
 
