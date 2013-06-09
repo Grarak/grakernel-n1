@@ -58,6 +58,7 @@ void nvhost_syncpt_deinit(struct nvhost_syncpt *);
 #define syncpt_to_dev(sp) container_of(sp, struct nvhost_master, syncpt)
 #define syncpt_op(sp) (syncpt_to_dev(sp)->op.syncpt)
 #define SYNCPT_CHECK_PERIOD (2*HZ)
+#define MAX_STUCK_CHECK_COUNT 15
 
 
 /**
@@ -156,6 +157,11 @@ int nvhost_syncpt_wait_check(struct nvhost_syncpt *sp,
 			int num_waitchk);
 
 void nvhost_syncpt_debug(struct nvhost_syncpt *sp);
+
+static inline int nvhost_syncpt_is_valid(struct nvhost_syncpt *sp, u32 id)
+{
+	return id != NVSYNCPT_INVALID && id < sp->nb_pts;
+}
 
 int nvhost_mutex_try_lock(struct nvhost_syncpt *sp, int idx);
 
