@@ -770,14 +770,17 @@ struct mxt_data {
 	u8			firm_status_data;
 	u8			firm_normal_status_ack;
 #endif
-	u8 check_auto_cal;
+	u8			check_auto_cal;
 	u16			set_mode_for_ta;
 	u16			mxt_status;
 
-	u16			keyled;
-	bool		keyled_sleep;
+#ifdef KEY_LED_CONTROL
+	bool			touchkey_led_status;
+	struct work_struct	work;
+	struct workqueue_struct	*wq;
+#endif
 
-	struct mxt_callbacks callbacks;
+	struct mxt_callbacks	callbacks;
 };
 
 /* Returns the start address of object in mXT memory. */

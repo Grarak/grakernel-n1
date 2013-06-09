@@ -31,14 +31,16 @@
 #define	DEBUG_RAW       8
 #define	DEBUG_TRACE     10
 
-//#define TSP_BOOST 1
+//#define TSP_BOOST
+#ifdef TSP_BOOST
 #define BOOST_CPU_FREQ_DEFAULT 608000
 
-#if (CONFIG_TEGRA_CPU_FREQ_MAX < BOOST_CPU_FREQ_DEFAULT)
+#if defined (CONFIG_TEGRA_CPU_FREQ_MAX) && (CONFIG_TEGRA_CPU_FREQ_MAX < BOOST_CPU_FREQ_DEFAULT)
 # define BOOST_CPU_FREQ CONFIG_TEGRA_CPU_FREQ_MAX
 #else
 # define BOOST_CPU_FREQ BOOST_CPU_FREQ_DEFAULT
 #endif
+#endif /* TSP_BOOST */
 
 #define	TS_100S_TIMER_INTERVAL 1
 
@@ -84,155 +86,6 @@
 #include <linux/reboot.h>
 #include <linux/regulator/consumer.h>
 #include <linux/gpio.h>
-
-#ifdef KEY_LED_CONTROL
-#ifdef CONFIG_TOUCHKEY_BLN
-#include <linux/miscdevice.h>
-#define BLN_VERSION 9
-
-bool bln_enabled = false;
-bool BLN_ongoing = false;
-bool bln_blink_enabled = false;
-
-static void enable_led_notification(void);
-static void disable_led_notification(void);
-
-static struct mxt_data *global_mxt;
-
-static void enable_touchkey_backlights(void){
-        printk(KERN_DEBUG "[TouchKey] enable LED from BLN app\n");
-        key_led_on(global_mxt, 0xFF);
-}
-
-static void disable_touchkey_backlights(void){
-        printk(KERN_DEBUG "[TouchKey] disable LED from BLN app\n");
-        key_led_on(global_mxt, 0x00);
-}
-
-static void enable_led_notification(void){
-
-        if( bln_enabled ){
-                printk(KERN_DEBUG "[TouchKey] BLN_ongoing set to true\n");
-                BLN_ongoing = true;
-                enable_touchkey_backlights();
-        }
-}
-
-static void disable_led_notification(void){
-
-        bln_blink_enabled = false;
-        BLN_ongoing = false;
-        printk(KERN_DEBUG "[TouchKey] BLN_ongoing set to false\n");
-
-        disable_touchkey_backlights();
-}
-
-static ssize_t bln_status_read( struct device *dev, struct device_attribute *attr, char *buf ){
-        return sprintf(buf, "%u\n", (bln_enabled ? 1 : 0 ));
-}
-
-static ssize_t bln_status_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size ){
-        unsigned int data;
-
-        if(sscanf(buf, "%u\n", &data) == 1 ){
-            if( data == 0 || data == 1 ){
-
-                if( data == 1 ){
-                    bln_enabled = true;
-                }
-
-                if( data == 0 ){
-                    bln_enabled = false;
-                    if( BLN_ongoing )
-                        disable_led_notification();
-                }
-
-            }else{
-                /* error */
-            }
-        }else{
-            /* error */
-        }
-
-        return size;
-}
-
-static ssize_t notification_led_status_read( struct device *dev, struct device_attribute *attr, char *buf ){
-        return sprintf(buf, "%u\n", (BLN_ongoing ? 1 : 0 ));
-}
-
-static ssize_t notification_led_status_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size ){
-        unsigned int data;
-
-        if(sscanf(buf, "%u\n", &data ) == 1 ){
-            if( data == 0 || data == 1 ){
-                if( data == 1 )
-                    enable_led_notification();
-
-                if( data == 0 )
-                    disable_led_notification();
-            }else{
-                /* error */
-            }
-        }else{
-            /* error */
-        }
-
-        return size;
-}
-
-static ssize_t blink_control_read( struct device *dev, struct device_attribute *attr, char *buf ){
-        return sprintf( buf, "%u\n", (bln_blink_enabled ? 1 : 0 ) );
-}
-
-static ssize_t blink_control_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size ){
-        unsigned int data;
-
-        if( sscanf(buf, "%u\n", &data ) == 1 ){
-            if( data == 0 || data == 1 ){
-                if (data == 1){
-                    bln_blink_enabled = true;
-                    disable_touchkey_backlights();
-                }
-
-                if(data == 0){
-                    bln_blink_enabled = false;
-                    enable_touchkey_backlights();
-                }
-            }
-        }
-
-        return size;
-}
-
-static ssize_t bln_version( struct device *dev, struct device_attribute *attr, char *buf ){
-        return sprintf(buf, "%u\n", BLN_VERSION);
-}
-
-static DEVICE_ATTR(blink_control, S_IRUGO | S_IWUGO, blink_control_read, blink_control_write );
-static DEVICE_ATTR(enabled, S_IRUGO | S_IWUGO, bln_status_read, bln_status_write );
-static DEVICE_ATTR(notification_led, S_IRUGO | S_IWUGO, notification_led_status_read,  notification_led_status_write );
-static DEVICE_ATTR(version, S_IRUGO, bln_version, NULL );
-
-static struct attribute *bln_notification_attributes[] = {
-        &dev_attr_blink_control.attr,
-        &dev_attr_enabled.attr,
-        &dev_attr_notification_led.attr,
-        &dev_attr_version.attr,
-        NULL
-};
-
-static struct attribute_group bln_notification_group = {
-        .attrs = bln_notification_attributes,
-};
-
-static struct miscdevice bln_device = {
-        .minor = MISC_DYNAMIC_MINOR,
-        .name  = "backlightnotification",
-};
-
-#endif /* CONFIG_TOUCHKEY_BLN */
-#endif /* KEY_LED_CONTROL */
 
 /*
 * This is a driver for the Atmel maXTouch Object Protocol
@@ -339,26 +192,33 @@ int tsp_4key_led_ctrl[NUMOF4KEYS] = {
 static u16 tsp_keystatus;
 
 #ifdef KEY_LED_CONTROL
-static void key_led_set(struct mxt_data *mxt, u32 val);
+static void key_led_set(struct mxt_data *mxt, u16 val);
 
-static int key_led_timeout = 3000; /* 3 sec */
+#if 0
+static int key_led_timeout = 4000; /* 4 sec */
 static struct timer_list key_led_timer;
 static void key_led_timer_callback(unsigned long data);
+#endif
+
+static void touch_state_report(struct mxt_data *mxt, bool state);
+
+static struct mxt_data *local_mxt;
+static struct timer_list touch_led_timer;
+static unsigned short touch_led_timeout = 3; // timeout for the touchkey backlight in secs
+static bool touch_led_disabled = false; // true = force disable the touchkey backlight 
 #endif
 
 #ifdef CONFIG_GENERIC_BLN
 #include <linux/bln.h>
 
-static struct mxt_data *global_mxt;
-
 static void n1_touchkey_bln_enable(void)
 {
-	key_led_set(global_mxt, 0xFF);
+	key_led_set(local_mxt, 0xFF);
 }
 
 static void n1_touchkey_bln_disable(void)
 {
-	key_led_set(global_mxt, 0x00);
+	key_led_set(local_mxt, 0x00);
 }
 
 static struct bln_implementation n1_touchkey_bln = {
@@ -392,7 +252,7 @@ static unsigned int time_after_autocal_enable = 0;
 static unsigned int time_after_autocal_enable_key;
 static bool coin_check_flag = 0;
 static u8 coin_check_count = 0;
-static bool metal_suppression_chk_flag = false;
+static bool metal_suppression_chk_flag = true;
 
 static u8 chk_touch_cnt, chk_antitouch_cnt;
 static u8 caling_check = 0;
@@ -468,7 +328,7 @@ static void mxt_late_resume(struct early_suspend *h);
 
 #ifdef MXT_FACTORY_TEST
 extern struct class *sec_class;
-struct device *tsp_factory_mode;
+static struct device *tsp_factory_mode;
 #endif
 
 #if (TS_100S_TIMER_INTERVAL)
@@ -483,8 +343,8 @@ static void ts_100ms_tmr_work(struct work_struct *work);
 #define ts_100ms_timer_stop(mxt)
 #endif
 
-static int  mxt_identify(struct i2c_client *client, struct mxt_data *mxt);
-static int  mxt_read_object_table(struct i2c_client *client, struct mxt_data *mxt);
+static int mxt_identify(struct i2c_client *client, struct mxt_data *mxt);
+static int mxt_read_object_table(struct i2c_client *client, struct mxt_data *mxt);
 
 #define I2C_RETRY_COUNT 5
 
@@ -711,10 +571,10 @@ static void mxt_release_all_fingers(struct mxt_data *mxt)
 	input_sync(mxt->input);
 
 #ifdef TSP_BOOST
-		if (clk_lock_state) {
-			tegra_cpu_unlock_speed(false);
-			clk_lock_state = false;
-		}
+	if (clk_lock_state) {
+		tegra_cpu_unlock_speed(false);
+		clk_lock_state = false;
+	}
 #endif
 }
 
@@ -1613,15 +1473,6 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 
 
 	if (status & MXT_MSGB_T9_DETECT) {   /* case 1: detected */
-
-#ifdef KEY_LED_CONTROL
-		/* wakeup key leds on touch */
-		if (mxt->keyled_sleep && mxt->keyled != 0) {
-			klogi_if("[TSP] touched !\n");
-			key_led_set(mxt, (u32) mxt->keyled ^ 0x100);
-		}
-#endif
-
 		mtouch_info[touch_id].pressure = message[MXT_MSG_T9_TCHAMPLITUDE];  /* touch amplitude */
 		mtouch_info[touch_id].x = (int16_t)xpos;
 		mtouch_info[touch_id].y = (int16_t)ypos;
@@ -1637,11 +1488,31 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 #ifdef TOUCH_LOCKUP_PATTERN_RELEASE
 			touch_is_pressed_arr[touch_id] = 1;
 #endif
+
+#ifdef KEY_LED_CONTROL
+			touch_state_report(mxt, true);
+
+#if 0
+			// enable lights on keydown
+			if (touch_led_disabled == false) {
+				if (mxt->touchkey_led_status == false) {
+					pr_info("[Touchkey] %s: keydown - LED ON\n", __func__);
+					key_led_set(mxt, 0xFF);
+					mxt->touchkey_led_status = true;
+				}
+#if 0
+				if (timer_pending(&touch_led_timer) == 1) {
+					mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+				}
+#endif
+			}
+#endif
+#endif
 		} else if (status & MXT_MSGB_T9_MOVE) {
 #if defined(MXT_DRIVER_FILTER)
 			equalize_coordinate(0, touch_id, &mtouch_info[touch_id].x, &mtouch_info[touch_id].y);
 #endif
-			if(cal_move++>=3){
+			if(cal_move++ >= 3) {
 				touch_message_flag = 1;
 				cal_move=0;
 			}
@@ -1652,6 +1523,22 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 	} else if (status & MXT_MSGB_T9_RELEASE) {   /* case 2: released */
 		pressed_or_released = 1;
 		mtouch_info[touch_id].pressure = 0;
+
+#ifdef KEY_LED_CONTROL
+		touch_state_report(mxt, false);
+#if 0
+		// touch led timeout on keyup
+		if (touch_led_disabled == false) {
+			if (timer_pending(&touch_led_timer) == 0) {
+				pr_info("[Touchkey] %s: keyup - add_timer\n", __func__);
+				touch_led_timer.expires = jiffies + (HZ * touch_led_timeout);
+				add_timer(&touch_led_timer);
+			} else {
+				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+			}
+		}
+#endif
+#endif
 	} else if (status & MXT_MSGB_T9_SUPPRESS) {   /* case 3: suppressed */
 	     /*
 	     * Atmel's recommendation:
@@ -1667,7 +1554,7 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 	} else {
 		pr_err("[TSP] Unknown status (0x%x)", status);
 
-		if(facesup_message_flag_T9 == 1) {
+		if (facesup_message_flag_T9 == 1) {
 			facesup_message_flag_T9 = 0;
 			if (debug >= DEBUG_MESSAGES)
 				pr_info("[TSP] Palm(T92) Suppressed !!! \n");
@@ -1886,16 +1773,6 @@ void process_T15_message(u8 *message, struct mxt_data *mxt)
 	}
 #endif
 
-#ifdef KEY_LED_CONTROL
-	if (message[MXT_MSG_T15_STATUS] & MXT_MSGB_T15_DETECT) {
-		/* wakeup key leds on touch */
-		if (mxt->keyled_sleep && mxt->keyled != 0) {
-			//pr_info("[TSP] touched !\n");
-			key_led_set(mxt, (u32) mxt->keyled ^ 0x100);
-		}
-	}
-#endif
-
 	/* whether reportid is thing of atmel_mxt224E_TOUCH_KEYARRAY */
 	/* single key configuration*/
 	if ((mxt->pdata->board_rev <= 9) || (mxt->pdata->board_rev >= 13)) {
@@ -1936,6 +1813,10 @@ void process_T15_message(u8 *message, struct mxt_data *mxt)
 			if (debug >= DEBUG_MESSAGES)
 				pr_info("[TSP_KEY] P %s\n", tsp_2keyname[tsp_keystatus - 1]);
 #endif
+
+#ifdef KEY_LED_CONTROL
+			touch_state_report(mxt, true);
+#endif
 		} else {
 			switch (tsp_keystatus) {
 			case TOUCH_2KEY_MENU:
@@ -1953,6 +1834,11 @@ void process_T15_message(u8 *message, struct mxt_data *mxt)
 			if (debug >= DEBUG_MESSAGES)
 				pr_info("[TSP_KEY] r %s\n", tsp_2keyname[tsp_keystatus - 1]);
 #endif
+
+#ifdef KEY_LED_CONTROL
+			touch_state_report(mxt, false);
+#endif
+
 			tsp_keystatus = TOUCH_KEY_NULL;
 
 		}
@@ -3826,6 +3712,7 @@ static ssize_t test_resume(struct device *dev, struct device_attribute *attr, ch
 #endif
 
 #ifdef KEY_LED_CONTROL
+#if 0
 void key_led_timer_callback(unsigned long data)
 {
 	struct mxt_data *mxt = (struct mxt_data *) data;
@@ -3848,12 +3735,17 @@ void key_led_timer_callback(unsigned long data)
 		gpio_direction_output(mxt->pdata->key_led_en1, false);
 	}
 }
+#endif
 
-static void key_led_set(struct mxt_data *mxt, u32 val)
+static void key_led_set(struct mxt_data *mxt, u16 val)
 {
 	if (!mxt)
 		return;
 
+	if (!mxt->pdata)
+		return;
+
+#if 0
 	if (mxt->keyled != (u16) val) {
 		klogi_if("[LED] %s: 0x%x",  __func__, val);
 		mxt->keyled = (u16) val;
@@ -3866,17 +3758,11 @@ static void key_led_set(struct mxt_data *mxt, u32 val)
 		mod_timer(&key_led_timer, jiffies - 1);
 	}
 
-	if (!mxt->pdata)
-		return;
-
 	if (mxt->keyled_sleep)
 		val = 0;
+#endif
 
 	if (mxt->pdata->key_led_en1) {
-		int ret = gpio_request(mxt->pdata->key_led_en1, "tsp_key_led1");
-		if (!ret)
-			return;
-
 		gpio_direction_output(mxt->pdata->key_led_en1, (val) ? true : false);
 	}
 
@@ -3894,56 +3780,184 @@ static ssize_t key_led_show(struct device *dev, struct device_attribute *attr,
 			    char *buf)
 {
 	struct mxt_data *mxt = dev_get_drvdata(dev);
+	int ret;
+
 	if (!mxt)
 		return -EIO;
 
-	return sprintf(buf, "%u\n", mxt->keyled);
+	ret = sprintf(buf, "%hu\n", (unsigned short)mxt->touchkey_led_status);
+	return ret;
 }
 
 static ssize_t key_led_store(struct device *dev, struct device_attribute *attr,
 			     const char *buf, size_t size)
 {
 	struct mxt_data *mxt = dev_get_drvdata(dev);
-	int i = 0;
+	unsigned short data;
+	int ret;
 
-	if (sscanf(buf, "%d", &i) < 1) {
-		pr_err("[TSP] keyled write error\n");
-	}
-
-	if (!mxt) {
+	if (!mxt)
 		return -EIO;
+
+	ret = sscanf(buf, "%hu", &data);
+	if (ret != 1) {
+		printk(KERN_DEBUG "[TouchKey] %s, %d err\n",
+			__func__, __LINE__);
+		return size;
 	}
 
-	key_led_set(mxt, (u32) i);
+	if (data > 0) {
+		if (touch_led_disabled == false) {
+			key_led_set(mxt, 0xFF);
 
-	klogi_if("[TSP] Button backlight set by HAL = %d", i);
+			if (timer_pending(&touch_led_timer) == 0) {
+				pr_info("[Touchkey] %s: add_timer\n", __func__);
+				touch_led_timer.expires = jiffies + (HZ * touch_led_timeout);
+				add_timer(&touch_led_timer);
+			} else {
+				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+			}
+		}
+	} else {
+		if (timer_pending(&touch_led_timer) == 1) {
+			pr_info("[Touchkey] %s: del_timer\n", __func__);
+			del_timer(&touch_led_timer);
+		}
+	}
+
+	pr_info("[TouchKey] %s mxt->touchkey_led_status=%hu\n", __func__, data);
+	mxt->touchkey_led_status = (data > 0) ? true : false;
 
 	return size;
 }
 
 static DEVICE_ATTR(brightness, S_IRUGO | S_IWUSR, key_led_show, key_led_store);
 
-static ssize_t key_led_timeout_show(struct device *dev, struct device_attribute *attr,
-                                    char *buf)
+static ssize_t touch_led_force_disable_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", key_led_timeout);
+	int ret;
+
+	ret = sprintf(buf, "%hu\n", (unsigned short)touch_led_disabled);
+	pr_info("[Touchkey] %s: touch_led_disabled=%hu\n", __func__, (unsigned short)touch_led_disabled);
+
+	return ret;
 }
 
-static ssize_t key_led_timeout_store(struct device *dev, struct device_attribute *attr,
-                                     const char *buf, size_t size)
+static ssize_t touch_led_force_disable_store(struct device *dev,
+	struct device_attribute *attr, const char *buf,
+	size_t size)
 {
-	if (sscanf(buf, "%d", &key_led_timeout) < 1)
+	struct mxt_data *mxt = dev_get_drvdata(dev);
+	unsigned short data;
+	int ret;
+
+	if (!mxt)
+		return -EIO;
+
+	ret = sscanf(buf, "%hu\n", &data);
+	if (unlikely(ret != 1)) {
+		pr_err("[Touchkey] %s err\n", __func__);
 		return -EINVAL;
+	}
 
-	if (key_led_timeout < -1)
-		key_led_timeout = -1;
-
-	mod_timer(&key_led_timer, jiffies + msecs_to_jiffies(key_led_timeout));
+	pr_info("[Touchkey] %s value=%hu\n", __func__, data);
+    
+	if (data == 1) {
+		key_led_set(mxt, 0x00);
+		mxt->touchkey_led_status = false;
+	}
+	touch_led_disabled = (data > 0) ? true : false;
 
 	return size;
 }
-#endif
+static DEVICE_ATTR(force_disable, S_IRUGO | S_IWUSR | S_IWGRP,
+	touch_led_force_disable_show, touch_led_force_disable_store);
 
+static ssize_t touch_led_timeout_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	int ret;
+
+	ret = sprintf(buf, "%hu\n", touch_led_timeout);
+	pr_info("[Touchkey] %s: touch_led_timeout=%hu\n", __func__, touch_led_timeout);
+
+	return ret;
+}
+
+static ssize_t touch_led_timeout_store(struct device *dev,
+	struct device_attribute *attr, const char *buf,
+	size_t size)
+{
+	unsigned short data;
+	int ret;
+
+	ret = sscanf(buf, "%hu\n", &data);
+	if (unlikely(ret != 1)) {
+		pr_err("[TouchKey] %s err\n", __func__);
+		return -EINVAL;
+	}
+
+	pr_info("[TouchKey] %s new timeout=%hu\n", __func__, data);
+	touch_led_timeout = data;
+
+	return size;
+}
+static DEVICE_ATTR(led_timeout, S_IRUGO | S_IWUSR | S_IWGRP,
+	touch_led_timeout_show, touch_led_timeout_store);
+
+static void touch_led_timedout(unsigned long ptr)
+{
+	pr_info("[TouchKey] %s\n", __func__);
+	queue_work(local_mxt->wq, &local_mxt->work);
+}
+
+static void touch_led_timedout_work(struct work_struct *work)
+{
+	struct mxt_data *mxt = container_of(work, struct mxt_data, work);
+
+	if (!mxt)
+		return;
+
+	if (touch_led_timeout != 0)
+	{
+		pr_info("[TouchKey] %s disabling touchled\n", __func__);
+		key_led_set(mxt, 0x00);
+		mxt->touchkey_led_status = false;
+	}
+}
+
+static void touch_state_report(struct mxt_data *mxt, bool state)
+{
+	if (!mxt)
+		return;
+
+	if (touch_led_disabled == false) {
+		if (state == true) {
+			if (mxt->touchkey_led_status == false) {
+				pr_info("[TouchKey] %s enable touchleds\n", __func__);
+				key_led_set(mxt, 0xFF);
+				mxt->touchkey_led_status = true;
+			}
+#if 0
+			if (timer_pending(&touch_led_timer) == 1) {
+				pr_info("[TouchKey] %s mod_timer\n", __func__);
+				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+			}
+#endif
+		} else if (state == false) {
+			if (timer_pending(&touch_led_timer) == 1) {
+				pr_info("[TouchKey] %s mod_timer\n", __func__);
+				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+			} else if (mxt->touchkey_led_status == true) {
+				pr_info("[TouchKey] %s add_timer\n", __func__);
+				touch_led_timer.expires = jiffies + (HZ * touch_led_timeout);
+				add_timer(&touch_led_timer);
+			}
+		}
+	}
+}
+#endif
 
 /* Register sysfs files */
 static DEVICE_ATTR(deltas,	S_IRUGO, show_deltas,      NULL);
@@ -3983,10 +3997,6 @@ static DEVICE_ATTR(set_delta4, S_IRUGO | S_IWUSR | S_IWOTH | S_IXOTH, set_delta4
 static DEVICE_ATTR(set_threshould, S_IRUGO | S_IWUSR | S_IWOTH | S_IXOTH, set_threshold_mode_show, NULL);
 #endif
 
-#ifdef KEY_LED_CONTROL
-static DEVICE_ATTR(key_led_timeout, S_IRUGO | S_IWUGO, key_led_timeout_show, key_led_timeout_store);
-#endif
-
 static struct attribute *maxTouch_attributes[] = {
 	&dev_attr_deltas.attr,
 	&dev_attr_references.attr,
@@ -4001,9 +4011,6 @@ static struct attribute *maxTouch_attributes[] = {
 	&dev_attr_firmware.attr,
 	&dev_attr_object.attr,
 	&dev_attr_message.attr,
-#ifdef KEY_LED_CONTROL
-	&dev_attr_key_led_timeout.attr,
-#endif
 /*	&dev_attr_suspend.attr, */
 /*	&dev_attr_resume.attr, */
 	NULL,
@@ -4013,30 +4020,43 @@ static struct attribute_group maxtouch_attr_group = {
 	.attrs = maxTouch_attributes,
 };
 
+#ifdef KEY_LED_CONTROL
+static struct attribute *keyled_attributes[] = {
+	&dev_attr_brightness.attr,
+	&dev_attr_led_timeout.attr,
+	&dev_attr_force_disable.attr, 
+	NULL,
+};
+
+static struct attribute_group keyled_attr_group = {
+	.attrs = keyled_attributes,
+};
+#endif
+
 static struct attribute *maxTouch_facotry_attributes[] = {
 #ifdef MXT_FACTORY_TEST
 	&dev_attr_tsp_firm_update.attr,
-		&dev_attr_tsp_firm_update_status.attr,
-		&dev_attr_tsp_threshold.attr,
-		&dev_attr_tsp_firm_version_phone.attr,
-		&dev_attr_tsp_firm_version_panel.attr,
+	&dev_attr_tsp_firm_update_status.attr,
+	&dev_attr_tsp_threshold.attr,
+	&dev_attr_tsp_firm_version_phone.attr,
+	&dev_attr_tsp_firm_version_panel.attr,
 #endif
 
 #if ENABLE_NOISE_TEST_MODE
-		&dev_attr_set_refer0.attr,
-		&dev_attr_set_delta0.attr,
-		&dev_attr_set_refer1.attr,
-		&dev_attr_set_delta1.attr,
-		&dev_attr_set_refer2.attr,
-		&dev_attr_set_delta2.attr,
-		&dev_attr_set_refer3.attr,
-		&dev_attr_set_delta3.attr,
-		&dev_attr_set_refer4.attr,
-		&dev_attr_set_delta4.attr,
-		&dev_attr_set_threshould.attr,
+	&dev_attr_set_refer0.attr,
+	&dev_attr_set_delta0.attr,
+	&dev_attr_set_refer1.attr,
+	&dev_attr_set_delta1.attr,
+	&dev_attr_set_refer2.attr,
+	&dev_attr_set_delta2.attr,
+	&dev_attr_set_refer3.attr,
+	&dev_attr_set_delta3.attr,
+	&dev_attr_set_refer4.attr,
+	&dev_attr_set_delta4.attr,
+	&dev_attr_set_threshould.attr,
 #endif
 
-		NULL,
+	NULL,
 };
 
 static struct attribute_group maxtouch_factory_attr_group = {
@@ -5145,7 +5165,7 @@ static void mxt_early_suspend(struct early_suspend *h)
 		tch_vct[i].cnt = 0;
 	}
 	mxt->mxt_status = false;
-	key_led_set(mxt, 0);
+	key_led_set(mxt, 0x00);
 #if 0
 #ifdef MXT_SLEEP_POWEROFF
 	if (mxt->pdata->suspend_platform_hw != NULL)
@@ -5244,7 +5264,7 @@ static void mxt_late_resume(struct early_suspend *h)
 #ifndef MXT_SLEEP_POWEROFF
 	calibrate_chip(mxt);
 #endif
-	metal_suppression_chk_flag = false;
+	metal_suppression_chk_flag = true;
 	mxt->mxt_status = true;
 	enable_irq(mxt->client->irq);
 }
@@ -5416,18 +5436,7 @@ param_check_ok:
 		if (error < 0)
 			goto err_after_get_regulator;
 	}
-
-#ifdef CONFIG_TOUCHKEY_BLN
-        error = misc_register( &bln_device );
-        if( error ){
-            printk(KERN_ERR "[BLN] sysfs misc_register failed.\n");
-        }else{
-            if( sysfs_create_group( &bln_device.this_device->kobj, &bln_notification_group) < 0){
-                printk(KERN_ERR "[BLN] sysfs create group failed.\n");
-            } 
-        }
-#endif /* CONFIG_TOUCHKEY_BLN */
-#endif /* KEY_LED_CONTROL */
+#endif
 
 	/* Chip is valid and active. */
 	if (debug >= DEBUG_TRACE)
@@ -5565,8 +5574,8 @@ param_check_ok:
 		mtouch_info[i].pressure = -1;
 
 #ifndef MXT_THREADED_IRQ
-		/* Schedule a worker routine to read any messages that might have
-	* been sent before interrupts were enabled. */
+	/* Schedule a worker routine to read any messages that might have
+	 * been sent before interrupts were enabled. */
 	cancel_delayed_work(&mxt->dwork);
 	schedule_delayed_work(&mxt->dwork, 0);
 #endif
@@ -5629,23 +5638,63 @@ param_check_ok:
 #endif	/* CONFIG_HAS_EARLYSUSPEND */
 
 #ifdef KEY_LED_CONTROL
+	error = gpio_request(mxt->pdata->key_led_en1, "tsp_key_led1");
+	if (!error)
+		goto err_after_interrupt_register;
+
 	/* create sysfs */
 	leds_class = class_create(THIS_MODULE, "leds");
 	if (IS_ERR(leds_class)) {
-		return PTR_ERR(leds_class);
+		goto err_after_gpio_request;
 	}
+
 	led_dev = device_create(leds_class, NULL, 0, mxt, "button-backlight");
+	if (IS_ERR(led_dev)) {
+		pr_err("[TSP] Failed to create button-backlight device!\n");
+		error = -ENODEV;
+		goto err_after_led_class;
+	}
+
+#if 0
 	if (device_create_file(led_dev, &dev_attr_brightness) < 0) {
 		pr_err("[TSP] Failed to create device file(%s)!\n", dev_attr_brightness.attr.name);
 	}
-	setup_timer(&key_led_timer, key_led_timer_callback, (unsigned long) mxt);
+#endif
+
+	error = sysfs_create_group(&led_dev->kobj, &keyled_attr_group);
+	if (error) {
+		pr_err("[TSP] Failed to create keyled_attr_group!\n");
+		goto err_after_led_device;
+	}
+
+//	setup_timer(&key_led_timer, key_led_timer_callback, (unsigned long) mxt);
+
+	// init workqueue
+	mxt->wq = create_singlethread_workqueue("touchkey_led_wq");
+	if (!mxt->wq) {
+		pr_err("[TSP] Could not create workqueue!\n");
+		error = -ENOMEM;
+		goto err_after_led_sysfs;
+	}
+
+	/* this is the thread function we run on the work queue */
+	INIT_WORK(&mxt->work, touch_led_timedout_work);
+
+	// init the touchled timer
+	init_timer(&touch_led_timer);
+	touch_led_timer.function = touch_led_timedout;
+
+	local_mxt = mxt;
+
+#ifdef CONFIG_GENERIC_BLN
+	register_bln_implementation(&n1_touchkey_bln);
+#endif
 #endif /* KEY_LED_CONTROL */
 
 	error = sysfs_create_group(&client->dev.kobj, &maxtouch_attr_group);
 	if (error) {
-		unregister_early_suspend(&mxt->early_suspend);
 		pr_err("[TSP] fail sysfs_create_group\n");
-		goto err_after_interrupt_register;
+		goto err_after_led_wq;
 	}
 
 #ifdef MXT_FACTORY_TEST
@@ -5658,58 +5707,64 @@ param_check_ok:
 
 	error = sysfs_create_group(&tsp_factory_mode->kobj, &maxtouch_factory_attr_group);
 	if (error) {
-		if (unverified) {
-			pr_err("[TSP] fail sysfs_create_group 1\n");
-			goto err_after_attr_group;
-		} else {
-			unregister_early_suspend(&mxt->early_suspend);
-			pr_err("[TSP] fail sysfs_create_group 2\n");
-			goto err_after_attr_group;
-		}
+		pr_err("[TSP] fail sysfs_create_group 2\n");
+		device_destroy(sec_class, 0);
+		goto err_after_attr_group;
 	}
 #endif
 
 #if TS_100S_TIMER_INTERVAL
-		INIT_WORK(&mxt->tmr_work, ts_100ms_tmr_work);
+	INIT_WORK(&mxt->tmr_work, ts_100ms_tmr_work);
 
-		ts_100s_tmr_workqueue = create_singlethread_workqueue("ts_100_tmr_workqueue");
-		if (!ts_100s_tmr_workqueue)
-		{
-			printk(KERN_ERR "unabled to create touch tmr work queue \r\n");
-			error = -1;
-			goto err_after_attr_group;
-		}
-		ts_100ms_timer_init(mxt);
+	ts_100s_tmr_workqueue = create_singlethread_workqueue("ts_100_tmr_workqueue");
+	if (!ts_100s_tmr_workqueue)
+	{
+		printk(KERN_ERR "[TSP] Failed to create touch timer workqueue!\n");
+		error = -1;
+#ifdef MXT_FACTORY_TEST
+		sysfs_remove_group(&tsp_factory_mode->kobj, &maxtouch_factory_attr_group);
+		device_destroy(sec_class, 0);
+#endif
+		goto err_after_attr_group;
+	}
+	ts_100ms_timer_init(mxt);
 #endif
 
 	wake_lock_init(&mxt->wakelock, WAKE_LOCK_SUSPEND, "touch");
 	mxt->mxt_status = true;
 
-#ifdef CONFIG_GENERIC_BLN
-	global_mxt = mxt;
-	register_bln_implementation(&n1_touchkey_bln);
-#endif
-
-#ifdef CONFIG_TOUCHKEY_BLN
-	global_mxt = mxt;
-#endif /* CONFIG_TOUCHKEY_BLN */
-
 	/* after 15sec, start touch working */
 	schedule_delayed_work(&mxt->initial_dwork, 1500);
 	if (debug >= DEBUG_INFO)
 		pr_info("[TSP] mxt probe ok\n");
+
 	return 0;
 
 err_after_attr_group:
 	sysfs_remove_group(&client->dev.kobj, &maxtouch_attr_group);
 
+err_after_led_wq:
+#ifdef KEY_LED_CONTROL
+	destroy_workqueue(mxt->wq);
+
+err_after_led_sysfs:
+	sysfs_remove_group(&led_dev->kobj, &keyled_attr_group);
+
+err_after_led_device:
+	device_destroy(leds_class, 0);
+
+err_after_led_class:
+	class_destroy(leds_class);
+
+err_after_gpio_request:
+	gpio_free(mxt->pdata->key_led_en1);
+#endif
+
 err_after_interrupt_register:
+	unregister_early_suspend(&mxt->early_suspend);
+
 	if (mxt->irq)
 		free_irq(mxt->irq, mxt);
-
-#ifdef KEY_LED_CONTROL
-	del_timer(&key_led_timer);
-#endif
 
 //err_after_input_register:
 	input_free_device(input);
@@ -5722,6 +5777,7 @@ err_after_get_regulator:
 	regulator_put(mxt->pdata->reg_vdd);
 	regulator_put(mxt->pdata->reg_avdd);
 	regulator_put(mxt->pdata->reg_vdd_lvsio);
+
 err_after_kmalloc:
 	if (mxt != NULL) {
 		kfree(mxt->rid_map);
@@ -5743,37 +5799,42 @@ static int __devexit mxt_remove(struct i2c_client *client)
 	struct mxt_data *mxt;
 
 	mxt = i2c_get_clientdata(client);
+
 #ifdef CONFIG_HAS_EARLYSUSPEND
 	wake_lock_destroy(&mxt->wakelock);
 	unregister_early_suspend(&mxt->early_suspend);
 #endif	/* CONFIG_HAS_EARLYSUSPEND */
+
+#if TS_100S_TIMER_INTERVAL
+	destroy_workqueue(ts_100s_tmr_workqueue);
+#endif
+
+#ifdef MXT_FACTORY_TEST
+	sysfs_remove_group(&tsp_factory_mode->kobj, &maxtouch_factory_attr_group);
+	device_destroy(sec_class, 0);
+#endif
+
 	/* Close down sysfs entries */
 	sysfs_remove_group(&client->dev.kobj, &maxtouch_attr_group);
 
 #ifdef KEY_LED_CONTROL
-	device_remove_file(led_dev, &dev_attr_brightness);
+	destroy_workqueue(mxt->wq);
+
+	sysfs_remove_group(&led_dev->kobj, &keyled_attr_group);
 	device_destroy(leds_class, 0);
 	class_destroy(leds_class);
 
-	del_timer(&key_led_timer);
-#endif /* KEY_LED_CONTROL */
-
-#ifdef KEY_LED_CONTROL
-	device_remove_file(led_dev, &dev_attr_brightness);
-	device_destroy(leds_class, 0);
-	class_destroy(leds_class);
-
-#ifdef CONFIG_TOUCHKEY_BLN
-        misc_deregister(&bln_device);
-#endif /* CONFIG_TOUCHKEY_BLN */
+	gpio_free(mxt->pdata->key_led_en1);
 #endif /* KEY_LED_CONTROL */
 
 	/* Release IRQ so no queue will be scheduled */
 	if (mxt->irq)
 		free_irq(mxt->irq, mxt);
+
 #ifndef MXT_THREADED_IRQ
 	cancel_delayed_work_sync(&mxt->dwork);
 #endif
+
 	input_unregister_device(mxt->input);
 	/* Should dealloc deltas, references, CTE structures, if allocated */
 
