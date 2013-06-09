@@ -2243,7 +2243,7 @@ static bool tegra_dc_windows_are_dirty(struct tegra_dc *dc)
 	u32 val;
 
 	val = tegra_dc_readl(dc, DC_CMD_STATE_CONTROL);
-	if (val & (WIN_A_UPDATE | WIN_B_UPDATE | WIN_C_UPDATE))
+	if (val & (WIN_A_ACT_REQ | WIN_B_ACT_REQ | WIN_C_ACT_REQ))
 	    return true;
 #endif
 	return false;
@@ -2263,7 +2263,7 @@ static void tegra_dc_trigger_windows(struct tegra_dc *dc)
 		dc->windows[i].dirty = 0;
 		completed = 1;
 #else
-		if (!(val & (WIN_A_UPDATE << i))) {
+		if (!(val & (WIN_A_ACT_REQ << i))) {
 			dc->windows[i].dirty = 0;
 			completed = 1;
 		} else {
