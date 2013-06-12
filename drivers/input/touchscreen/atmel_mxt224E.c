@@ -194,12 +194,6 @@ static u16 tsp_keystatus;
 #ifdef KEY_LED_CONTROL
 static void key_led_set(struct mxt_data *mxt, u16 val);
 
-#if 0
-static int key_led_timeout = 4000; /* 4 sec */
-static struct timer_list key_led_timer;
-static void key_led_timer_callback(unsigned long data);
-#endif
-
 static void touch_state_report(struct mxt_data *mxt, bool state);
 
 static struct mxt_data *local_mxt;
@@ -1491,22 +1485,6 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 
 #ifdef KEY_LED_CONTROL
 			touch_state_report(mxt, true);
-
-#if 0
-			// enable lights on keydown
-			if (touch_led_disabled == false) {
-				if (mxt->touchkey_led_status == false) {
-					pr_info("[Touchkey] %s: keydown - LED ON\n", __func__);
-					key_led_set(mxt, 0xFF);
-					mxt->touchkey_led_status = true;
-				}
-#if 0
-				if (timer_pending(&touch_led_timer) == 1) {
-					mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
-				}
-#endif
-			}
-#endif
 #endif
 		} else if (status & MXT_MSGB_T9_MOVE) {
 #if defined(MXT_DRIVER_FILTER)
@@ -1526,18 +1504,6 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 
 #ifdef KEY_LED_CONTROL
 		touch_state_report(mxt, false);
-#if 0
-		// touch led timeout on keyup
-		if (touch_led_disabled == false) {
-			if (timer_pending(&touch_led_timer) == 0) {
-				pr_info("[Touchkey] %s: keyup - add_timer\n", __func__);
-				touch_led_timer.expires = jiffies + (HZ * touch_led_timeout);
-				add_timer(&touch_led_timer);
-			} else {
-				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
-			}
-		}
-#endif
 #endif
 	} else if (status & MXT_MSGB_T9_SUPPRESS) {   /* case 3: suppressed */
 	     /*
@@ -3713,31 +3679,6 @@ static ssize_t test_resume(struct device *dev, struct device_attribute *attr, ch
 #endif
 
 #ifdef KEY_LED_CONTROL
-#if 0
-void key_led_timer_callback(unsigned long data)
-{
-	struct mxt_data *mxt = (struct mxt_data *) data;
-	if (!mxt || !mxt->pdata) {
-		pr_err("[LED] %s: bad mxt pdata (mxt=%lx) !\n", __func__, data);
-		return;
-	}
-
-	mxt->keyled_sleep = true;
-
-	if (mxt->pdata->key_led_en1) {
-		int ret = gpio_request(mxt->pdata->key_led_en1, "tsp_key_led1");
-		if (!ret) {
-			pr_warn("[LED] %s: unable to request gpio\n", __func__);
-			return;
-		}
-		if (mxt->keyled != 0) {
-			klogi_if("[LED] key led timeout");
-		}
-		gpio_direction_output(mxt->pdata->key_led_en1, false);
-	}
-}
-#endif
-
 static void key_led_set(struct mxt_data *mxt, u16 val)
 {
 	if (!mxt)
@@ -3745,23 +3686,6 @@ static void key_led_set(struct mxt_data *mxt, u16 val)
 
 	if (!mxt->pdata)
 		return;
-
-#if 0
-	if (mxt->keyled != (u16) val) {
-		klogi_if("[LED] %s: 0x%x",  __func__, val);
-		mxt->keyled = (u16) val;
-		mxt->keyled_sleep = false;
-	}
-
-	if (val > 0) {
-		mod_timer(&key_led_timer, jiffies + msecs_to_jiffies(key_led_timeout));
-	} else {
-		mod_timer(&key_led_timer, jiffies - 1);
-	}
-
-	if (mxt->keyled_sleep)
-		val = 0;
-#endif
 
 	if (mxt->pdata->key_led_en1) {
 		gpio_direction_output(mxt->pdata->key_led_en1, (val) ? true : false);
@@ -3904,7 +3828,7 @@ static ssize_t touch_led_timeout_store(struct device *dev,
 
 	return size;
 }
-static DEVICE_ATTR(led_timeout, S_IRUGO | S_IWUSR | S_IWGRP,
+static DEVICE_ATTR(timeout, S_IRUGO | S_IWUSR | S_IWGRP,
 	touch_led_timeout_show, touch_led_timeout_store);
 
 static void touch_led_timedout(unsigned long ptr)
@@ -5657,19 +5581,11 @@ param_check_ok:
 		goto err_after_led_class;
 	}
 
-#if 0
-	if (device_create_file(led_dev, &dev_attr_brightness) < 0) {
-		pr_err("[TSP] Failed to create device file(%s)!\n", dev_attr_brightness.attr.name);
-	}
-#endif
-
 	error = sysfs_create_group(&led_dev->kobj, &keyled_attr_group);
 	if (error) {
 		pr_err("[TSP] Failed to create keyled_attr_group!\n");
 		goto err_after_led_device;
 	}
-
-//	setup_timer(&key_led_timer, key_led_timer_callback, (unsigned long) mxt);
 
 	// init workqueue
 	mxt->wq = create_singlethread_workqueue("touchkey_led_wq");
