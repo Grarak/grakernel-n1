@@ -198,7 +198,7 @@ static void touch_state_report(struct mxt_data *mxt, bool state);
 
 static struct mxt_data *local_mxt;
 static struct timer_list touch_led_timer;
-static unsigned short touch_led_timeout = 3; // timeout for the touchkey backlight in secs
+static unsigned short timeout = 3; // timeout for the touchkey backlight in secs
 static bool touch_led_disabled = false; // true = force disable the touchkey backlight 
 #endif
 
@@ -3737,10 +3737,10 @@ static ssize_t key_led_store(struct device *dev, struct device_attribute *attr,
 
 			if (timer_pending(&touch_led_timer) == 0) {
 				pr_info("[Touchkey] %s: add_timer\n", __func__);
-				touch_led_timer.expires = jiffies + (HZ * touch_led_timeout);
+				touch_led_timer.expires = jiffies + (HZ * timeout);
 				add_timer(&touch_led_timer);
 			} else {
-				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+				mod_timer(&touch_led_timer, jiffies + (HZ * timeout));
 			}
 		}
 	} else {
@@ -3799,18 +3799,18 @@ static ssize_t touch_led_force_disable_store(struct device *dev,
 static DEVICE_ATTR(force_disable, S_IRUGO | S_IWUSR | S_IWGRP,
 	touch_led_force_disable_show, touch_led_force_disable_store);
 
-static ssize_t touch_led_timeout_show(struct device *dev,
+static ssize_t timeout_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	int ret;
 
-	ret = sprintf(buf, "%hu\n", touch_led_timeout);
-	pr_info("[Touchkey] %s: touch_led_timeout=%hu\n", __func__, touch_led_timeout);
+	ret = sprintf(buf, "%hu\n", timeout);
+	pr_info("[Touchkey] %s: timeout=%hu\n", __func__, timeout);
 
 	return ret;
 }
 
-static ssize_t touch_led_timeout_store(struct device *dev,
+static ssize_t timeout_store(struct device *dev,
 	struct device_attribute *attr, const char *buf,
 	size_t size)
 {
@@ -3824,12 +3824,12 @@ static ssize_t touch_led_timeout_store(struct device *dev,
 	}
 
 	pr_info("[TouchKey] %s new timeout=%hu\n", __func__, data);
-	touch_led_timeout = data;
+	timeout = data;
 
 	return size;
 }
 static DEVICE_ATTR(timeout, S_IRUGO | S_IWUSR | S_IWGRP,
-	touch_led_timeout_show, touch_led_timeout_store);
+	timeout_show, timeout_store);
 
 static void touch_led_timedout(unsigned long ptr)
 {
@@ -3844,7 +3844,7 @@ static void touch_led_timedout_work(struct work_struct *work)
 	if (!mxt)
 		return;
 
-	if (touch_led_timeout != 0)
+	if (timeout != 0)
 	{
 		pr_info("[TouchKey] %s disabling touchled\n", __func__);
 		key_led_set(mxt, 0x00);
@@ -3867,16 +3867,16 @@ static void touch_state_report(struct mxt_data *mxt, bool state)
 #if 0
 			if (timer_pending(&touch_led_timer) == 1) {
 				pr_info("[TouchKey] %s mod_timer\n", __func__);
-				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+				mod_timer(&touch_led_timer, jiffies + (HZ * timeout));
 			}
 #endif
 		} else if (state == false) {
 			if (timer_pending(&touch_led_timer) == 1) {
 				pr_info("[TouchKey] %s mod_timer\n", __func__);
-				mod_timer(&touch_led_timer, jiffies + (HZ * touch_led_timeout));
+				mod_timer(&touch_led_timer, jiffies + (HZ * timeout));
 			} else if (mxt->touchkey_led_status == true) {
 				pr_info("[TouchKey] %s add_timer\n", __func__);
-				touch_led_timer.expires = jiffies + (HZ * touch_led_timeout);
+				touch_led_timer.expires = jiffies + (HZ * timeout);
 				add_timer(&touch_led_timer);
 			}
 		}
@@ -3948,7 +3948,7 @@ static struct attribute_group maxtouch_attr_group = {
 #ifdef KEY_LED_CONTROL
 static struct attribute *keyled_attributes[] = {
 	&dev_attr_brightness.attr,
-	&dev_attr_led_timeout.attr,
+	&dev_attr_timeout.attr,
 	&dev_attr_force_disable.attr, 
 	NULL,
 };
