@@ -23,7 +23,7 @@
 #include <media/s5k6aafx.h>
 #include <media/tegra_camera.h>
 #ifdef CONFIG_MACH_BOSE_ATT
-#include <s5k6aafx_setting_bose.h>
+#include "s5k6aafx_setting_bose.h"
 #else
 #include "s5k6aafx_setting.h"
 #endif
