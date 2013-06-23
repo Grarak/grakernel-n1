@@ -87,10 +87,6 @@
 #include <linux/regulator/consumer.h>
 #include <linux/gpio.h>
 
-#ifdef CONFIG_TOUCH_WAKE
-#include <linux/touch_wake.h>
-#endif
-
 /*
 * This is a driver for the Atmel maXTouch Object Protocol
 *
@@ -1590,9 +1586,6 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 				input_mt_slot(mxt->input, i);
 				input_mt_report_slot_state(mxt->input, MT_TOOL_FINGER, false);
 			} else {
-                                #ifdef CONFIG_TOUCH_WAKE
-                                if (!device_is_suspended())
-                                #endif
 				input_mt_slot(mxt->input, i);
 				input_mt_report_slot_state(mxt->input, MT_TOOL_FINGER, true);
 				input_report_abs(mxt->input,
@@ -1607,10 +1600,6 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 					mtouch_info[i].size);
 
 				chkpress++;
-
-                                #ifdef CONFIG_TOUCH_WAKE
-                                touch_press();
-                                #endif
 			}
 
 #ifdef TOUCH_LOCKUP_PATTERN_RELEASE
@@ -5283,29 +5272,6 @@ static void mxt_late_resume(struct early_suspend *h)
 }
 #endif
 
-#ifdef CONFIG_TOUCH_WAKE
-static struct mxt_data *touchwake_data;
-
-void touchscreen_disable(void)
-{
-    disable_irq(touchwake_data->client->irq);
-    calibrate_chip(touchwake_data);
-
-    return;
-}
-
-EXPORT_SYMBOL(touchscreen_disable);
-
-void touchscreen_enable(void)
-{
-    calibrate_chip(touchwake_data);
-    enable_irq(touchwake_data->client->irq);
-
-    return;
-}
-EXPORT_SYMBOL(touchscreen_enable);
-#endif
-
 #ifdef KEY_LED_CONTROL
 static struct class *leds_class;
 static struct device *led_dev;
@@ -5908,10 +5874,6 @@ static int mxt_resume(struct i2c_client *client)
 
 	if (device_may_wakeup(&client->dev))
 		disable_irq_wake(mxt->irq);
-        
-        #ifdef CONFIG_TOUCH_WAKE
-        touchwake_data = data;
-        #endif
 
 	return 0;
 }
