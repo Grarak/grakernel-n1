@@ -11,13 +11,13 @@ bldcya=${txtbld}$(tput setaf 6) # cyan
 
 txtrst=$(tput sgr0) # Reset
 
-butterversion=v2.2.1
+butterversion=v2.2.2
 tcf=~/android/kernel/toolchains/
 
 DATE_START=$(date +"%s")
 
 echo -e "${bldcya} Select Toolchain ${txtrst}"
-echo -e "> 1: Linaro 4.7.3 13.05"
+echo -e "  1: Linaro 4.7.3 13.05"
 echo -e "  2: Linaro 4.8.1 13.05"
 read toolchain
 
