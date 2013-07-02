@@ -67,6 +67,8 @@
 #include <media/tegra_camera.h>
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
+#include <asm/setup.h>
+#include <mach/tegra_bootargs.h>
 #include <mach/usb_phy.h>
 #include <mach/gpio-n1.h>
 #include <mach/sec_battery.h>
@@ -115,6 +117,124 @@ MODULE_PARM_DESC(charging_mode_from_boot, "Charging mode parameter value.");
 #else
 int charging_mode_from_boot = 0;
 #endif
+
+static NvBootArgs s_BootArgs = { {0}, {0}, {0}, {0}, {0}, {0}, {{0}} };
+
+static int __init parse_tag_nvidia(const struct tag *tag)
+{
+	const struct tag_tegra *nvtag = &tag->u.tegra;
+
+	/* fill the preserved handles */
+	if (nvtag->bootarg_key >= NvBootArgKey_PreservedMemHandle_0 &&
+	    nvtag->bootarg_key < NvBootArgKey_PreservedMemHandle_Num)
+	{
+		int ndx = nvtag->bootarg_key - NvBootArgKey_PreservedMemHandle_0;
+
+		NvBootArgsPreservedMemHandle *dst = &s_BootArgs.MemHandleArgs[ndx];
+		const NvBootArgsPreservedMemHandle *src =
+			(const NvBootArgsPreservedMemHandle *)nvtag->bootarg;
+		if (nvtag->bootarg_len != sizeof(NvBootArgsPreservedMemHandle))
+			printk("Unexpected preserved memory handle tag length!\n");
+		else
+			*dst = *src;
+
+		return 0;
+	}
+
+	/* fill the other members of NvBootArgs */
+	switch (nvtag->bootarg_key) {
+	case NvBootArgKey_ChipShmoo:
+	{
+		NvBootArgsChipShmoo *dst = &s_BootArgs.ChipShmooArgs;
+		const NvBootArgsChipShmoo *src =
+			(const NvBootArgsChipShmoo *)nvtag->bootarg;
+		if (nvtag->bootarg_len != sizeof(NvBootArgsChipShmoo))
+			printk("Unexpected shmoo tag length!\n");
+		else {
+			*dst = *src;
+			pr_info("Shmoo tag with handle 0x%x\n", src->MemHandleKey);
+		}
+		break;
+	}
+	case NvBootArgKey_Display:
+	{
+		NvBootArgsDisplay *dst = &s_BootArgs.DisplayArgs;
+		const NvBootArgsDisplay *src =
+			(const NvBootArgsDisplay *)nvtag->bootarg;
+		if (nvtag->bootarg_len != sizeof(NvBootArgsDisplay))
+			printk("Unexpected display tag length!\n");
+		else {
+			*dst = *src;
+			pr_info("Display tag Controller=%u Index=%u %s\n",
+				dst->Controller, dst->DisplayDeviceIndex,
+				dst->bEnabled ? "enabled":"disabled");
+		}
+		break;
+	}
+	case NvBootArgKey_Framebuffer:
+	{
+		NvBootArgsFramebuffer *dst = &s_BootArgs.FramebufferArgs;
+		const NvBootArgsFramebuffer *src =
+			(const NvBootArgsFramebuffer *)nvtag->bootarg;
+		if (nvtag->bootarg_len != sizeof(NvBootArgsFramebuffer))
+			printk("Unexpected framebuffer tag length %d != %d!\n",
+				nvtag->bootarg_len, sizeof(NvBootArgsFramebuffer));
+		else {
+			*dst = *src;
+			pr_info("Framebuffer tag with handle 0x%x\n", src->MemHandleKey);
+			pr_info("  %hux%hu %u, size=%u, flags=%u\n", dst->Width, dst->Height,
+				dst->ColorFormat, dst->Size, dst->Flags);
+		}
+		break;
+	}
+	case NvBootArgKey_Rm:
+	{
+		NvBootArgsRm *dst = &s_BootArgs.RmArgs;
+		const NvBootArgsRm *src =
+			(const NvBootArgsRm *)nvtag->bootarg;
+		if (nvtag->bootarg_len != sizeof(NvBootArgsRm))
+			printk("Unexpected RM tag length!\n");
+		else {
+			*dst = *src;
+			pr_info("Found a RM tag\n");
+		}
+		break;
+	}
+	case NvBootArgKey_ChipShmooPhys:
+	{
+		NvBootArgsChipShmooPhys *dst = &s_BootArgs.ChipShmooPhysArgs;
+		const NvBootArgsChipShmooPhys *src =
+			(const NvBootArgsChipShmooPhys *)nvtag->bootarg;
+		if (nvtag->bootarg_len != sizeof(NvBootArgsChipShmooPhys))
+			printk("Unexpected phys shmoo tag length!\n");
+		else {
+			*dst = *src;
+			pr_info("Phys shmoo tag with pointer 0x%X and length %u\n",
+				src->PhysShmooPtr, src->Size);
+		}
+		break;
+	}
+	case NvBootArgKey_WarmBoot:
+	{
+		NvBootArgsWarmboot *dst = &s_BootArgs.WarmbootArgs;
+		const NvBootArgsWarmboot *src =
+			(const NvBootArgsWarmboot *)nvtag->bootarg;
+		if (nvtag->bootarg_len != sizeof(NvBootArgsWarmboot))
+			printk("Unexpected warmboot tag length!\n");
+		else {
+			*dst = *src;
+			pr_info("Found a warmboot tag, handle=0x%x\n", src->MemHandleKey);
+		}
+		break;
+	}
+	default:
+		pr_warning("%s: unknown tegra tag, key=0x%x len=%u bootarg=%d\n", __func__,
+			tag->u.tegra.bootarg_key, tag->u.tegra.bootarg_len,
+			(u8) tag->u.tegra.bootarg[0]);
+	}
+	return 0;
+}
+__tagtable(ATAG_NVIDIA, parse_tag_nvidia);
 
 
 #define PREALLOC_WLAN_SEC_NUM		4
