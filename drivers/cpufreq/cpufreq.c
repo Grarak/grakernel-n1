@@ -30,6 +30,7 @@
 #include <linux/mutex.h>
 #include <linux/syscore_ops.h>
 #include <linux/pm_qos_params.h>
+#include <linux/earlysuspend.h>
 
 #include <trace/events/power.h>
 
@@ -1466,6 +1467,28 @@ static struct sysdev_driver cpufreq_sysdev_driver = {
 	.remove		= cpufreq_remove_dev,
 };
 
+#ifdef CONFIG_CPU_SUSPEND_CORE
+static void cpufreq_suspend_core(int suspend)
+{
+	if (!suspend) {
+		if (num_online_cpus() < 2)
+			cpu_up(1);
+	} else {
+		if (num_online_cpus() >= 2)
+			cpu_down(1);
+	}
+}
+static void cpufreq_core_suspend(struct early_suspend *handler) {
+	cpufreq_suspend_core(1);
+}
+static void cpufreq_core_resume(struct early_suspend *handler) {
+	cpufreq_suspend_core(0);
+}
+static struct early_suspend cpufreq_early_suspend = {
+	.suspend = cpufreq_core_suspend,
+	.resume = cpufreq_core_resume,
+};
+#endif
 
 /**
  * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
@@ -2206,6 +2229,18 @@ static int __init cpufreq_core_init(void)
 				 &max_freq_notifier);
 	BUG_ON(rc);
 
+#ifdef CONFIG_CPU_SUSPEND_CORE
+	register_early_suspend(&cpufreq_early_suspend);
+#endif
 	return 0;
 }
+
+static void __exit cpufreq_core_exit(void)
+{
+#ifdef CONFIG_CPU_SUSPEND_CORE
+	unregister_early_suspend(&cpufreq_early_suspend);
+#endif
+}
+
 core_initcall(cpufreq_core_init);
+__exitcall(cpufreq_core_exit);
