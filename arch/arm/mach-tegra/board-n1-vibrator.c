@@ -36,11 +36,13 @@
 
 #include <asm/mach-types.h>
 #include <mach/gpio-n1.h>
-#include "../../../drivers/staging/android/timed_output.h"
 #include <mach/pinmux.h>
 #include "clock.h"
 
-#define MAX_TIMEOUT	10000	/* 10s */
+#ifdef CONFIG_MACH_VIBRATOR
+#  include "../../../drivers/staging/android/timed_output.h"
+#  define MAX_TIMEOUT	10000	/* 10s */
+#endif
 
 static struct vibrator {
 	struct wake_lock wklock;
@@ -82,6 +84,7 @@ static int vibrator_write_register(u8 addr, u8 w_data)
 	return 0;
 }
 
+#ifdef CONFIG_MACH_VIBRATOR
 static void isa1200_resume(void)
 {
 	vibrator_write_register(0x30, 0x11);
@@ -104,7 +107,6 @@ static void isa1200_suspend(void)
 
 	pr_debug("%s\n", __func__);
 }
-
 
 static void n1_vibrator_off(void)
 {
@@ -189,6 +191,7 @@ static void n1_vibrator_work(struct work_struct *work)
 {
 	n1_vibrator_off();
 }
+#endif /* CONFIG_MACH_VIBRATOR */
 
 static int vibrator_i2c_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
@@ -251,7 +254,6 @@ EXPORT_SYMBOL(imm_vibrator_clk_enable);
 
 int imm_vibrator_clk_disable(void)
 {
-
 	if (!vibdata.dap_mclk2) {
 		printk("%s driver is not ready\n", __func__);
 		return 0;
@@ -314,7 +316,6 @@ static const struct i2c_device_id vibrator_device_id[] = {
 };
 MODULE_DEVICE_TABLE(i2c, vibrator_device_id);
 
-
 static struct i2c_driver vibrator_i2c_driver = {
 	.driver = {
 		.name = "isa1200",
@@ -333,9 +334,11 @@ static int __init n1_init_vibrator(void)
 		return 0;
 	}
 
+#ifdef CONFIG_MACH_VIBRATOR
 	hrtimer_init(&vibdata.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	vibdata.timer.function = n1_vibrator_timer_func;
 	INIT_WORK(&vibdata.work, n1_vibrator_work);
+#endif
 
 	vibdata.dap_mclk2  = tegra_get_clock_by_name("cdev2");
 
@@ -345,25 +348,28 @@ static int __init n1_init_vibrator(void)
 		goto err_gpio_req2;
 
 	gpio_direction_output(GPIO_VIBTONE_EN, 0);
-		ret = i2c_add_driver(&vibrator_i2c_driver);
 
+	ret = i2c_add_driver(&vibrator_i2c_driver);
 	if (ret)
 		pr_err("%s: i2c_add_driver() failed err = %d\n", __func__, ret);
-
 
 	wake_lock_init(&vibdata.wklock, WAKE_LOCK_SUSPEND, "vibrator");
 	mutex_init(&vibdata.lock);
 
+#ifdef CONFIG_MACH_VIBRATOR
 	ret = timed_output_dev_register(&to_dev);
 	if (ret < 0)
 		goto err_to_dev_reg;
+#endif
 
 	return 0;
 
+#ifdef CONFIG_MACH_VIBRATOR
 err_to_dev_reg:
 	mutex_destroy(&vibdata.lock);
 	wake_lock_destroy(&vibdata.wklock);
 	gpio_free(GPIO_VIBTONE_EN);
+#endif
 err_gpio_req2:
 	tegra_gpio_disable(GPIO_VIBTONE_EN);
 

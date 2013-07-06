@@ -1385,7 +1385,6 @@ static __devinit int sec_bat_probe(struct platform_device *pdev)
 	wake_lock_init(&info->cable_wake_lock, WAKE_LOCK_SUSPEND,
 			"sec-battery-cable");
 
-
 	info->batt_health = POWER_SUPPLY_HEALTH_GOOD;
 	info->charging_start_time = 0;
 #ifdef CONFIG_SAMSUNG_LPM_MODE
@@ -1416,7 +1415,6 @@ static __devinit int sec_bat_probe(struct platform_device *pdev)
 
 	/* create sec detail attributes */
 	sec_bat_create_attrs(info->psy_bat.dev);
-
 
 #ifdef __TEST_DEVICE_DRIVER__
 	sec_batt_test_create_attrs(info->psy_ac.dev);
@@ -1489,7 +1487,7 @@ static int __devexit sec_bat_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int sec_bat_suspend(struct device *dev)
+static int sec_bat_prepare(struct device *dev)
 {
 	struct sec_bat_info *info = dev_get_drvdata(dev);
 
@@ -1503,7 +1501,7 @@ static int sec_bat_suspend(struct device *dev)
 	return 0;
 }
 
-static int sec_bat_resume(struct device *dev)
+static void sec_bat_complete(struct device *dev)
 {
 	struct sec_bat_info *info = dev_get_drvdata(dev);
 
@@ -1514,13 +1512,11 @@ static int sec_bat_resume(struct device *dev)
 
 	wake_lock(&info->monitor_wake_lock);
 	queue_work(info->monitor_wqueue, &info->monitor_work);
-
-	return 0;
 }
 
 static const struct dev_pm_ops sec_bat_pm_ops = {
-	.prepare	= sec_bat_suspend,
-	.complete	= sec_bat_resume,
+	.prepare	= sec_bat_prepare,
+	.complete	= sec_bat_complete,
 };
 
 static struct platform_driver sec_bat_driver = {

@@ -54,7 +54,7 @@ static struct mpu3050_platform_data n1_mpu3050_pdata = {
 	 * 90 degrees counter-clockwise from natural orientation.
 	 * So X & Y are swapped and Y is negated.
 	 */
-	.orientation = {0, 1,  0,
+	.orientation = {0,  1,  0,
 			1,  0,  0,
 			0,  0,  -1 },
 	.level_shifter = 0,
@@ -69,7 +69,7 @@ static struct mpu3050_platform_data n1_mpu3050_pdata = {
 		 * So X & Y are both negated.
 		 */
 		.orientation = {0,  1,  0,
-				1, 0,  0,
+				1,  0,  0,
 				0,  0,  -1 },
 	},
 	.compass = {
@@ -94,8 +94,8 @@ static struct mpu3050_platform_data n1_mpu3050_pdata_rev05 = {
 	 * 90 degrees counter-clockwise from natural orientation.
 	 * So X & Y are swapped and Y is negated.
 	 */
-	.orientation = {0, -1,  0,
-			-1,  0,  0,
+	.orientation = {0,  -1,  0,
+			-1, 0,   0,
 			0,  0,  -1 },
 	.level_shifter = 0,
 	.accel = {
@@ -122,7 +122,7 @@ static struct mpu3050_platform_data n1_mpu3050_pdata_rev05 = {
 		 * 90 degrees clockwise from natural orientation.
 		 * So X & Y are swapped and Y & Z are negated.
 		 */
-		.orientation = {0, 1,  0,
+		.orientation = {0,  1,  0,
 				1,  0,  0,
 				0,  0, -1 },
 	},
@@ -165,7 +165,6 @@ static const struct i2c_board_info n1_i2c_mpu_sensor_board_info_rev05[] = {
 		I2C_BOARD_INFO("kxtf9", 0x0F),
 	},
 };
-
 
 static void n1_ak8975_init(void)
 {
