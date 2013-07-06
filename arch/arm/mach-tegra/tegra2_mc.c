@@ -896,7 +896,7 @@ static enum hrtimer_restart sample_timer_function(struct hrtimer *handle)
 #define REGISTER_SYSFS(_name, _val)					\
 	tegra_mc_dram_##_name##_kobj =					\
 		kobject_create_and_add(#_name, tegra_mc_dram_kobj);	\
-	sysfs_create_group(tegra_mc_dram_##_name##_kobj,		\
+	rc = sysfs_create_group(tegra_mc_dram_##_name##_kobj,		\
 			   &tegra_mc_dram_##_name##_attr_group);
 
 static int tegra_mc_init(void)
@@ -941,6 +941,9 @@ static int tegra_mc_init(void)
 		goto out_remove_group_client_0;
 
 	dram_counters(REGISTER_SYSFS)
+	if(rc) {
+		pr_err("%s: Problem registering sysfs\n", __func__);
+	}
 
 	/* hrtimer */
 	hrtimer_init(&sample_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);

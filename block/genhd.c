@@ -1601,7 +1601,7 @@ static void disk_events_workfn(struct work_struct *work)
 	struct gendisk *disk = ev->disk;
 	char *envp[ARRAY_SIZE(disk_uevents) + 1] = { };
 	unsigned int clearing = ev->clearing;
-	unsigned int events;
+	unsigned int events = 0;
 	unsigned long intv;
 	int nr_events = 0, i;
 

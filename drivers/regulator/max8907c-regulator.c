@@ -117,9 +117,9 @@ struct max8907c_regulator_info {
 static int max8907c_regulator_list_voltage(struct regulator_dev *dev,
 					   unsigned index);
 static int max8907c_regulator_ldo_set_voltage(struct regulator_dev *dev,
-					      int min_uV, int max_uV);
+			      int min_uV, int max_uV, unsigned *selector);
 static int max8907c_regulator_bbat_set_voltage(struct regulator_dev *dev,
-					       int min_uV, int max_uV);
+			       int min_uV, int max_uV, unsigned *selector);
 static int max8907c_regulator_ldo_get_voltage(struct regulator_dev *dev);
 static int max8907c_regulator_fixed_get_voltage(struct regulator_dev *dev);
 static int max8907c_regulator_bbat_get_voltage(struct regulator_dev *dev);
@@ -211,7 +211,7 @@ static int max8907c_regulator_list_voltage(struct regulator_dev *rdev,
 }
 
 static int max8907c_regulator_ldo_set_voltage(struct regulator_dev *rdev,
-					      int min_uV, int max_uV)
+			      int min_uV, int max_uV, unsigned *selector)
 {
 	const struct max8907c_regulator_info *info = rdev_get_drvdata(rdev);
 	int val;
@@ -225,7 +225,7 @@ static int max8907c_regulator_ldo_set_voltage(struct regulator_dev *rdev,
 }
 
 static int max8907c_regulator_bbat_set_voltage(struct regulator_dev *rdev,
-					       int min_uV, int max_uV)
+			       int min_uV, int max_uV, unsigned *selector)
 {
 	const struct max8907c_regulator_info *info = rdev_get_drvdata(rdev);
 	int val;
@@ -409,7 +409,7 @@ static int max8907c_regulator_probe(struct platform_device *pdev)
 	struct max8907c_regulator_info *info;
 	struct regulator_dev *rdev;
 	struct regulator_init_data *p = pdev->dev.platform_data;
-	struct max8907c_chip_regulator_data *chip_data = p->driver_data;;
+	struct max8907c_chip_regulator_data *chip_data = p->driver_data;
 	u8 version;
 
 	/* Backwards compatibility with max8907b, SD1 uses different voltages */
