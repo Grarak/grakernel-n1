@@ -232,9 +232,20 @@ config CPU_FREQ_GOV_HYPER
 
            If in doubt, say Y.
 
+config CPU_FREQ_SYNC_SCALING
+        bool "Apply governor scaling to the two CPU cores"
+        depends on CPU_FREQ && SMP
+        default y if CPU_FREQ && SMP
+        help
+          Allow compatibility with CM CPU Performances settings which only
+          set cpu governor and min/max frequencies on the first cpu core
+
+          If Y, changing scaling of a core via sysfs will also update
+          settings for the second one.
+
 config CPU_SUSPEND_CORE
         bool "Disable Second Core (1) on suspend"
-        depends on CPU_FREQ
+        depends on CPU_FREQ && SMP
         default n
         help
           Bring down second cpu core on early suspend
@@ -255,4 +266,4 @@ source "drivers/cpufreq/Kconfig.powerpc"
 endmenu
 
 endif
-endmenu
+endmenuconfig CPU_SUSPEND_CORE
