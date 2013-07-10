@@ -220,16 +220,16 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
 		.hcpu = hcpu,
 	};
 
-	printk(KERN_INFO "%s 1 .. cpu = %d\n", __func__, cpu);
+	pr_debug("%s 1 .. cpu = %d\n", __func__, cpu);
 	if (num_online_cpus() == 1)
 		return -EBUSY;
 
 	if (!cpu_online(cpu))
 		return -EINVAL;
 
-	printk(KERN_INFO "%s: LINE(%d)\n", __func__, __LINE__);
+	pr_debug("%s: LINE(%d)\n", __func__, __LINE__);
 	cpu_hotplug_begin();
-	printk(KERN_INFO "%s 3 .. cpu = %d\n", __func__, cpu);
+	pr_debug("%s 3 .. cpu = %d\n", __func__, cpu);
 
 	err = __cpu_notify(CPU_DOWN_PREPARE | mod, hcpu, -1, &nr_calls);
 	if (err) {
@@ -239,7 +239,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
 				__func__, cpu);
 		goto out_release;
 	}
-	printk(KERN_INFO "%s 4 .. cpu = %d\n", __func__, cpu);
+	pr_debug("%s 4 .. cpu = %d\n", __func__, cpu);
 
 	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
 	if (err) {
@@ -250,7 +250,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
 	}
 	BUG_ON(cpu_online(cpu));
 
-	printk(KERN_INFO "%s 5 .. cpu = %d\n", __func__, cpu);
+	pr_debug("%s 5 .. cpu = %d\n", __func__, cpu);
 	/*
 	 * The migration_call() CPU_DYING callback will have removed all
 	 * runnable tasks from the cpu, there's only the idle task left now
@@ -258,26 +258,27 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
 	 *
 	 * Wait for the stop thread to go away.
 	 */
-	printk(KERN_INFO "%s: LINE(%d)\n", __func__, __LINE__);
+	pr_debug("%s: LINE(%d)\n", __func__, __LINE__);
 	while (!idle_cpu(cpu))
 		cpu_relax();
 
-	printk(KERN_INFO "%s 6 .. cpu = %d\n", __func__, cpu);
+	pr_debug("%s 6 .. cpu = %d\n", __func__, cpu);
 
 	/* This actually kills the CPU. */
 	__cpu_die(cpu);
 
-	printk(KERN_INFO "%s 7 .. cpu = %d\n", __func__, cpu);
+	pr_debug("%s 7 .. cpu = %d\n", __func__, cpu);
 	/* CPU is completely dead: tell everyone.  Too late to complain. */
 	cpu_notify_nofail(CPU_DEAD | mod, hcpu);
 
 	check_for_tasks(cpu);
 
 out_release:
-	printk(KERN_INFO "%s: LINE(%d)\n", __func__, __LINE__);
 	cpu_hotplug_done();
 	if (!err)
 		cpu_notify_nofail(CPU_POST_DEAD | mod, hcpu);
+	else
+		pr_err("%s: fail !\n", __func__);
 	return err;
 }
 
