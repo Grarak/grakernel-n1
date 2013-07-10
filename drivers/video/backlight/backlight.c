@@ -311,7 +311,7 @@ struct backlight_device *backlight_device_register(const char *name,
 		memcpy(&new_bd->props, props,
 		       sizeof(struct backlight_properties));
 		if (props->type <= 0 || props->type >= BACKLIGHT_TYPE_MAX) {
-			WARN(1, "%s: invalid backlight type", name);
+			pr_info("%s: init backlight type %x=>RAW", name, props->type);
 			new_bd->props.type = BACKLIGHT_RAW;
 		}
 	} else {
