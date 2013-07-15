@@ -580,7 +580,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 				 "Out of memory (oom_kill_allocating_task)");
 		goto out;
 	}
-
 out:
 	/*
 	 * Give the killed threads a good chance of exiting before trying to
