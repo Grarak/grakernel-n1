@@ -92,7 +92,7 @@ static int si4709_i2c_probe(struct i2c_client *client,
 	return 0;
 }
 
-static int __exit si4709_i2c_remove(struct i2c_client *client)
+static int __devexit si4709_i2c_remove(struct i2c_client *client)
 {
 	struct si4709_data *si4709_dev = i2c_get_clientdata(client);
 
