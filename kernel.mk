@@ -1,5 +1,5 @@
 # Rename this file to Android.mk to build in AOSP
-ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),i9103)
+ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),n1)
 
 # Prevent conflict with CM9 kernel.mk build task
 ifeq ($(TARGET_AUTO_KDIR),)
@@ -69,12 +69,17 @@ endif
 
 ###############################################################################
 
+# gcc 4.7 from aosp/master
+KERNEL_CROSS_COMPILE := $(ROOTDIR)prebuilts/gcc/linux-x86/arm/arm-eabi-4.7/bin/arm-eabi-
+MODULE_CROSS_COMPILE := $(KERNEL_CROSS_COMPILE)
+
 # gcc 4.6.x-google in jelly bean, doesnt work yet
 # KERNEL_CROSS_COMPILE := $(ROOTDIR)prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-
 # MODULE_CROSS_COMPILE := $(ROOTDIR)prebuilt/$(HOST_PREBUILT_TAG)/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 
-KERNEL_CROSS_COMPILE := $(ROOTDIR)prebuilt/$(HOST_PREBUILT_TAG)/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
-MODULE_CROSS_COMPILE := $(KERNEL_CROSS_COMPILE)
+# ics
+# KERNEL_CROSS_COMPILE := $(ROOTDIR)prebuilt/$(HOST_PREBUILT_TAG)/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+# MODULE_CROSS_COMPILE := $(KERNEL_CROSS_COMPILE)
 
 KERNEL_BUILD_DIR       := $(ROOTDIR)$(PRODUCT_OUT)/obj/kernel_intermediates/build
 TARGET_PREBUILT_KERNEL ?= $(KERNEL_BUILD_DIR)/arch/arm/boot/zImage
@@ -122,11 +127,12 @@ endif
 # Turn on kernel engineering build as default when TARGET_BUILD_VARIANT is eng
 # to disable it, add ENG_BLD=0 in build command
 
-#Use 0 for stock rom, 1 for CM
-ENG_BLD = 0
+#Use 0 for stock rom, 1 for CM/AOSP
+ENG_BLD = 1
 
 PRODUCT_SPECIFIC_DEFCONFIGS += ${LJAPDEFCONFIGSRC}/feature/networkfs.config
 PRODUCT_SPECIFIC_DEFCONFIGS += ${LJAPDEFCONFIGSRC}/feature/ntfs.config
+PRODUCT_SPECIFIC_DEFCONFIGS += ${LJAPDEFCONFIGSRC}/feature/selinux.config
 # PRODUCT_SPECIFIC_DEFCONFIGS += ${LJAPDEFCONFIGSRC}/feature/kexec.config
 # PRODUCT_SPECIFIC_DEFCONFIGS += ${LJAPDEFCONFIGSRC}/feature/hid.config
 # PRODUCT_SPECIFIC_DEFCONFIGS += ${LJAPDEFCONFIGSRC}/feature/zram.config
