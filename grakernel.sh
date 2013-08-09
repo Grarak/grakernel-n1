@@ -17,16 +17,16 @@ tcf=/Volumes/kernel/toolchain/
 DATE_START=$(date +"%s")
 
 echo -e "${bldcya} Select Toolchain ${txtrst}"
-echo -e "  1: Linaro 4.7.3 13.07"
-echo -e "  2: Linaro 4.8.1 13.07"
+echo -e "  1: Google 4.6"
+echo -e "> 2: Google 4.7"
 read toolchain
 
 if [ "$toolchain" == "1" ]; then
-        export CROSS_COMPILE=${tcf}linaro-4.7-13.07/bin/arm-eabi-
+        export CROSS_COMPILE=${tcf}arm-eabi-4.6/bin/arm-eabi-
 fi
 
 if [ "$toolchain" == "2" ]; then
-        export CROSS_COMPILE=${tcf}linaro-4.8-13.07/bin/arm-eabi-
+        export CROSS_COMPILE=${tcf}arm-eabi-4.7/bin/arm-eabi-
 fi
 
 echo -e "${bldcya} Cleaning .... ${txtrst}"
