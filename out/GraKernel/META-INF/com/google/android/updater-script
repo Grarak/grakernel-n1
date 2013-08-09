@@ -2,17 +2,14 @@ ui_print("");
 ui_print("");
 ui_print("");
 ui_print("");
-ui_print("------------------------------------------------");
-ui_print("      ButterKernel Weekly  
-buildscriptline
- by Grarak            ");
-ui_print("  ____             __    __                     ");
-ui_print(" /\  _`\          /\ \__/\ \__                  ");
-ui_print(" \ \ \L\ \  __  __\ \ ,_\ \ ,_\    __   _ __    ");
-ui_print("  \ \  _ <'/\ \/\ \\ \ \/\ \ \/  /'__`\/\`'__\  ");
-ui_print("   \ \ \L\ \ \ \_\ \\ \ \_\ \ \_/\  __/\ \ \/   ");
-ui_print("    \ \____/\ \____/ \ \__\\ \__\ \____\\ \_\   ");
-ui_print("     \/___/  \/___/   \/__/ \/__/\/____/ \/_/   ");
+ui_print("                GraKernel by Grarak               ");
+ui_print("                                                  ");
+ui_print("                   Version 1.0.0                  ");
+ui_print("                                                  ");
+ui_print("          /~~\        | /               |         ");
+ui_print("         |  __|/~\/~~||( /~/|/~\|/~\ /~/|         ");
+ui_print("          \__/|   \__|| \\/_|   |   |\/_|         ");
+                                         
 
 show_progress(0.100000, 0);
 

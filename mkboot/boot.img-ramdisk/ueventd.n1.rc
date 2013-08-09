@@ -26,11 +26,18 @@
 /dev/akm8975	0660	system	system
 
 # for GPS
-/dev/ttyHS0	0660	root	system
+/dev/ttyHS0	0664	radio	system
+/sys/devices/virtual/sec/gps/GPS* value 0664 radio system
 
 # for FM Radio
 /dev/fmradio	0660	system	audio
 
+# cpufreq
+/sys/devices/system/cpu/cpu* scaling_min_freq 0664 system system
+/sys/devices/system/cpu/cpu* scaling_max_freq 0664 system system
+/sys/devices/system/cpu/cpu* scaling_governor 0664 system system
+
 # for usb printer
 /dev/bus/usb/*	0660	system	usb
 /dev/usb/lp*	0660	system	usb
+

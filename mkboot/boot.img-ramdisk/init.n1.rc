@@ -2,6 +2,7 @@ import init.n1.usb.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
+
     write /sys/class/firmware/timeout 5
 
     export EXTERNAL_STORAGE /storage/sdcard0
@@ -11,6 +12,18 @@ on early-init
     mkdir /storage/sdcard0 0775 system system
     mkdir /storage/sdcard1 0775 system system
     mkdir /storage/usbdisk0 0775 system system
+    mkdir /storage/usbdisk1 0000 system system
+
+    # mkdir /mnt/shell/emulated 0700 shell shell
+    # mkdir /storage/emulated 0555 root root
+    # Support legacy paths
+    # symlink /storage/emulated/legacy /sdcard
+    # symlink /storage/emulated/legacy /mnt/sdcard
+    # symlink /storage/emulated/legacy /storage/sdcard0
+    # symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+    # export EXTERNAL_STORAGE /storage/emulated/legacy
+    # export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    # export EMULATED_STORAGE_TARGET /storage/emulated
 
     mkdir /efs 0771 radio system
     mkdir /preload 0771 system system
@@ -26,6 +39,9 @@ on early-init
     symlink /storage/usbdisk0 /mnt/usbDisk
 
 on fs
+    setprop ro.crypto.tmpfs_options size=128m,mode=0771,uid=1000,gid=1000
+    setprop ro.crypto.umount_sd false
+
     mount_all /fstab.n1
 
     mkdir /efs/bluetooth
@@ -37,23 +53,29 @@ on fs
 
     mkdir /mnt/modem 0770 radio system
 
-on boot
-    chown system system /efs/wifi/.mac.info
-    chown system system /data/.mac.info
-    chmod 0664 /efs/wifi/.mac.info
-    chmod 0664 /data/.mac.info
-
-    mkdir /data/misc/wifi 0770 wifi system
+on post-fs-data
+    mkdir /data/misc/wifi 0770 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    mkdir /data/misc/dhcp 0775 dhcp dhcp
-    mkdir /data/nvcam 0775 system system
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
+    mkdir /data/nvcam 0775 media camera
+
     mkdir /data/wifi 0770 wifi wifi
     mkdir /data/misc/radio 0775 radio system
 
-# external storage emulation
-#    mkdir /data/media 0775 media_rw media_rw
-#    chown media_rw media_rw /data/media
+    # we will remap this as /storage/sdcard0 with the sdcard fuse tool
+    # mkdir /data/media 0770 media_rw media_rw
+    # chown media_rw media_rw /data/media
+
+    chown system system /data/.mac.info
+    chmod 0664 /data/.mac.info
+
+    # Set indication (checked by vold) that we have finished this action
+    setprop vold.post_fs_data_done 1
+
+on boot
+    chown system system /efs/wifi/.mac.info
+    chmod 0664 /efs/wifi/.mac.info
 
 # IMEI
     mkdir /efs/imei 0775 radio system
@@ -71,17 +93,17 @@ on boot
 # bluetooth
     # UART device
     chmod 0660 /dev/ttyHS2
-    chown bluetooth bluetooth /dev/ttyHS2
+    chown bluetooth net_bt_stack /dev/ttyHS2
 
     # power up/down interface
     chmod 0660 /sys/class/rfkill/rfkill0/state
     chmod 0660 /sys/class/rfkill/rfkill0/type
-    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
-    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
 
 # bluetooth MAC address programming
-    chown bluetooth bluetooth ro.bt.bdaddr_path
-    chown bluetooth bluetooth /system/etc/bluetooth
+    chown bluetooth net_bt_stack ro.bt.bdaddr_path
+    chown bluetooth net_bt_stack /system/etc/bluetooth
     setprop ro.bt.bdaddr_path "/efs/bluetooth/bt_addr"
 
 # UART/USB path switching
@@ -170,9 +192,6 @@ on boot
     chmod 666 /sys/class/input/input2/device/rate
     chmod 666 /sys/class/input/input2/device/autosleep
 
-# BB UART settings
-    chown radio system /dev/ttyHS0
-
 # BB remote file system
     mkdir /data/rfs
     mkdir /data/rfs/data
@@ -197,18 +216,6 @@ on boot
     chown radio system /sys/power/cpufreq_table
     chmod 0444 /sys/power/cpufreq_table
 
-# Power management settings
-#    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 216000
-#    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1200000
-#    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
-#    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq 216000
-#    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 1200000
-#    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
-#    write /sys/devices/system/cpu/cpufreq/interactive/go_maxspeed_load 80
-#    write /sys/devices/system/cpu/cpufreq/interactive/boost_factor 2
-#    write /sys/devices/system/cpu/cpufreq/interactive/sustain_load 80
-#    write /sys/module/cpuidle/parameters/lp2_in_idle 1
-
 # COM port settings
     symlink /dev/ttyACM3 /dev/log_modem
 
@@ -216,18 +223,22 @@ on boot
 #    write /sys/block/mmcblk0/queue/read_ahead_kb 2048
 #    write /sys/block/mmcblk1/queue/read_ahead_kb 2048
 
+# mute gc alloc/free in logcat
+    setprop dalvik.vm.debug.alloc 0
+    setprop dalvik.vm.heapgrowthlimit 72m
+
 # GPS
-    chown root system /dev/ttyHS0
+    chown radio system /dev/ttyHS0
     chmod 0664 /dev/ttyHS0
 
-    mkdir /data/gps 0771 system system
-    chown system system /data/gps
+    mkdir /data/gps 0777 radio system
+    chown radio system /data/gps
 
     chmod 0664 /sys/class/sec/gps/GPS_PWR_EN/value
-    chown root system /sys/class/sec/gps/GPS_PWR_EN/value
+    chown radio system /sys/class/sec/gps/GPS_PWR_EN/value
 
     chmod 0664 /sys/class/sec/gps/GPS_nRST/value
-    chown root system /sys/class/sec/gps/GPS_nRST/value
+    chown radio system /sys/class/sec/gps/GPS_nRST/value
 
 # ko files for FM Radio
     insmod /system/lib/modules/Si4709_driver.ko
@@ -321,10 +332,18 @@ on boot
     chown system radio /sys/class/power_supply/battery/batt_charging_source
     chown system radio /sys/class/power_supply/battery/batt_lp_charging
 
+    # nvcpud is not safe, and not linked to the framework
+    chown system root /dev/min_online_cpus
+    chown system root /dev/cpu_freq_min
+    chown system root /dev/cpu_freq_max
+    setprop nvcpud.enabled true
+    setprop nvcpud.config_refresh_ms 30000
+    start nvcpud
+
 service cpboot-daemon /sbin/cbd -d -o t -p 7
     class main
     user root
-    group radio cache inet misc audio sdcard_r sdcard_rw qcom_oncrpc qcom_diag log
+    group radio cache inet misc audio log sdcard_rw qcom_oncrpc qcom_diag
 
 service p2p_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf -N \
@@ -335,7 +354,7 @@ service p2p_supplicant /system/bin/wpa_supplicant \
     # user wifi
     # group wifi inet keystore
     class main
-    socket wpa_wlan0 dgram 660 wifi wifi
+    socket wpa_wlan0 dgram 660 wifi wifi u:object_r:wpa_socket:s0
     disabled
     oneshot
 
@@ -347,7 +366,7 @@ service wpa_supplicant /system/bin/wpa_supplicant \
     # user wifi
     # group wifi inet keystore
     class main
-    socket wpa_wlan0 dgram 660 wifi wifi
+    socket wpa_wlan0 dgram 660 wifi wifi u:object_r:wpa_socket:s0
     disabled
     oneshot
 
@@ -380,15 +399,11 @@ service iprenew_p2p /system/bin/dhcpcd -n
     disabled
     oneshot
 
-# Enable NvCpuD, and set it to never poll config again
-on boot
-    setprop nvcpud.enabled true
-    setprop nvcpud.config_refresh_ms -1
-
 service nvcpud /system/bin/nvcpud
     class main
-    user root
-    group root
+    user system
+    group log
+    disabled
 
 # bugreport is triggered by the VOLUME-DOWN and VOLUME-UP keys
 service bugreport /system/bin/dumpstate -d -v -o /data/storage/bugreports/bugreport
@@ -396,15 +411,24 @@ service bugreport /system/bin/dumpstate -d -v -o /data/storage/bugreports/bugrep
     oneshot
     keycodes 115 114
 
+# Exec after cm runparts
+on property:init.svc.sysinit=stopped
+    # set KSM thread interval to 15 seconds (vs 1.5 in cm.rc)
+    write /sys/kernel/mm/ksm/sleep_millisecs 15000
+    # prevent bootloop on upgrade, media could be buggy sometimes
+    restart media
+
+on property:init.svc.media=restarting
+    exec /system/xbin/killall mediaserver
+
 # Power management settings
 on property:sys.boot_completed=1
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 216000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1000000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq 216000
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 1000000
-    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
+    chown system system /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor
+    chown system system /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
+    chown system system /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
     write /sys/devices/system/cpu/cpufreq/interactive/go_maxspeed_load 80
     write /sys/devices/system/cpu/cpufreq/interactive/boost_factor 2
     write /sys/devices/system/cpu/cpufreq/interactive/sustain_load 80
     write /sys/module/cpuidle/parameters/lp2_in_idle 1
+    stop nvcpud
+

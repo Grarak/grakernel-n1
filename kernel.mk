@@ -58,7 +58,7 @@ endif
 
 # Default board defconfig
 ifeq ($(TARGET_KERNEL_CONFIG),)
-    BLD_CONF=butter_n1_defconfig
+    BLD_CONF=gk_n1_defconfig
 else
     BLD_CONF=$(TARGET_KERNEL_CONFIG)
 endif
