@@ -27,9 +27,13 @@
 
 #include <linux/cache.h>
 
+#ifdef CONFIG_RCU_BOOST
 static inline void rcu_init(void)
 {
 }
+#else
+void rcu_init(void);
+#endif
 
 static inline void rcu_barrier_bh(void)
 {

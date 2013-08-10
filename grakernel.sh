@@ -11,7 +11,7 @@ bldcya=${txtbld}$(tput setaf 6) # cyan
 
 txtrst=$(tput sgr0) # Reset
 
-gkversion=v1.0
+gkversion=v1.0.0
 tcf=/Volumes/kernel/toolchain/
 
 DATE_START=$(date +"%s")
@@ -72,7 +72,7 @@ make tegra_n1_defconfig
 
 ###########################################################################
 echo -e "${bldcya} Build kernel ${txtrst}"
-cp arch/arm/configs/gk_n1_defconfig .config
+cp arch/arm/configs/gk_i9103_defconfig .config
 sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-GraKernel_${gkversion}_selinux_4.3.+\"/ .config
 
 ###########################################################################
@@ -84,18 +84,16 @@ if [ -e arch/arm/boot/zImage ]; then
 
         echo -e "${bldcya} Building boot.img .... ${txtrst}"
 
-        cp arch/arm/boot/zImage mkboot/
+        cp arch/arm/boot/zImage mkboot/.
         cd mkboot
-
+        ./img.sh
         cd ..
         cp mkboot/boot.img out/GraKernel/
 
-        rm -rfv out/GraKernel/system/lib/modules/*
+        rm -rf out/GraKernel/system/lib/modules/*
         find -name '*.ko' -exec cp -v {} out/GraKernel/system/lib/modules \;
 
         cd out/GraKernel/META-INF/com/google/android
-
-        sed -i s/ui_print(\"                   Version*/ui_print(\"                   Version ${gkversion}                  \");/ updater-script
 
         cd ../../../..
         zip -r GraKernel_${gkversion}.zip cleaner META-INF system boot.img

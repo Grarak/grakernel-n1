@@ -3,7 +3,7 @@
 
 #define NUM_OF_REGISTERS    0x10
 
-/*Si4709 registers*/
+/* Si4709 registers */
 #define    DEVICE_ID        0x00
 #define    CHIP_ID          0x01
 #define    POWERCFG         0x02
@@ -21,7 +21,7 @@
 #define    RDSC             0x0E
 #define    RDSD             0x0F
 
-/***********POWERCFG************/
+/***********POWERCFG*****************/
 #define POWERCFG_DSMUTE       0x8000
 #define POWERCFG_DMUTE        0x4000
 #define POWERCFG_MONO         0x2000
@@ -33,11 +33,11 @@
 #define POWERCFG_ENABLE       0x0001
 /************************************/
 
-/***********CHANNEL************/
+/***********CHANNEL******************/
 #define CHANNEL_TUNE          0x8000
 /************************************/
 
-/***********SYSCONFIG1************/
+/***********SYSCONFIG1***************/
 #define SYSCONFIG1_RDSIEN     0x8000
 #define SYSCONFIG1_STCIEN     0x4000
 #define SYSCONFIG1_RDS        0x1000
@@ -49,7 +49,7 @@
 #define SYSCONFIG1_GPO0       0x0004
 /************************************/
 
-/***********SYSCONFIG2************/
+/***********SYSCONFIG2***************/
 #define SYSCONFIG2_BAND1      0x0080
 #define SYSCONFIG2_BAND0      0x0040
 #define SYSCONFIG2_SPACE1     0x0020
@@ -60,7 +60,7 @@
 #define SYSCONFIG2_VOLUME0    0x0001
 /************************************/
 
-/***********SYSCONFIG3************/
+/***********SYSCONFIG3***************/
 #define SYSCONFIG3_SMUTER1    0x8000
 #define SYSCONFIG3_SMUTER0    0x4000
 #define SYSCONFIG3_SMUTEA1    0x2000
@@ -76,11 +76,11 @@
 #define SYSCONFIG3_SKCNT0     0x0001
 /************************************/
 
-/***********TEST1************/
+/***********TEST1********************/
 #define TEST1_AHIZEN          0x4000
 /************************************/
 
-/***********STATUSRSSI************/
+/***********STATUSRSSI***************/
 #define STATUSRSSI_RDSR       0x8000
 #define STATUSRSSI_STC        0x4000
 #define STATUSRSSI_SF_BL      0x2000
@@ -91,7 +91,7 @@
 #define STATUSRSSI_ST         0x0100
 /************************************/
 
-/***********READCHAN************/
+/***********READCHAN*****************/
 #define READCHAN_BLERB1       0x8000
 #define READCHAN_BLERB0       0x4000
 #define READCHAN_BLERC1       0x2000
@@ -485,28 +485,28 @@ static inline void TEST1_BITSET_RESERVED(u16 * data)
 
 /********************************************************************/
 
-#define NEW_RDS_GROUP_READY    1
-#define NO_RDS_GROUP_READY     0
+#define NEW_RDS_GROUP_READY		1
+#define NO_RDS_GROUP_READY		0
 
-#define COMPLETE       1
-#define CLEAR          0
+#define COMPLETE			1
+#define CLEAR				0
 
-#define SEEK_SUCCESSFUL              1
-#define SEEK_FAILURE_BAND_LMT_RCHD   0
+#define SEEK_SUCCESSFUL			1
+#define SEEK_FAILURE_BAND_LMT_RCHD	0
 
-#define AFC_RAILED        1
-#define AFC_NOT_RAILED    0
+#define AFC_RAILED			1
+#define AFC_NOT_RAILED			0
 
-#define RDS_DECODER_SYNCHRONIZED       1
-#define RDS_DECODER_NOT_SYNCHRONIZED   0
+#define RDS_DECODER_SYNCHRONIZED	1
+#define RDS_DECODER_NOT_SYNCHRONIZED	0
 
-#define STEREO    1
-#define MONO      0
+#define STEREO				1
+#define MONO				0
 
-#define ERRORS_0     0
-#define ERRORS_1_2   1
-#define ERRORS_3_5   2
-#define ERRORS_NO_CORREC_POSSIBLE_6_p   3
+#define ERRORS_0			0
+#define ERRORS_1_2			1
+#define ERRORS_3_5			2
+#define ERRORS_NO_CORREC_POSSIBLE_6_p	3
 
 static inline int STATUSRSSI_RDS_READY_STATUS(u16 data)
 {
@@ -632,27 +632,27 @@ static inline u8 SYS_CONFIG2_FM_VOL(u16 data)
 	return (u8) (0x000F & data);
 }
 
-/*POWER_CONFIG_STATUS*/
+/* POWER_CONFIG_STATUS */
 
 #define SOFTMUTE_ENABLE		0
 #define SOFTMUTE_DISABLE	1
 
 #define MUTE_ENABLE		0
-#define MUTE_DISABLE	1
+#define MUTE_DISABLE		1
 
-#define STEREO_SELECT	0
+#define STEREO_SELECT		0
 #define MONO_SELECT		1
 
-#define RDS_MODE_STANDARD		0
-#define RDS_MODE_VERBOSE		1
+#define RDS_MODE_STANDARD	0
+#define RDS_MODE_VERBOSE	1
 
-#define SEEK_MODE_CONT_SEEK		0
-#define SEEK_MODE_STOP_SEEK		1
+#define SEEK_MODE_CONT_SEEK	0
+#define SEEK_MODE_STOP_SEEK	1
 
-#define SEEK_DOWN	0
-#define SEEK_UP		1
+#define SEEK_DOWN		0
+#define SEEK_UP			1
 
-#define SEEK_DISABLE	0
+#define SEEK_DISABLE		0
 #define SEEK_ABLE		1
 
 static inline int POWER_CONFIG_SOFTMUTE_STATUS(u16 data)

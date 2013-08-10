@@ -654,7 +654,6 @@ static irqreturn_t touchkey_interrupt(int irq, void *dummy)
 #ifdef CONFIG_HAS_EARLYSUSPEND
 static int melfas_touchkey_early_suspend(struct early_suspend *h)
 {
-
 	int i;
 
 	touchkey_enable = 0;
@@ -684,6 +683,7 @@ static int melfas_touchkey_late_resume(struct early_suspend *h)
 {
 	set_touchkey_debug('R');
 	printk(KERN_DEBUG "[TouchKey] melfas_touchkey_late_resume\n");
+
 
 	/* enable ldo20 */
 	touchkey_ldo_on(1);

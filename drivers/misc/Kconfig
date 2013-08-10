@@ -608,22 +608,5 @@ source "drivers/misc/carma/Kconfig"
 source "drivers/misc/tegra-baseband/Kconfig"
 source "drivers/misc/modem_if/Kconfig"
 
-config BLX
-	bool "Support for Battery Life eXtender"
-	default y
-	help
-	  Say Y here to enable Battery Life eXtender
-
-config FSYNC_CONTROL
-        bool "Support for FSync Control"
-        default y
-        help
-          Say Y here to enable FSync Control
-
-config MALI_CONTROL
-	tristate "mali gpu control interfaces"
-	depends on VIDEO_MALI400MP_UMP
-	default y
-
 endif # MISC_DEVICES
 

@@ -42,6 +42,7 @@
 
 static struct rfkill *bt_rfkill;
 
+#ifdef BT_LPM_ENABLE
 struct bcm_bt_lpm {
 	int wake;
 	int host_wake;
@@ -54,6 +55,7 @@ struct bcm_bt_lpm {
 	struct wake_lock wake_lock;
 	char wake_lock_name[100];
 } bt_lpm;
+#endif
 
 static int bcm4330_bt_rfkill_set_power(void *data, bool blocked)
 {
@@ -279,7 +281,9 @@ static int bcm4330_bluetooth_remove(struct platform_device *pdev)
 	gpio_free(GPIO_BT_WAKE);
 	gpio_free(GPIO_BT_HOST_WAKE);
 
+#ifdef BT_LPM_ENABLE
 	wake_lock_destroy(&bt_lpm.wake_lock);
+#endif
 	return 0;
 }
 

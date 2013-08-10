@@ -246,7 +246,7 @@ static unsigned int time_after_autocal_enable = 0;
 static unsigned int time_after_autocal_enable_key;
 static bool coin_check_flag = 0;
 static u8 coin_check_count = 0;
-static bool metal_suppression_chk_flag = true;
+static bool metal_suppression_chk_flag = false;
 
 static u8 chk_touch_cnt, chk_antitouch_cnt;
 static u8 caling_check = 0;
@@ -1567,7 +1567,6 @@ void process_T9_message(u8 *message, struct mxt_data *mxt)
 
 				chkpress++;
 			}
-
 #ifdef TOUCH_LOCKUP_PATTERN_RELEASE
 /*
 Forced-calibration or Touch kernel reboot at power on or system wake-up.
@@ -5091,7 +5090,6 @@ static void mxt_early_suspend(struct early_suspend *h)
 	}
 	mxt->mxt_status = false;
 	key_led_set(mxt, 0x00);
-
 #if 0
 #ifdef MXT_SLEEP_POWEROFF
 	if (mxt->pdata->suspend_platform_hw != NULL)

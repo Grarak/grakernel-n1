@@ -3,4 +3,4 @@
 #
 
 obj-$(CONFIG_VIBTONZ) += vibrator.o
-vibrator-objs +=tspdrv.o
+vibrator-objs += tspdrv.o

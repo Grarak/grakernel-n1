@@ -493,9 +493,9 @@ static int Si4709_ioctl(struct inode *inode, struct file *filp,
 		}
 		break;
 
-/*VNVS:START 13-OCT'09----
-Switch Case statements for calling functions which reads device-id,
-chip-id,power configuration, system configuration2 registers */
+/*VNVS:START 13-OCT'09----*/
+	/* Switch Case statements for calling functions which reads device-id,
+	   chip-id,power configuration, system configuration2 registers */
 	case Si4709_IOC_CHIP_ID_GET:
 		{
 			chip_id chp_id;
@@ -568,7 +568,7 @@ chip-id,power configuration, system configuration2 registers */
 /*VNVS:END*/
 
 /*VNVS:START 18-NOV'09*/
-		/*Reading AFCRL Bit */
+	/* Reading AFCRL Bit */
 	case Si4709_IOC_AFCRL_GET:
 		{
 			u8 afc;
@@ -582,8 +582,8 @@ chip-id,power configuration, system configuration2 registers */
 		}
 		break;
 
-		/*Setting DE-emphasis Time Constant.
-		   For DE=0,TC=50us(Europe,Japan,Australia) and DE=1,TC=75us(USA) */
+	/* Setting DE-emphasis Time Constant.
+	   For DE=0,TC=50us(Europe,Japan,Australia) and DE=1,TC=75us(USA) */
 	case Si4709_IOC_DE_SET:
 		{
 			u8 de_tc;
@@ -658,7 +658,7 @@ chip-id,power configuration, system configuration2 registers */
 		}
 		break;
 
-		/*Resetting the RDS Data Buffer */
+	/* Resetting the RDS Data Buffer */
 	case Si4709_IOC_RESET_RDS_DATA:
 		{
 			debug("Si4709_IOC_RESET_RDS_DATA called");
@@ -855,8 +855,7 @@ int __init Si4709_driver_init(void)
 
 	/*VNVS: 13-OCT'09----
 	Initially Pulling the interrupt pin HIGH as the FM Radio device gives 5ms low pulse*/
-#ifdef CONFIG_MACH_N1
-#else
+#ifndef CONFIG_MACH_N1
 	if (gpio_is_valid(Si4709_rst)) {
 		if (gpio_request(Si4709_rst, FM_PORT))
 			printk(KERN_ERR "Failed to request FM_RESET!\n");
@@ -865,7 +864,7 @@ int __init Si4709_driver_init(void)
 
 	s3c_gpio_setpull(Si4709_int, S3C_GPIO_PULL_UP);
 
-    /****Resetting the device****/
+	/****Resetting the device****/
 	gpio_set_value(Si4709_rst, 0);
 	debug(" Si4709_driver_init FM_RESET=%d", gpio_get_value(Si4709_rst));
 	gpio_set_value(Si4709_rst, 1);
@@ -915,11 +914,11 @@ void __exit Si4709_driver_exit(void)
 		misc_deregister(&Si4709_misc_device);
 	}
 #else
-	/*Delete the i2c driver */
+	/* Delete the i2c driver */
 	Si4709_i2c_drv_exit();
 	free_irq(Si4709_irq, NULL);
 
-	/*misc device deregistration */
+	/* misc device deregistration */
 	misc_deregister(&Si4709_misc_device);
 #endif //CONFIG_MACH_N1
 
