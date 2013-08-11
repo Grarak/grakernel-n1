@@ -18,7 +18,8 @@ DATE_START=$(date +"%s")
 
 echo -e "${bldcya} Select Toolchain ${txtrst}"
 echo -e "  1: Google 4.6"
-echo -e "> 2: Google 4.7"
+echo -e "  2: Google 4.7"
+echo -e "> 3: Linaro 4.8 13.07 by Christopher83"
 read toolchain
 
 if [ "$toolchain" == "1" ]; then
@@ -27,6 +28,10 @@ fi
 
 if [ "$toolchain" == "2" ]; then
         export CROSS_COMPILE=${tcf}arm-eabi-4.7/bin/arm-eabi-
+fi
+
+if [ "$toolchain" == "2" ]; then
+        export CROSS_COMPILE=${tcf}linaro-optimized-4.8-13.07/bin/arm-unknown-linux-gnueabi-
 fi
 
 echo -e "${bldcya} Cleaning .... ${txtrst}"
