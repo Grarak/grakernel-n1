@@ -34,4 +34,6 @@ struct timed_output_dev {
 extern int timed_output_dev_register(struct timed_output_dev *dev);
 extern void timed_output_dev_unregister(struct timed_output_dev *dev);
 
+extern int timed_output_get_kobject(struct kobject** kobj);
+
 #endif

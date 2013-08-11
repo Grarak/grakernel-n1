@@ -96,16 +96,23 @@ static int g_nMajor;
 #include "VibeOSKernelLinuxTime.c"
 #endif
 
+static bool to_linked = false;
+
 /* strength modification */
-unsigned short int pwm_val = 50;
+#define LEVEL_MIN      0
+#define LEVEL_MAX      100
+#define LEVEL_DEFAULT  50
+unsigned short int pwm_value = LEVEL_DEFAULT;
+
+static struct kobject *vibrator_kobj = NULL;
 
 static ssize_t pwm_val_show(struct device *dev, struct device_attribute *attr,
                               char *buf)
 {
 	int count;
 
-	count = sprintf(buf, "%hu\n", pwm_val);
-	pr_debug("[VIB] pwm_val: %hu\n", pwm_val);
+	count = sprintf(buf, "%hu\n", pwm_value);
+	pr_debug("[VIB] pwm_val: %hu\n", pwm_value);
 
 	return count;
 }
@@ -113,37 +120,64 @@ static ssize_t pwm_val_show(struct device *dev, struct device_attribute *attr,
 ssize_t pwm_val_store(struct device *dev, struct device_attribute *attr,
                         const char *buf, size_t size)
 {
-	if (kstrtoul(buf, 0, (unsigned long int*)&pwm_val))
-		pr_err("[VIB] %s: error on storing pwm_val\n", __func__);
+	if (kstrtoul(buf, 0, (unsigned long int*)&pwm_value))
+		pr_err("[VIB] %s: error storing pwm_value\n", __func__);
 
-	pr_info("[VIB] %s: pwm_val=%hu\n", __func__, pwm_val);
+	pr_info("[VIB] %s: pwm_value=%hu\n", __func__, pwm_value);
 
 	/* make sure new pwm duty is in range */
-	if (pwm_val > 100)
-		pwm_val = 100;
-	else if (pwm_val < 0)
-		pwm_val = 0;
+	if (pwm_value > LEVEL_MAX)
+		pwm_value = LEVEL_MAX;
+	else if (pwm_value < LEVEL_MIN)
+		pwm_value = LEVEL_MIN;
 
 	return size;
 }
 
-static DEVICE_ATTR(pwm_val, S_IRUGO | S_IWUSR, pwm_val_show, pwm_val_store);
+static DEVICE_ATTR(pwm_value, S_IRUGO | S_IWUSR|S_IWGRP, pwm_val_show, pwm_val_store);
 
-static int create_vibrator_sysfs(void)
+// second link for compat.
+static struct device_attribute dev_attr_pwm_val = {
+	.attr = { .name="pwm_val", .mode=S_IRUGO | S_IWUSR|S_IWGRP, },
+	.show = &pwm_val_show,
+	.store = &pwm_val_store,
+};
+
+/**
+ * link pwm_value attribute where it should be according to cm team
+ * and another one for compatibility
+ */
+static int create_vibrator_sysfs(struct device *dev)
 {
-	int ret;
-	struct kobject *vibrator_kobj;
+	int ret = 0;
+	struct kobject *to_kobj = NULL; /* timed_output vibrator folder */
+
+        if (to_linked)
+		return -EEXIST;
+
+	if (timed_output_get_kobject(&to_kobj) != 0)
+		return -ENODEV;
+
+	ret = sysfs_create_file(to_kobj, &dev_attr_pwm_value.attr);
+	if (ret) {
+		pr_err("%s: create pwm_value failed\n", __func__);
+		return ret;
+	}
+
+	/* also create /sys/vibrator/pwm_val for compat */
 	vibrator_kobj = kobject_create_and_add("vibrator", NULL);
 	if (unlikely(!vibrator_kobj))
 		return -ENOMEM;
 
-	ret = sysfs_create_file(vibrator_kobj, &dev_attr_pwm_val.attr);
-	if (unlikely(ret < 0)) {
-		pr_err("[VIB] sysfs_create_file failed: %d\n", ret);
-		return ret;
-	}
+	kobject_uevent(vibrator_kobj, KOBJ_ADD);
 
-	return 0;
+	ret = sysfs_create_file(vibrator_kobj, &dev_attr_pwm_val.attr);
+	if (ret < 0)
+		pr_err("[VIB] sysfs_create_file failed: %d\n", ret);
+
+	to_linked = (ret == 0);
+
+	return ret;
 }
 
 /* timed_output */
@@ -196,7 +230,7 @@ static void enable_vibetonz_from_user(struct timed_output_dev *dev, int value)
 		if (value > MAX_TIMEOUT)
 			value = MAX_TIMEOUT;
 
-		strength = DEFAULT_STRENGTH * pwm_val / 100;
+		strength = DEFAULT_STRENGTH * pwm_value / 100;
 
 		if (strength != 0) {
 			ImmVibeSPI_ForceOut_AmpEnable(0);
@@ -223,6 +257,10 @@ static void vibetonz_start(void)
 	INIT_WORK(&vibrator_timeout, vibrator_timeout_work);
 
 	ret = timed_output_dev_register(&timed_output_vt);
+
+	if (!to_linked && timed_output_vt.dev) {
+		create_vibrator_sysfs(timed_output_vt.dev);
+	}
 
 	if (ret)
 		DbgOut((KERN_ERR "tspdrv: timed_output_dev_register failed\n"));
@@ -397,7 +435,6 @@ int init_module(void)
 	}
 
 	vibetonz_start();
-	create_vibrator_sysfs();
 
 	return 0;
 err_platform_drv_reg:

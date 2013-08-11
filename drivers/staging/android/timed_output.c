@@ -22,6 +22,7 @@
 
 #include "timed_output.h"
 
+static struct kobject* to_kobj = NULL;
 static struct class *timed_output_class;
 static atomic_t device_count;
 
@@ -51,6 +52,14 @@ static ssize_t enable_store(
 
 static DEVICE_ATTR(enable, S_IRUGO | S_IWUSR, enable_show, enable_store);
 
+/* return device kobject to link vibrator attributes over sysfs */
+int timed_output_get_kobject(struct kobject** kobj)
+{
+	*kobj = to_kobj;
+	return (to_kobj != NULL) ? 0 : -ENODEV;
+}
+EXPORT_SYMBOL(timed_output_get_kobject);
+
 static int create_timed_output_class(void)
 {
 	if (!timed_output_class) {
@@ -65,6 +74,7 @@ static int create_timed_output_class(void)
 
 int timed_output_dev_register(struct timed_output_dev *tdev)
 {
+	struct device *dev;
 	int ret;
 
 	if (!tdev || !tdev->name || !tdev->enable || !tdev->get_time)
@@ -86,6 +96,9 @@ int timed_output_dev_register(struct timed_output_dev *tdev)
 
 	dev_set_drvdata(tdev->dev, tdev);
 	tdev->state = 0;
+
+	dev = tdev->dev;
+	to_kobj = &dev->kobj;
 	return 0;
 
 err_create_file:
@@ -105,7 +118,7 @@ void timed_output_dev_unregister(struct timed_output_dev *tdev)
 }
 EXPORT_SYMBOL_GPL(timed_output_dev_unregister);
 
-static int __init timed_output_init(void)
+static int __devinit timed_output_init(void)
 {
 	return create_timed_output_class();
 }
@@ -115,7 +128,7 @@ static void __exit timed_output_exit(void)
 	class_destroy(timed_output_class);
 }
 
-module_init(timed_output_init);
+device_initcall(timed_output_init);
 module_exit(timed_output_exit);
 
 MODULE_AUTHOR("Mike Lockwood <lockwood@android.com>");
