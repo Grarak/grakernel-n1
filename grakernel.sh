@@ -95,7 +95,7 @@ if [ -e arch/arm/boot/zImage ]; then
         cd ..
         cp mkboot/boot.img out/GraKernel/
 
-        rm -rf out/GraKernel/system/lib/modules/*
+        rm -rf out/GraKernel/system/lib/modules/*.ko
         find -name '*.ko' -exec cp -v {} out/GraKernel/system/lib/modules \;
 
         cd out/GraKernel/META-INF/com/google/android
