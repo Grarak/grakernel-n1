@@ -11,7 +11,7 @@ bldcya=${txtbld}$(tput setaf 6) # cyan
 
 txtrst=$(tput sgr0) # Reset
 
-gkversion=v1.0.0
+gkversion=alpha
 tcf=/Volumes/kernel/toolchain/
 
 DATE_START=$(date +"%s")
@@ -99,8 +99,9 @@ if [ -e arch/arm/boot/zImage ]; then
         find -name '*.ko' -exec cp -v {} out/GraKernel/system/lib/modules \;
 
         cd out/GraKernel/META-INF/com/google/android
-
+        sed -i s/"Version * "/"Version ${gkversion}"/ updater-script
         cd ../../../..
+        rm -rf *.zip
         zip -r GraKernel_${gkversion}.zip cleaner META-INF system boot.img
    
         echo -e "${bldcya} Finished!! ${txtrst}"

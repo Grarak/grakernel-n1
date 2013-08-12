@@ -4,7 +4,9 @@ ui_print("");
 ui_print("");
 ui_print("                GraKernel by Grarak               ");
 ui_print("                                                  ");
-ui_print("                   Version 1.0.0                  ");
+ui_print("                   
+Version alpha 
+                 ");
 ui_print("                                                  ");
 ui_print("          /~~\        | /               |         ");
 ui_print("         |  __|/~\/~~||( /~/|/~\|/~\ /~/|         ");
