@@ -1,8 +1,0 @@
-#!/sbin/busybox sh
-
-echo '<settingsRoot>'
-
-. /res/customconfig/customconfig.xml.generate.cpu
-. /res/customconfig/customconfig.xml.generate.io
-
-echo '</settingsRoot>'

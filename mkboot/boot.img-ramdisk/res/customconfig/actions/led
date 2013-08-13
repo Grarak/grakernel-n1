@@ -1,5 +1,0 @@
-#!/sbin/busybox sh
-
-echo $2 > /sys/class/sec/led/led_pattern
-
-echo "Done."
