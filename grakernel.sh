@@ -97,9 +97,6 @@ if [ -e arch/arm/boot/zImage ]; then
 
         rm -rf out/GraKernel/system/lib/modules/*.ko
         find -name '*.ko' -exec cp -v {} out/GraKernel/system/lib/modules \;
-        
-        cd out/GraKernel
-
         rm -rf *.zip
         zip -r GraKernel_${gkversion}.zip cleaner META-INF system boot.img
    
