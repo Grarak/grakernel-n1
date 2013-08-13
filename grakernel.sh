@@ -99,7 +99,7 @@ if [ -e arch/arm/boot/zImage ]; then
         find -name '*.ko' -exec cp -v {} out/GraKernel/system/lib/modules \;
 
         cd out/GraKernel/META-INF/com/google/android
-        sed -i s/"Version * "/"Version ${gkversion}"/ updater-script
+        sed -i s/"Version * "/"Version ${gkversion} "/ updater-script
         cd ../../../..
         rm -rf *.zip
         zip -r GraKernel_${gkversion}.zip cleaner META-INF system boot.img
