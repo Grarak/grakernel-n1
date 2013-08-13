@@ -1,12 +1,5 @@
 ui_print("");
-ui_print("");
-ui_print("");
-ui_print("");
 ui_print("                GraKernel by Grarak               ");
-ui_print("                                                  ");
-ui_print("                   
-Version alpha 
-                 ");
 ui_print("                                                  ");
 ui_print("          /~~\        | /               |         ");
 ui_print("         |  __|/~\/~~||( /~/|/~\|/~\ /~/|         ");
