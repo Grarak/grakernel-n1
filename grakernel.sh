@@ -110,7 +110,7 @@ if [ -e arch/arm/boot/zImage ]; then
         echo -e "${bldcya} Flashable zip is in /out/GraKernel ${txtrst}"
 
 else
-	        echo "${bldred} KERNEL DID NOT BUILD! ${txtrst}"
+	echo "${bldred} KERNEL DID NOT BUILD! ${txtrst}"
 fi
 
 exit 0
