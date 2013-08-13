@@ -1,0 +1,32 @@
+#!/sbin/busybox sh
+
+cat << ENDCONFIG
+
+  <settingsTab name="CPU">
+
+    <settingsPane description="Apply the settings on boot only if the desired settings prove to be stable, else the device ends up in a boot-loop. If turned off, the displayed values do not correspond the current live values but the saved profile values, some inconsistencies may occur on applying." 
+                  name="CPU control switch">
+      <checkbox description="If enabled, the below settings will be applied at boot." 
+                name="Set CPU settings on boot" 
+                action="controlswitch CPU"
+                label="Set on boot"/>
+    </settingsPane>
+
+    <settingsPane description="CPUFreq scaling" name="CPU voltage control">
+      <seekbar description="Set the maximum freqency the CPU scales up to. Default: `expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq\` / 1000` MHz." 
+               name="CPU max frequency" 
+               action="cpugeneric /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"
+               unit="KHz" reversed="false" step="100000"
+               min="`expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq\``" 
+               max="`expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq\``" />
+
+      <seekbar description="Set the minimum freqency the CPU scales down to. Default: `expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq\` / 1000` MHz." 
+               name="CPU min frequency" 
+               action="cpugeneric /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq"
+               unit="KHz" reversed="false" step="100000"
+               min="`expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq\``" 
+               max="`expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq\``" />
+
+    </settingsPane>
+  </settingsTab>
+ENDCONFIG

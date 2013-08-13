@@ -1,0 +1,72 @@
+#!/sbin/busybox sh
+
+XML=$CONFIG_XML
+
+echo "" > $XML
+
+echo '
+<settingsRoot>' >> $XML
+
+echo '
+  <settingsTab name="CPU">
+
+    <settingsPane description="Apply the settings on boot only if the desired settings prove to be stable, else the device ends up in a boot-loop. If turned off, the displayed values do not correspond the current live values but the saved profile values, some inconsistencies may occur on applying." 
+                  name="CPU control switch">
+      <checkbox description="If enabled, the below settings will be applied at boot." 
+                name="Set CPU settings on boot" 
+                action="controlswitch CPU"
+                label="Set on boot"/>
+    </settingsPane>
+
+    <settingsPane description="CPU scaling" 
+                  name="CPU voltage control">' >> $XML
+
+echo "
+      <seekbar description=\"Set the maximum freqency the CPU scales down to. Default: `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | rev | cut -c 4- | rev` MHz.\" 
+               name=\"CPU max frequency\" 
+               action=\"cpugeneric /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq\"
+               unit=\"KHz\" reversed=\"false\" step=\"100000\"
+               min=\"`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq`\" 
+               max=\"`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq`\" />
+
+      <seekbar description=\"Set the minimum freqency the CPU scales down to. Default: `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq | rev | cut -c 4- | rev` MHz.\" 
+               name=\"CPU min frequency\" 
+               action=\"cpugeneric /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq\"
+               unit=\"KHz\" reversed=\"false\" step=\"100000\"
+               min=\"`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq`\" 
+               max=\"`cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq`\" />
+
+    </settingsPane>" >> $XML
+
+echo '
+    <settingsPane description="Decreasing voltage will lower power consumption of the CPU. Increasing it on overclocked frequencies improves stability. Too low voltage may cause instabilities and freezes. The Exynos 5410 undervolts automatically when the thermal sensor detects a cold state: the real voltage applied in that case is 75mV below the configured values." 
+                  name="CPU voltage control">
+    </settingsPane>
+
+    <settingsPane description="" name="big cores">' >> $XML
+
+while read FREQ UVOLT; do
+  if [ "$FREQ" == "600" ]; then
+    echo '</settingsPane> <settingsPane description="" name="LITTLE cores">' >> $XML
+  fi
+
+  echo "<seekBar  description=\"Default voltage: $UVOLTµV\" name=\"" >> $XML
+
+  if [ $FREQ -lt 700 ]; then
+    echo `expr ${FREQ} \* 2` >> $XML
+  else
+     echo ${FREQ} >> $XML
+  fi
+
+  echo " MHz step\" 
+                action=\"cpuvolt ${FREQ}\"
+                unit=\" µV\" min=\"600000\" reversed=\"false\" step=\"6250\" max=\"1350000\"/>" >> $XML
+  CPUFREQLIST="$CPUFREQLIST $FREQ"
+done < /sys/devices/system/cpu/cpu0/cpufreq/UV_uV_table
+
+echo '
+    </settingsPane>
+  </settingsTab>
+</settingsRoot>' >> $XML
+
+chmod 777 $XML
