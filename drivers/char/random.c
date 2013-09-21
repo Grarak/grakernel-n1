@@ -609,8 +609,6 @@ static void set_timer_rand_state(unsigned int irq,
 }
 #endif
 
-static struct timer_rand_state input_timer_state;
-
 /*
  * This function adds entropy to the entropy "pool" by using timing
  * delays.  It uses the timer_rand_state structure to make an estimate
@@ -637,7 +635,7 @@ static void add_timer_randomness(struct timer_rand_state *state, unsigned num)
 		goto out;
 
 	sample.jiffies = jiffies;
-	sample.cycles = get_cycles();
+	sample.cycles = random_get_entropy();
 	sample.num = num;
 	mix_pool_bytes(&input_pool, &sample, sizeof(sample));
 
@@ -1262,7 +1260,8 @@ unsigned int get_random_int(void)
 	__u32 *hash = get_cpu_var(get_random_int_hash);
 	unsigned int ret;
 
-	hash[0] += current->pid + jiffies + get_cycles();
+	hash[0] += current->pid + jiffies + random_get_entropy();
+
 	md5_transform(hash, random_int_secret);
 	ret = hash[0];
 	put_cpu_var(get_random_int_hash);
