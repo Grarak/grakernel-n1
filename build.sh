@@ -68,6 +68,13 @@ nice -n 10 make -j4 ARCH=arm
 
 ###########################################################################
 if [ -e arch/arm/boot/zImage ]; then
+
+	cp -vf arch/arm/boot/zImage ramdisk/
+	find -name "*.ko" -exec cp -vf {} ramdisk/boot.img-ramdisk/lib/modules/ \;
+
+	cd ramdisk
+	./build.sh
+
         echo -e "${bldcya} Finished!! ${txtrst}"
         DATE_END=$(date +"%s")
         DIFF=$(($DATE_END - $DATE_START))
