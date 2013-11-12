@@ -70,7 +70,9 @@ nice -n 10 make -j4 ARCH=arm
 if [ -e arch/arm/boot/zImage ]; then
 
 	cp -vf arch/arm/boot/zImage ramdisk/
-	find -name "*.ko" -exec cp -vf {} ramdisk/boot.img-ramdisk/lib/modules/ \;
+	for ramdiskfolder in 2 3; do
+		find -name "*.ko" -exec cp -vf {} ramdisk/aosp4$ramdiskfolder/lib/modules/ \;
+	done
 
 	cd ramdisk
 	./build.sh
