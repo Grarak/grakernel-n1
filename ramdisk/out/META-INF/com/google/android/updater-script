@@ -1,1 +1,3 @@
-package_extract_file("boot.img", "/dev/block/mmcblk0p9");
+assert(package_extract_file("boot.img", "/tmp/boot.img"),
+       write_raw_image("/tmp/boot.img", "/dev/block/mmcblk0p9"),
+       delete("/tmp/boot.img"));
