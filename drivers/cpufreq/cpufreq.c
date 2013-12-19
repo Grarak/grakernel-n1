@@ -34,6 +34,8 @@
 
 #include <trace/events/power.h>
 
+unsigned int cpu_suspend_max_freq = 312000;
+
 #include "../dvfs.h"
 int *UV_mV_Ptr;
 extern struct dvfs *cpu_dvfs;
@@ -697,6 +699,22 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
+static ssize_t show_screen_off_max_freq(struct cpufreq_policy *policy, char *buf)
+{
+    return sprintf(buf, "%d\n", cpu_suspend_max_freq);
+}
+
+static ssize_t store_screen_off_max_freq(struct cpufreq_policy *policy, const char *buf, size_t count)
+{
+    unsigned int max;
+    max = simple_strtoul(buf, NULL, 10);
+    
+    if (max <= policy->cpuinfo.max_freq && max >= policy->cpuinfo.min_freq)
+    cpu_suspend_max_freq = max;
+    
+    return count;
+}
+
 static ssize_t show_cpuinfo_max_mV(struct cpufreq_policy *policy, char *buf)
 {
 	return scnprintf(buf, PAGE_SIZE, "%u\n", CPUMVMAX);
@@ -762,6 +780,7 @@ cpufreq_freq_attr_ro(scaling_available_governors);
 cpufreq_freq_attr_rw(scaling_setspeed);
 cpufreq_freq_attr_ro(policy_min_freq);
 cpufreq_freq_attr_ro(policy_max_freq);
+cpufreq_freq_attr_rw(screen_off_max_freq);
 cpufreq_freq_attr_rw(UV_mV_table);
 
 static struct attribute *default_attrs[] = {
@@ -780,6 +799,7 @@ static struct attribute *default_attrs[] = {
 	&scaling_setspeed.attr,
 	&policy_min_freq.attr,
 	&policy_max_freq.attr,
+    &screen_off_max_freq.attr,
 	&UV_mV_table.attr,
 	NULL
 };
