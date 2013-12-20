@@ -745,33 +745,34 @@ _out:
 	return ret;
 }
 
+extern unsigned int cpu_suspend_max_freq;
+unsigned int stored_cpu_user_cap = 0;
 
 static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
 	void *dummy)
 {
-    extern unsigned int cpu_suspend_max_freq;
-    unsigned int stored_cpu_user_cap = 0;
-
 	mutex_lock(&tegra_cpu_lock);
 	if (event == PM_SUSPEND_PREPARE) {
-		is_suspended = true;
-		pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
-			freq_table[suspend_index].frequency);
-		tegra_update_cpu_speed(freq_table[suspend_index].frequency);
-		tegra_auto_hotplug_governor(
-			freq_table[suspend_index].frequency, true);
         if (cpu_suspend_max_freq) {
             pr_info("Cpufreq suspend: setting max frequency to %d kHz\n",cpu_suspend_max_freq);
-            stored_cpu_user_cap = cpu_user_cap;
+            if (cpu_user_cap)
+                stored_cpu_user_cap = cpu_user_cap;
+            else
+                stored_cpu_user_cap = policy_max_speed[0];
             cpu_user_cap = cpu_suspend_max_freq;
         }
+        is_suspended = true;
+        pr_info("Tegra cpufreq suspend: setting frequency to %d kHz\n",
+                freq_table[suspend_index].frequency);
+        tegra_update_cpu_speed(freq_table[suspend_index].frequency);
+        tegra_auto_hotplug_governor(freq_table[suspend_index].frequency, true);
 	} else if (event == PM_POST_SUSPEND) {
+        unsigned int freq;
         if (stored_cpu_user_cap) {
             pr_info("Cpufreq resume: restoring max frequency to %d kHz\n", stored_cpu_user_cap);
             cpu_user_cap = stored_cpu_user_cap;
             stored_cpu_user_cap = 0;
         }
-		/* unsigned int freq; */
 		is_suspended = false;
 		/* tegra_cpu_edp_init(true); */
 		/* tegra_cpu_set_speed_cap(&freq); */
