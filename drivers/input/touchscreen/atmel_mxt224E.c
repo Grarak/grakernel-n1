@@ -246,7 +246,7 @@ static unsigned int time_after_autocal_enable = 0;
 static unsigned int time_after_autocal_enable_key;
 static bool coin_check_flag = 0;
 static u8 coin_check_count = 0;
-static bool metal_suppression_chk_flag = false;
+static bool metal_suppression_chk_flag = true;
 
 static u8 chk_touch_cnt, chk_antitouch_cnt;
 static u8 caling_check = 0;
@@ -5188,7 +5188,7 @@ static void mxt_late_resume(struct early_suspend *h)
 #ifndef MXT_SLEEP_POWEROFF
 	calibrate_chip(mxt);
 #endif
-	metal_suppression_chk_flag = false;
+	metal_suppression_chk_flag = true;
 	mxt->mxt_status = true;
 	enable_irq(mxt->client->irq);
 }
