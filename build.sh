@@ -56,8 +56,15 @@ make tegra_n1_defconfig
 
 ###########################################################################
 echo -e "${bldcya} Build kernel ${txtrst}"
+echo -e "> : i9103 [0]";
+echo -e "  : i927  [1]";
+read variant
 
-cp arch/arm/configs/gk_i9103_defconfig .config
+if [ "$variant" == "0" ]; then
+    cp arch/arm/configs/gk_i9103_defconfig .config
+else
+    cp arch/arm/configs/gk_i927_defconfig .config
+fi
 sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-GraKernel_${version}\"/ .config
 
 ###########################################################################
