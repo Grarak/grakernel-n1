@@ -16,7 +16,7 @@ build () {
 
 echo "  AOSP 4.2 [0]"
 echo "  AOSP 4.3 [1]"
-ehco "> AOSP 4.4 [2]"
+echo "> AOSP 4.4 [2]"
 
 read ramdisk
 
