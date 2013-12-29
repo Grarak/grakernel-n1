@@ -14,15 +14,18 @@ build () {
     ./mkbootimg-$1 --kernel zImage --ramdisk ramdisk.gz --cmdline "mem=511M@0M secmem=1M@511M mem=512M@512M vmalloc=256M fota_boot=false tegra_fbmem=800K@0x18012000 video=tegrafb console=ram usbcore.old_scheme_first=1 lp0_vec=8192@0x1819E000 emmc_checksum_done=true emmc_checksum_pass=true tegraboot=sdmmc gpt" -o boot.img
 }
 
-echo "> AOSP 4.2 [0]"
+echo "  AOSP 4.2 [0]"
 echo "  AOSP 4.3 [1]"
+ehco "> AOSP 4.4 [2]"
 
 read ramdisk
 
 if [ "$ramdisk" == "0" ]; then
 	ramdiskfolder=aosp42
-else
+elif [ "$ramdisk" == "1" ]; then
 	ramdiskfolder=aosp43
+else
+    ramdiskfolder=aosp44
 fi
 
 if [ -e ~/.bash_profile ]; then
