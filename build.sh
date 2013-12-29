@@ -68,21 +68,17 @@ nice -n 10 make -j4 ARCH=arm
 
 ###########################################################################
 if [ -e arch/arm/boot/zImage ]; then
-
-	cp -vf arch/arm/boot/zImage ramdisk/
-	for ramdiskfolder in 2 3 4; do
-		find -name "*.ko" -exec cp -f {} ramdisk/aosp4$ramdiskfolder/lib/modules \;
-	done
+	cp -f arch/arm/boot/zImage ramdisk/out/kernel
+    find -name "*.ko" -exec cp -f {} ramdisk/out/system/lib/modules \;
 
 	cd ramdisk
 	./build.sh
 
-        echo -e "${bldcya} Finished!! ${txtrst}"
-        DATE_END=$(date +"%s")
-        DIFF=$(($DATE_END - $DATE_START))
-        echo "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
-        date '+%a, %d %b %Y %H:%M:%S'
-
+    echo -e "${bldcya} Finished!! ${txtrst}"
+    DATE_END=$(date +"%s")
+    DIFF=$(($DATE_END - $DATE_START))
+    echo "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
+    date '+%a, %d %b %Y %H:%M:%S'
 else
 	echo "${bldred} KERNEL DID NOT BUILD! ${txtrst}"
 fi
