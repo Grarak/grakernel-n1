@@ -56,11 +56,11 @@ make tegra_n1_defconfig
 
 ###########################################################################
 echo -e "${bldcya} Build kernel ${txtrst}"
-echo -e "> : i9103 [0]";
-echo -e "  : i927  [1]";
+echo -e "> 1. i9103";
+echo -e "  2. i927";
 read variant
 
-if [ "$variant" == "0" ]; then
+if [ "$variant" == "1" ]; then
     cp arch/arm/configs/gk_i9103_defconfig .config
 else
     cp arch/arm/configs/gk_i927_defconfig .config
