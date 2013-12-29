@@ -35,6 +35,7 @@
 *.str.tmp
 modules.builtin
 scripts/
+ashldi3.S
 boot.img
 zImage
 out/GraKernel/*.zip
