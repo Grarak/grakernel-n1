@@ -34,6 +34,10 @@
 
 #include <trace/events/power.h>
 
+#include "../dvfs.h"
+int *UV_mV_Ptr;
+extern struct dvfs *cpu_dvfs;
+
 /* Description of __CPUFREQ_KOBJ_DEL_DEADLOCK_FIX
  *
  * When the kobject of cpufreq's ref count is zero in show/store function,
@@ -693,15 +697,6 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
-static ssize_t show_frequency_voltage_table(struct cpufreq_policy *policy, char *buf)
-{
-	char *table = buf;
-	int i;
-	for (i = 0; i < FREQCOUNT; i++)
-		table += sprintf(table, "%d %d %d\n", cpufrequency[i], cpuvoltage[i], (cpuvoltage[i]-cpuuvoffset[i])); // TODO: Should be frequency, default voltage, current voltage
-	return table - buf;
-}
-
 static ssize_t show_cpuinfo_max_mV(struct cpufreq_policy *policy, char *buf)
 {
 	return scnprintf(buf, PAGE_SIZE, "%u\n", CPUMVMAX);
@@ -714,34 +709,39 @@ static ssize_t show_cpuinfo_min_mV(struct cpufreq_policy *policy, char *buf)
 
 static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
 {
-	char *table = buf;
 	int i;
+    char *table = buf;
 
-	table += sprintf(table, "%d", cpuuvoffset[0]);
-	for (i = 1; i < FREQCOUNT - 1; i++)
-	{
-		table += sprintf(table, " %d", cpuuvoffset[i]);
-	}
-	table += sprintf(table, " %d\n", cpuuvoffset[FREQCOUNT - 1]);
+    if (cpu_dvfs == NULL)
+        return sprintf(buf, "INIT\n");
 
-	return table - buf;
+    for (i = cpu_dvfs->num_freqs - 1; i >= 0; i--)
+        table += sprintf(table, "%limhz: %d mV\n", cpu_dvfs->freqs[i]/1000000, cpu_dvfs->millivolts[i] - UV_mV_Ptr[i]);
+    table += sprintf(table, "\n");
+    return table - buf;
 }
 
 static ssize_t store_UV_mV_table(struct cpufreq_policy *policy, const char *buf, size_t count)
 {
-	int tmptable[FREQCOUNT];
-	int i;
-	unsigned int ret = sscanf(buf, "%d %d %d %d %d %d %d %d %d %d", &tmptable[0], &tmptable[1], &tmptable[2], &tmptable[3], &tmptable[4], &tmptable[5], &tmptable[6], &tmptable[7], &tmptable[8], &tmptable[9]);
-	if (ret != FREQCOUNT)
-		return -EINVAL;
-	for (i = 0; i < FREQCOUNT; i++)
-	{
-		if ((cpuvoltage[i]-tmptable[i]) > CPUMVMAX || (cpuvoltage[i]-tmptable[i]) < CPUMVMIN) // Keep within constraints
-			return -EINVAL;
-		else
-			cpuuvoffset[i] = tmptable[i];
-	}
-	return count;
+	char *p = buf, *k;
+    long uv;
+    int i = cpu_dvfs->num_freqs - 1;
+
+    while (i >= 0) {
+        k = strsep(&p, " ");
+        if (k == NULL)
+        break;
+        if (strlen(k) > 0) {
+            uv = simple_strtol(k, NULL, 10);
+            UV_mV_Ptr[i] = cpu_dvfs->millivolts[i] - uv;
+            i--;
+        }
+    }
+
+    if (i == cpu_dvfs->num_freqs - 1)
+        return -EINVAL;
+
+    return count;
 }
 
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
@@ -753,7 +753,6 @@ cpufreq_freq_attr_ro(cpuinfo_transition_latency);
 cpufreq_freq_attr_ro(bios_limit);
 cpufreq_freq_attr_ro(related_cpus);
 cpufreq_freq_attr_ro(affected_cpus);
-cpufreq_freq_attr_ro(frequency_voltage_table);
 cpufreq_freq_attr_ro(scaling_cur_freq);
 cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
@@ -773,7 +772,6 @@ static struct attribute *default_attrs[] = {
 	&cpuinfo_transition_latency.attr,
 	&related_cpus.attr,
 	&affected_cpus.attr,
-	&frequency_voltage_table.attr,
 	&scaling_min_freq.attr,
 	&scaling_max_freq.attr,
 	&scaling_governor.attr,
@@ -2283,6 +2281,8 @@ static int __init cpufreq_core_init(void)
 {
 	int cpu;
 	int rc;
+
+    UV_mV_Ptr = kzalloc(sizeof(int)*(MAX_DVFS_FREQS), GFP_KERNEL);
 
 	for_each_possible_cpu(cpu) {
 		per_cpu(cpufreq_policy_cpu, cpu) = -1;
