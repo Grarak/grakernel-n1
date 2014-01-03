@@ -56,15 +56,6 @@ extern struct dvfs *cpu_dvfs;
  */
 #define __CPUFREQ_KOBJ_DEL_DEADLOCK_FIX
 
-/* Initial implementation of userspace voltage control */
-#define FREQCOUNT 10
-#define CPUMVMAX 1250
-#define CPUMVMIN 770
-int cpufrequency[FREQCOUNT] = { 1200000, 1100000, 1000000, 912000, 816000, 760000, 608000, 456000, 312000, 216000 };
-int cpuvoltage[FREQCOUNT] = { 1200, 1150, 1125, 1050, 1000, 975, 900, 825, 775, 770 };  //UV, but 4th increased by 25mV
-
-int cpuuvoffset[FREQCOUNT] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
 #ifdef __CPUFREQ_KOBJ_DEL_DEADLOCK_FIX
 static DEFINE_PER_CPU(struct mutex, cpufreq_remove_mutex);
 #endif
@@ -715,16 +706,6 @@ static ssize_t store_screen_off_max_freq(struct cpufreq_policy *policy, const ch
     return count;
 }
 
-static ssize_t show_cpuinfo_max_mV(struct cpufreq_policy *policy, char *buf)
-{
-	return scnprintf(buf, PAGE_SIZE, "%u\n", CPUMVMAX);
-}
-
-static ssize_t show_cpuinfo_min_mV(struct cpufreq_policy *policy, char *buf)
-{
-	return scnprintf(buf, PAGE_SIZE, "%u\n", CPUMVMIN);
-}
-
 static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
 {
 	int i;
@@ -765,8 +746,6 @@ static ssize_t store_UV_mV_table(struct cpufreq_policy *policy, const char *buf,
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
 cpufreq_freq_attr_ro(cpuinfo_min_freq);
 cpufreq_freq_attr_ro(cpuinfo_max_freq);
-cpufreq_freq_attr_ro(cpuinfo_min_mV);
-cpufreq_freq_attr_ro(cpuinfo_max_mV);
 cpufreq_freq_attr_ro(cpuinfo_transition_latency);
 cpufreq_freq_attr_ro(bios_limit);
 cpufreq_freq_attr_ro(related_cpus);
@@ -786,8 +765,6 @@ cpufreq_freq_attr_rw(UV_mV_table);
 static struct attribute *default_attrs[] = {
 	&cpuinfo_min_freq.attr,
 	&cpuinfo_max_freq.attr,
-	&cpuinfo_min_mV.attr,
-	&cpuinfo_max_mV.attr,
 	&cpuinfo_transition_latency.attr,
 	&related_cpus.attr,
 	&affected_cpus.attr,
