@@ -101,7 +101,7 @@ static bool to_linked = false;
 /* strength modification */
 #define LEVEL_MIN      0
 #define LEVEL_MAX      100
-#define LEVEL_DEFAULT  50
+#define LEVEL_DEFAULT  75
 unsigned short int pwm_value = LEVEL_DEFAULT;
 
 static struct kobject *vibrator_kobj = NULL;
