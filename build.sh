@@ -15,10 +15,8 @@ version=0.6
 
 DATE_START=$(date +"%s")
 
-echo -e "${bldcya} Cleaning .... ${txtrst}"
-
 ##########################################################################
-echo -e "Do you want to clean up? [N/y]"
+echo -e "${bldcya}Do you want to clean up? ${txtrst} [N/y]"
 read cleanup
 
 if [ "$cleanup" == "y" ]; then
@@ -26,26 +24,24 @@ if [ "$cleanup" == "y" ]; then
         read cleanoption
 
         if [ "$cleanoption" == "n" ] || [ "$cleanoption" == "N" ]; then
-                echo -e "${bldcya} make clean ${txtrst}"
+                echo -e "${bldcya}make clean ${txtrst}"
         	make clean
         fi
 
         if [ "$cleanoption" == "y" ]; then
-                echo -e "${bldcya} make clean mrproper ${txtrst}"
+                echo -e "${bldcya}make clean mrproper ${txtrst}"
 	        make clean mrproper
         fi
 fi
 ###########################################################################
-
-###########################################################################
 [ -e .version ] && rm -f .version
 
-echo -e "${bldcya} Do you want to edit the kernel version? ${txtrst} [N/y]"
+echo -e "${bldcya}Do you want to edit the kernel version? ${txtrst} [N/y]"
 read kernelversion
 
 if [ "$kernelversion" == "y" ]; then
-        echo -e "${bldcya} What version has your kernel? ${txtrst}"
-        echo "${bldred} NUMBERS ONLY! ${txtrst}"
+        echo -e "${bldcya}What version has your kernel? ${txtrst}"
+        echo "${bldred}NUMBERS ONLY! ${txtrst}"
         read number
  
         echo $number >> .version
@@ -55,7 +51,7 @@ fi
 make tegra_n1_defconfig
 
 ###########################################################################
-echo -e "${bldcya} Build kernel ${txtrst}"
+echo -e "${bldcya}Build kernel ${txtrst}"
 echo -e "> 1. i9103";
 echo -e "  2. i927";
 read variant
@@ -68,7 +64,7 @@ fi
 sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-GraKernel_${version}\"/ .config
 
 ###########################################################################
-echo -e "${bldcya} This could take a while .... ${txtrst}"
+echo -e "${bldcya}This could take a while .... ${txtrst}"
 
 nice -n 10 make modules -j4 ARCH=arm
 nice -n 10 make -j4 ARCH=arm
@@ -81,13 +77,13 @@ if [ -e arch/arm/boot/zImage ]; then
 	cd ramdisk
 	./build.sh
 
-    echo -e "${bldcya} Finished!! ${txtrst}"
+    echo -e "${bldcya}Finished!! ${txtrst}"
     DATE_END=$(date +"%s")
     DIFF=$(($DATE_END - $DATE_START))
     echo "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
     date '+%a, %d %b %Y %H:%M:%S'
 else
-	echo "${bldred} KERNEL DID NOT BUILD! ${txtrst}"
+	echo "${bldred}KERNEL DID NOT BUILD! ${txtrst}"
 fi
 
 exit 0
