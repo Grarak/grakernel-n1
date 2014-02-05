@@ -1,0 +1,8 @@
+if [ -f $1 ];then
+	if [[ ! -z $2 ]]; then
+		echo $2 > $1
+		[ "$1" == "/sys/vibrator/pwm_val" ] && echo 300 > /sys/devices/virtual/timed_output/vibrator/enable
+	fi
+
+	echo `cat $1`
+fi

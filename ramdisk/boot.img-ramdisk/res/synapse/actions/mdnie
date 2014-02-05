@@ -1,0 +1,109 @@
+scenariowrite() {
+	case $1 in
+
+	Default)	SCENARIO=0
+			;;
+
+	UI)		SCENARIO=1
+			;;
+
+	Video)		SCENARIO=2
+			;;
+
+	Video-Warm)	SCENARIO=3
+			;;
+
+	Video-Cold)	SCENARIO=4
+			;;
+
+	Camera)		SCENARIO=5
+			;;
+
+	Navigation)	SCENARIO=6
+			;;
+
+	Gallery)	SCENARIO=7
+			;;
+
+
+	esac
+	echo $SCENARIO > /sys/class/mdnie/mdnie/scenario
+}
+
+scenarioread() {
+	case $((`cat /sys/class/mdnie/mdnie/scenario`)) in
+
+	0)		echo "Default"
+			;;
+
+	1)		echo "UI"
+			;;
+
+	2)		echo "Video"
+			;;
+
+	3)		echo "Video-Warm"
+			;;
+
+	4)		echo "Video-Cold"
+			;;
+
+	5)		echo "Camera"
+			;;
+
+	6)		echo "Navigation"
+			;;
+
+	7)		echo "Gallery"
+			;;
+
+	esac
+	return
+}
+
+modewrite() {
+	case $1 in
+
+	Dynamic)	MODE=0
+			;;
+
+	Standard)	MODE=1
+			;;
+
+	Natural)	MODE=2
+			;;
+
+	esac
+	echo $MODE > /sys/class/mdnie/mdnie/mode
+}
+
+moderead() {
+	case $((`cat /sys/class/mdnie/mdnie/mode`)) in
+
+	0)		echo "Dynamic"
+			;;
+
+	1)		echo "Standard"
+			;;
+
+	2)		echo "Natural"
+			;;
+
+	esac
+	return
+}
+
+case $1 in
+scenario)
+	if [[ ! -z $2 ]]; then
+		scenariowrite $2
+	fi
+	echo $(scenarioread)
+	;;
+mode)
+	if [[ ! -z $2 ]]; then
+		modewrite $2
+	fi
+	echo $(moderead)
+	;;
+esac

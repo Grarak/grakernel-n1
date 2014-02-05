@@ -1,0 +1,47 @@
+#!/sbin/busybox sh
+
+cat << CTAG
+{
+    name:Screen,
+    elements:[
+	{ SPane:{
+                title:"mDNIe global controls",
+                description:"mobile Digital Natural Image engine control. Samsungs hardware image post-processor controls virtually any image manipulation."
+        }},
+	{ SCheckBox:{
+		description:"Disable this to make white brighter at low brightness (this has impact of battery life).",
+                label:"Content Adaptive Brightness",
+                default:`cat /sys/class/mdnie/mdnie/cabc`,
+                action:"generic /sys/class/mdnie/mdnie/cabc"
+        }},
+	{ SCheckBox:{
+                label:"Outdoor Mode",
+                default:`cat /sys/class/mdnie/mdnie/outdoor`,
+                action:"generic /sys/class/mdnie/mdnie/outdoor"
+        }},
+	{ SOptionList:{
+		title:"Scenario",
+                action:"mdnie scenario",
+                values:[
+			Default,
+			UI,
+			Video,
+			Video-Warm,
+			Video-Cold,
+			Camera,
+			Navigation,
+			Gallery,
+                ]
+        }},
+	{ SOptionList:{
+		title:"Display Mode",
+                action:"mdnie mode",
+                values:[
+			Dynamic,
+			Standard,
+			Natural,
+                ]
+        }},
+    ]
+}
+CTAG

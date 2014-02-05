@@ -57,9 +57,9 @@ echo -e "  2. i927";
 read variant
 
 if [ "$variant" == "1" ]; then
-    cp arch/arm/configs/gk_i9103_defconfig .config
+	cp arch/arm/configs/gk_i9103_defconfig .config
 else
-    cp arch/arm/configs/gk_i927_defconfig .config
+	cp arch/arm/configs/gk_i927_defconfig .config
 fi
 sed -i s/CONFIG_LOCALVERSION=\".*\"/CONFIG_LOCALVERSION=\"-GraKernel_${version}\"/ .config
 
@@ -71,17 +71,19 @@ nice -n 10 make -j4 ARCH=arm
 
 ###########################################################################
 if [ -e arch/arm/boot/zImage ]; then
-	cp -f arch/arm/boot/zImage ramdisk/out/kernel
-    find -name "*.ko" -exec cp -f {} ramdisk/out/system/lib/modules \;
+	cp -vf arch/arm/boot/zImage ramdisk/
+	rm -f ramdisk/boot.img-ramdisk/lib/modules/*.ko
+	find -name "*.ko" -exec cp -vf {} ramdisk/boot.img-ramdisk/lib/modules/ \;
 
 	cd ramdisk
+
 	./build.sh
 
-    echo -e "${bldcya}Finished!! ${txtrst}"
-    DATE_END=$(date +"%s")
-    DIFF=$(($DATE_END - $DATE_START))
-    echo "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
-    date '+%a, %d %b %Y %H:%M:%S'
+	echo -e "${bldcya}Finished!! ${txtrst}"
+	DATE_END=$(date +"%s")
+	DIFF=$(($DATE_END - $DATE_START))
+	echo "Build completed in $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
+	date '+%a, %d %b %Y %H:%M:%S'
 else
 	echo "${bldred}KERNEL DID NOT BUILD! ${txtrst}"
 fi
