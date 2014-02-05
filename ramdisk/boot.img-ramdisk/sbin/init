@@ -1,0 +1,35 @@
+#!/sbin/busybox sh
+
+cd /
+
+mount -t proc proc /proc
+mount -t sysfs sys /sys
+
+mkdir -p /dev/block
+mknod /dev/block/mmcblk0p2 b 179 2
+mknod /dev/block/loop0 b 7 0
+
+mount -t ext4 /dev/block/mmcblk0p2 /system
+
+out() {
+	umount -f /system
+
+	chmod 755 /init
+	chmod 644 /*.n1
+	chmod 644 /*.rc
+	chmod 644 /*.prop
+	chmod -R 755 /lib
+
+	exec /init
+}
+if grep -q ro.build.version.sdk=17 /system/build.prop ; then
+	mv -f /res/aosp42/* /
+elif grep -q ro.build.version.sdk=18 /system/build.prop ; then
+	mv -f /res/aosp43/* /
+elif grep -q ro.build.version.sdk=19 /system/build.prop ; then
+	mv -f /res/aosp44/* /
+fi
+
+[ -d /system/app/Synapse.apk ] || mv -f /res/synapse/Synapse.apk /system/app/ && chmod 644 /system/app/Synapse.apk
+
+out
