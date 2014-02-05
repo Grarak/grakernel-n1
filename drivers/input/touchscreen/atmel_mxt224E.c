@@ -3232,20 +3232,11 @@ static ssize_t set_mxt_firm_status_show(struct device *dev, struct device_attrib
 
 }
 
+static u8 key_threshold = 50;
+
 static ssize_t key_threshold_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	u8 val;
-	struct mxt_data *mxt = dev_get_drvdata(dev);
-	if (mxt->set_mode_for_ta) {
-		mxt_read_byte(mxt->client,
-			MXT_BASE_ADDR(MXT_PROCG_NOISESUPPRESSION_T48) + MXT_ADR_T48_TCHTHR,
-			&val);
-	} else {
-	mxt_read_byte(mxt->client,
-		MXT_BASE_ADDR(MXT_TOUCH_MULTITOUCHSCREEN_T9) + MXT_ADR_T9_TCHTHR,
-		&val);
-	}
-	return sprintf(buf, "%d\n", val);
+	return sprintf(buf, "%d\n", key_threshold);
 }
 
 static ssize_t key_threshold_store(struct device *dev, struct device_attribute *attr,
@@ -3267,8 +3258,9 @@ static ssize_t key_threshold_store(struct device *dev, struct device_attribute *
 
 		enable_irq(mxt->client->irq);    /* enable interrupt */
 		wake_unlock(&mxt->wakelock);
+		key_threshold = i;
 		if (debug >= DEBUG_INFO)
-			pr_info("[TSP] threshold is changed to %d\n", i);
+			pr_info("[TSP] threshold is changed to %d\n", key_threshold);
 	} else
 		pr_err("[TSP] threshold write error\n");
 
