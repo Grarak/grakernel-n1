@@ -716,7 +716,6 @@ static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
 
     for (i = cpu_dvfs->num_freqs - 1; i >= 0; i--)
         table += sprintf(table, "%limhz: %d mV\n", cpu_dvfs->freqs[i]/1000000, cpu_dvfs->millivolts[i] - UV_mV_Ptr[i]);
-    table += sprintf(table, "\n");
     return table - buf;
 }
 
