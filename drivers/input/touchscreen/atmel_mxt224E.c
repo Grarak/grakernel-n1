@@ -3883,6 +3883,33 @@ static void touch_state_report(struct mxt_data *mxt, bool state)
 }
 #endif
 
+static ssize_t show_metal_suppression(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", metal_suppression_chk_flag ? 1 : 0);
+}
+
+static ssize_t store_metal_suppression(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+	unsigned int data;
+
+	if(sscanf(buf, "%u\n", &data) == 1) {
+		pr_devel("%s: %u \n", __FUNCTION__, data);
+		if (data == 1) {
+			pr_info("%s: Metal Suppression enabled\n", __FUNCTION__);
+			metal_suppression_chk_flag = true;
+		} else if (data == 0) {
+			pr_info("%s: Metal Suppression disabled\n", __FUNCTION__);
+			metal_suppression_chk_flag = false;
+		} else {
+			pr_info("%s: invalid input range %u\n", __FUNCTION__, data);
+		}
+	} else {
+		pr_info("%s: invalid input\n", __FUNCTION__);
+	}
+
+	return size;
+}
+
 /* Register sysfs files */
 static DEVICE_ATTR(deltas,	S_IRUGO, show_deltas,      NULL);
 static DEVICE_ATTR(references,	S_IRUGO, show_references,  NULL);
@@ -3897,6 +3924,7 @@ static DEVICE_ATTR(debug,	S_IWUSR, NULL,             set_debug);
 static DEVICE_ATTR(firmware,	S_IWUSR|S_IRUGO, show_firmware, store_firmware);
 static DEVICE_ATTR(object,	S_IWUSR|S_IRUGO, show_object, store_object);
 static DEVICE_ATTR(message,	S_IRUGO, show_message,     NULL);
+static DEVICE_ATTR(metal_suppression,	S_IWUSR|S_IRUGO, show_metal_suppression, store_metal_suppression);
 
 /* static DEVICE_ATTR(suspend, S_IRUGO, test_suspend, NULL); */
 /* static DEVICE_ATTR(resume, S_IRUGO, test_resume, NULL);  */
@@ -3937,6 +3965,7 @@ static struct attribute *maxTouch_attributes[] = {
 	&dev_attr_message.attr,
 /*	&dev_attr_suspend.attr, */
 /*	&dev_attr_resume.attr, */
+	&dev_attr_metal_suppression.attr,
 	NULL,
 };
 
