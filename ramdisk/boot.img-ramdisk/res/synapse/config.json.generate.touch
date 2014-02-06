@@ -1,0 +1,53 @@
+#!/sbin/busybox sh
+
+TIMEOUT='6:"6sec", 5:"5sec", 4:"4sec", 3:"3sec", 2:"2sec", 1:"1sec"'
+
+cat << CTAG
+{
+    name:Touch,
+    elements:[
+	{ STitleBar:{
+		title:"Touchscreen"
+        }},
+	{ SCheckBox:{
+                description:"If you have problems with the touchscreen try to enable/disable this.",
+                label:"Metal Suppression",
+                default:`cat /sys/devices/platform/tegra-i2c.1/i2c-1/1-004a/metal_suppression`,
+                action:"generic /sys/devices/platform/tegra-i2c.1/i2c-1/1-004a/metal_suppression"
+        }},
+	{ SSeekBar:{
+		description:"Change sensitivity of touchscreen.",
+		title:"Touchscreen Sensitivity", max:100, step:25,
+		default:`cat /sys/class/sec/sec_touchscreen/tsp_threshold`,
+		action:"generic /sys/class/sec/sec_touchscreen/tsp_threshold"
+        }},
+	{ STitleBar:{
+		title:"Touch Keys"
+	}},
+	{ SCheckBox:{
+                description:"Enable this the backlights of your phone will light up when you receive a notification.",
+                label:"Backlightnotification",
+                default:`cat /sys/class/misc/backlightnotification/enabled`,
+                action:"generic /sys/class/misc/backlightnotification/enabled"
+        }},
+	{ SCheckBox:{
+                description:"Disable to enable LED of touchkeys.",
+                label:"Disable Touch LED",
+                default:`cat /sys/devices/virtual/leds/button-backlight/force_disable`,
+                action:"generic /sys/devices/virtual/leds/button-backlight/force_disable"
+        }},
+	{ SSeekBar:{
+		description:"Change timeout of Touch LED Keys.",
+		title:"Touch LED Timeout",
+		default:`cat /sys/devices/virtual/leds/button-backlight/timeout`,
+		action:"generic /sys/devices/virtual/leds/button-backlight/timeout",
+		values:{
+`
+			echo $TIMEOUT
+`
+			, 0:"Never"
+		}
+        }},
+    ]
+}
+CTAG

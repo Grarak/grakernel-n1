@@ -20,29 +20,8 @@ cat << CTAG
                 ]
         }},
 	{ STitleBar:{
-		title:"Touchscreen"
-        }},
-	{ SCheckBox:{
-                description:"If you have problems with the touchscreen try to enable/disable this.",
-                label:"Metal Suppression",
-                default:`cat /sys/devices/platform/tegra-i2c.1/i2c-1/1-004a/metal_suppression`,
-                action:"generic /sys/devices/platform/tegra-i2c.1/i2c-1/1-004a/metal_suppression"
-        }},
-	{ SSeekBar:{
-		description:"Change sensitivity of touchscreen.",
-		title:"TouchscreenSensitivity", max:100, step:25,
-		default:`cat /sys/class/sec/sec_touchscreen/tsp_threshold`,
-		action:"generic /sys/class/sec/sec_touchscreen/tsp_threshold"
-        }},
-	{ STitleBar:{
 		title:"Other Settings"
 	}},
-	{ SCheckBox:{
-                description:"Enable this the backlights of your phone will light up when you receive a notification.",
-                label:"Backlightnotification",
-                default:`cat /sys/class/misc/backlightnotification/enabled`,
-                action:"generic /sys/class/misc/backlightnotification/enabled"
-        }},
 	{ SCheckBox:{
                 description:"Disable for better file system performance at the risk of data lost when phone crashes.",
                 label:"Fsync",

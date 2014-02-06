@@ -5,4 +5,8 @@ if [ -f $1 ];then
 	fi
 
 	echo `cat $1`
+else
+	case $1 in
+	/sys/block/mmcblk1/queue/read_ahead_kb)		echo "256" ;;
+	esac
 fi

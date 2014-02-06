@@ -6,6 +6,7 @@ cat << CTAG
     sections: [
 		`. /res/synapse/config.json.generate.cpu`,
 		`. /res/synapse/config.json.generate.screen`,
+		`. /res/synapse/config.json.generate.touch`,
 		`. /res/synapse/config.json.generate.io`,
 		`. /res/synapse/config.json.generate.misc`,
 		`. /res/synapse/config.json.generate.zram`
