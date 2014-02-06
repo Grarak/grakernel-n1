@@ -731,7 +731,6 @@ static void mxt_metal_suppression_off(struct work_struct *work)
 	struct	mxt_data *mxt;
 	mxt = container_of(work, struct mxt_data, timer_dwork.work);
 
-	metal_suppression_chk_flag = false;
 	if (debug >= DEBUG_INFO)
 		pr_info("[TSP]%s, metal_suppression_chk_flag = %d \n", __func__, metal_suppression_chk_flag);
 	disable_irq(mxt->client->irq);
@@ -4664,7 +4663,7 @@ static void cal_maybe_good(struct mxt_data *mxt)
 
 			first_palm_chk = true;
 
-			if (metal_suppression_chk_flag == true) {
+			if (metal_suppression_chk_flag) {
 				/* after 20 seconds, metal coin checking disable */
 				cancel_delayed_work(&mxt->timer_dwork);
 				/* 20120518 */
@@ -5090,7 +5089,6 @@ static void mxt_early_suspend(struct early_suspend *h)
 #endif
 
 	cancel_delayed_work(&mxt->config_dwork);
-	metal_suppression_chk_flag = false;
 	cancel_delayed_work(&mxt->timer_dwork);
 	cancel_delayed_work(&mxt->initial_dwork);
 	disable_irq(mxt->client->irq);
@@ -5209,7 +5207,6 @@ static void mxt_late_resume(struct early_suspend *h)
 #ifndef MXT_SLEEP_POWEROFF
 	calibrate_chip(mxt);
 #endif
-	metal_suppression_chk_flag = false;
 	mxt->mxt_status = true;
 	enable_irq(mxt->client->irq);
 }
