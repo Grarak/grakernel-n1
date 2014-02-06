@@ -3777,11 +3777,10 @@ static ssize_t touch_led_force_disable_store(struct device *dev,
 	}
 
 	pr_info("[Touchkey] %s value=%hu\n", __func__, data);
-    
-	if (data == 1) {
-		key_led_set(mxt, 0x00);
-		mxt->touchkey_led_status = false;
-	}
+
+	key_led_set(mxt, data == 1 ? 0x00 : 0xFF);
+	mxt->touchkey_led_status = data != 1;
+
 	touch_led_disabled = (data > 0) ? true : false;
 
 	return size;
@@ -3813,8 +3812,12 @@ static ssize_t timeout_store(struct device *dev,
 		return -EINVAL;
 	}
 
-	pr_info("[TouchKey] %s new timeout=%hu\n", __func__, data);
-	timeout = data;
+	if (data < 7) {
+		pr_info("[TouchKey] %s new timeout=%hu\n", __func__, data);
+		timeout = data;
+	} else {
+		pr_info("[TouchKey] %s timeout is too big\n", __func__);
+	}
 
 	return size;
 }
