@@ -767,7 +767,6 @@ static int tegra_pm_notify(struct notifier_block *nb, unsigned long event,
         tegra_update_cpu_speed(freq_table[suspend_index].frequency);
         tegra_auto_hotplug_governor(freq_table[suspend_index].frequency, true);
 	} else if (event == PM_POST_SUSPEND) {
-        unsigned int freq;
         if (stored_cpu_user_cap) {
             pr_info("Cpufreq resume: restoring max frequency to %d kHz\n", stored_cpu_user_cap);
             cpu_user_cap = stored_cpu_user_cap;
