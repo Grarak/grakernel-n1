@@ -257,10 +257,10 @@
 /data/sensors(/.*)?                         u:object_r:sensors_data_file:s0
 
 # for wpa_supp
-/dev/rfkill                                 u:object_r:rfkill_device:s0
+#/dev/rfkill                                 u:object_r:rfkill_device:s0
 
 # Firmwares
-/etc/firmware/bcm4330.hcd                   u:object_r:rfkill_device:s0
+#/etc/firmware/bcm4330.hcd                   u:object_r:rfkill_device:s0
 
 # System binaries
 /system/bin/restorecon                      u:object_r:restorecon_exec:s0
@@ -270,15 +270,12 @@
 /system/xbin/setenforce                     u:object_r:setenforce_exec:s0
 /system/xbin/restorecon                     u:object_r:restorecon_exec:s0
 
-#line 1 "vendor/omni/sepolicy/file_contexts"
-###########################
-# OmniROM common sepolicy
-#
-
-# cache
+#line 1 "vendor/cm/sepolicy/file_contexts"
 /cache/dalvik-cache(/.*)? u:object_r:dalvikcache_data_file:s0
 
-# performance-related sysfs files
+#############################
+# performance-related sysfs files (CM)
 /sys/kernel/mm/ksm(/.*)?       --          u:object_r:sysfs_writable:s0
 /sys/devices/system/cpu.*/cpufreq(/.*)? --  u:object_r:sysfs_writable:s0
 /sys/block/mmcblk0/queue/scheduler  --    u:object_r:sysfs_writable:s0
+
