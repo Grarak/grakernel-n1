@@ -2003,7 +2003,6 @@ static struct clk_pll_freq_table tegra_pll_x_freq_table[] = {
 	{ 13000000, 1320000000, 913,  9,  1, 12},
 	{ 19200000, 1320000000, 825,  12, 1, 8},
 	{ 26000000, 1320000000, 660,  13, 1, 12},
-#endif
 
 	/* 1.2 GHz */
 	{ 12000000, 1200000000, 600,  6,  1, 12},
@@ -2016,6 +2015,7 @@ static struct clk_pll_freq_table tegra_pll_x_freq_table[] = {
 	{ 13000000, 1100000000, 846,  10, 1, 12},
 	{ 19200000, 1100000000, 687,  12, 1, 8},
 	{ 26000000, 1100000000, 550,  13, 1, 12},
+#endif
 
 	/* 1 GHz */
 	{ 12000000, 1000000000, 1000, 12, 1, 12},
@@ -2760,6 +2760,7 @@ static struct cpufreq_frequency_table freq_table_1p0GHz[] = {
 	{ 8, CPUFREQ_TABLE_END },
 };
 
+#ifdef CONFIG_TEGRA_OVERCLOCK
 static struct cpufreq_frequency_table freq_table_1p2GHz[] = {
 	{ 0, 216000 },
 	{ 1, 312000 },
@@ -2774,7 +2775,6 @@ static struct cpufreq_frequency_table freq_table_1p2GHz[] = {
 	{ 10, CPUFREQ_TABLE_END },
 };
 
-#ifdef CONFIG_TEGRA_OVERCLOCK
 static struct cpufreq_frequency_table freq_table_1p32GHz[] = {
 	{ 0, 216000 },
 	{ 1, 312000 },
@@ -2794,8 +2794,8 @@ static struct cpufreq_frequency_table freq_table_1p32GHz[] = {
 static struct tegra_cpufreq_table_data cpufreq_tables[] = {
 	{ freq_table_760MHz, 1, 4, 0, 4 },
 	{ freq_table_1p0GHz, 2, 6, 0, 7 },
-	{ freq_table_1p2GHz, 2, 7, 0, 9 },
 #ifdef CONFIG_TEGRA_OVERCLOCK
+	{ freq_table_1p2GHz, 2, 7, 0, 9 },
 	{ freq_table_1p32GHz, 2, 7, 0, 11 },
 #endif
 };
