@@ -180,7 +180,8 @@ static struct dbs_tuners {
 	.sync_freq = DBS_SYNC_FREQ,
 	.optimal_freq = DBS_OPTIMAL_FREQ,
 	.freq_boost_time = DEFAULT_FREQ_BOOST_TIME,
-	.two_phase_freq = 0,
+	.boostfreq = 816000,
+	.two_phase_freq = 1000000,
 };
 
 static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
@@ -1292,10 +1293,10 @@ unsigned long get_lmf_inactive_load(void)
 #define NR_FSHIFT	1
 static unsigned int nr_run_thresholds[] = {
 /* 	1,  2 - on-line cpus target */
-	7,  UINT_MAX /* avg run threads * 2 (e.g., 9 = 2.25 threads) */
+	5,  UINT_MAX /* avg run threads * 2 (e.g., 9 = 2.25 threads) */
 	};
 
-static unsigned int nr_run_hysteresis = 8;  /* 0.5 thread */
+static unsigned int nr_run_hysteresis = 4;  /* 0.5 thread */
 static unsigned int nr_run_last;
 
 static unsigned int calculate_thread_stats (void)
