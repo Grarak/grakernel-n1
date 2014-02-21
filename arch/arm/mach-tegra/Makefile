@@ -222,3 +222,4 @@ obj-${CONFIG_BT_BCM4330}                += board-bluetooth-bcm4330.o
 obj-$(CONFIG_SEC_MODEM_N1)              += board-n1-modems.o
 obj-$(CONFIG_SEC_MODEM_BOSE)            += board-n1-modems.o
 obj-$(CONFIG_RQ_STATS)			+= rq_stats.o
+obj-$(CONFIG_INTELLI_PLUG)		+= intelli_plug.o

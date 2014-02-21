@@ -1,5 +1,7 @@
 #!/sbin/busybox sh
 
+MPS='0:"Disabled", 1:"1", 2:"2"'
+
 cat << CTAG
 {
     name:CPU,
@@ -79,6 +81,19 @@ cat << CTAG
 			done
 `
                 ]
+        }},
+	{ SPane:{
+                title:"Multicore Power Saving",
+                description:"Try to group tasks into the least cores possible. The higher it is, the more the aggression will be."
+        }},
+	{ SSeekBar:{
+                default:`cat /sys/devices/system/cpu/sched_mc_power_savings`,
+                action:"generic /sys/devices/system/cpu/sched_mc_power_savings",
+		values:{
+`
+			echo $MPS
+`
+		}
         }},
 	{ SPane:{
                 title:"CPU Voltage Control",
