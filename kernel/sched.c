@@ -721,37 +721,6 @@ static inline int cpu_of(struct rq *rq)
 #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
 #define raw_rq()		(&__raw_get_cpu_var(runqueues))
 
- /**
-
-  * highest_flag_domain - Return highest sched_domain containing flag.
-
-  * @cpu:	The cpu whose highest level of sched domain is to
-
-  *		be returned.
-
-  * @flag:	The flag to check for the highest sched_domain
-
-  *		for the given cpu.
-
-  *
-
-  * Returns the highest sched_domain of a cpu which contains the given flag.
-
-  */
-
-static inline struct sched_domain *highest_flag_domain(int cpu, int flag)
-{
-	struct sched_domain *sd, *hsd = NULL;
-
-	for_each_domain(cpu, sd) {
-		if (!(sd->flags & flag))
-			break;
-		hsd = sd;
-	}
-
-	return hsd;
-}
-
 DECLARE_PER_CPU(struct sched_domain *, sd_llc);
 DECLARE_PER_CPU(int, sd_llc_id);
 
