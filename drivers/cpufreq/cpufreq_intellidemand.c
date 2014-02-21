@@ -167,9 +167,7 @@ static struct dbs_tuners {
 	unsigned int boosted;
 	unsigned int freq_boost_time;
 	unsigned int boostfreq;
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	unsigned int two_phase_freq;
-#endif
 } dbs_tuners_ins = {
 	.up_threshold_multi_core = DEF_FREQUENCY_UP_THRESHOLD,
 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
@@ -182,9 +180,7 @@ static struct dbs_tuners {
 	.sync_freq = DBS_SYNC_FREQ,
 	.optimal_freq = DBS_OPTIMAL_FREQ,
 	.freq_boost_time = DEFAULT_FREQ_BOOST_TIME,
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	.two_phase_freq = 0,
-#endif
 };
 
 static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
@@ -353,11 +349,7 @@ show_one(sync_freq, sync_freq);
 show_one(boostpulse, boosted);
 show_one(boosttime, freq_boost_time);
 show_one(boostfreq, boostfreq);
-
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 show_one(two_phase_freq, two_phase_freq);
-#endif
-
 #ifdef CONFIG_CPUFREQ_LIMIT_MAX_FREQ 
 void set_lmf_browsing_state(bool onOff);
 void set_lmf_active_max_freq(unsigned long freq);
@@ -523,7 +515,6 @@ static ssize_t store_sampling_rate(struct kobject *a, struct attribute *b,
 	return count;
 }
 
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 static ssize_t store_two_phase_freq(struct kobject *a, struct attribute *b,
 				   const char *buf, size_t count)
 {
@@ -537,7 +528,6 @@ static ssize_t store_two_phase_freq(struct kobject *a, struct attribute *b,
 
 	return count;
 }
-#endif
 
 static ssize_t store_sync_freq(struct kobject *a, struct attribute *b,
 				   const char *buf, size_t count)
@@ -902,9 +892,7 @@ define_one_global_rw(sync_freq);
 define_one_global_rw(boostpulse);
 define_one_global_rw(boosttime);
 define_one_global_rw(boostfreq);
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 define_one_global_rw(two_phase_freq);
-#endif
 
 #ifdef CONFIG_CPUFREQ_LIMIT_MAX_FREQ
 define_one_global_rw(lmf_browser);
@@ -930,9 +918,7 @@ static struct attribute *dbs_attributes[] = {
 	&boostpulse.attr,
 	&boosttime.attr,
 	&boostfreq.attr,
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	&two_phase_freq.attr,
-#endif
 #ifdef CONFIG_CPUFREQ_LIMIT_MAX_FREQ
 	&lmf_browser.attr,
 	&lmf_active_max_freq.attr,
@@ -961,13 +947,11 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
 			CPUFREQ_RELATION_L : CPUFREQ_RELATION_H);
 }
 
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 int id_set_two_phase_freq(int cpufreq)
 {
 	dbs_tuners_ins.two_phase_freq = cpufreq;
 	return 0;
 }
-#endif
 
 static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 {
@@ -979,10 +963,8 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	unsigned int max_load_other_cpu = 0;
 	struct cpufreq_policy *policy;
 	unsigned int j;
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	static unsigned int phase = 0;
 	static unsigned int counter = 0;
-#endif
 
 	this_dbs_info->freq_lo = 0;
 	policy = this_dbs_info->cur_policy;
@@ -1119,43 +1101,12 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	/* Check for frequency increase */
 	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
 		/* If switching to max speed, apply sampling_down_factor */
-#ifndef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 		if (policy->cur < policy->max)
 			this_dbs_info->rate_mult =
 				dbs_tuners_ins.sampling_down_factor;
 		dbs_freq_increase(policy, policy->max);
-#else
-		if (counter < 5) {
-			counter++;
-			if (counter > 2) {
-				/* change to busy phase */
-				phase = 1;
-			}
-		}
-		if (dbs_tuners_ins.two_phase_freq != 0 && phase == 0) {
-			/* idle phase */
-			dbs_freq_increase(policy,
-				(((dbs_tuners_ins.two_phase_freq)> (int)(policy->max*80/100))
-					?(dbs_tuners_ins.two_phase_freq) : (int)(policy->max*80/100))  );
-		} else {
-			/* busy phase */
-			if (policy->cur < policy->max) {
-				if (sampling_rate_boosted &&
-					(dbs_tuners_ins.sampling_down_factor <
-						BOOSTED_SAMPLING_DOWN_FACTOR)) {
-					this_dbs_info->rate_mult =
-						BOOSTED_SAMPLING_DOWN_FACTOR;
-				} else {
-					this_dbs_info->rate_mult =
-						dbs_tuners_ins.sampling_down_factor;
-				}
-			}
-			dbs_freq_increase(policy, policy->max);
-		}
-#endif
 		return;
 	}
-#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	if (counter > 0) {
 		counter--;
 		if (counter == 0) {
@@ -1163,7 +1114,6 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 			phase = 0;
 		}
 	}
-#endif
 
 	if (num_online_cpus() > 1) {
 
