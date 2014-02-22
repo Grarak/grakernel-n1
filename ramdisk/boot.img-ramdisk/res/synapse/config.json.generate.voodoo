@@ -1,5 +1,6 @@
 #!/sbin/busybox sh
 
+DYNAMICRANGE='-7000:"100%", -6000:"80%", -4000:"60%", -3000:"40%", -1000:"20%", 0:"Compresser/Limiter Only"'
 MICROGAIN='0:"Original", 1:"Balanced - with DRC", 2:"High Sensitivity - with DRC", 3:"Loud environment - with DRC"'
 
 cat << CTAG
@@ -25,7 +26,6 @@ cat << CTAG
 		title:"Signal Processing"
         }},
 	{ SCheckBox:{
-		description:"Uses WM8994 ReTune hardware equalizer with advanced Dynamic Range management.",
                 label:"Bass Boost",
                 default:`cat /sys/class/misc/voodoo_sound/headphone_eq`,
                 action:"generic /sys/class/misc/voodoo_sound/headphone_eq"
@@ -39,12 +39,33 @@ for BAND in 1 2 3 4 5 ; do
 	}},'
 done
 `
+	{ SSeekBar:{
+		title:"Dynamic Range Management",
+                default:`cat /sys/devices/virtual/misc/voodoo_sound/digital_gain`,
+                action:"generic /sys/devices/virtual/misc/voodoo_sound/digital_gain",
+		values:{
+`
+			echo $DYNAMICRANGE
+`
+		}
+        }},
 	{ SCheckBox:{
 		description:"Force mono on stereo outputs.",
                 label:"Mono downmix",
                 default:`cat /sys/class/misc/voodoo_sound/mono_downmix`,
                 action:"generic /sys/class/misc/voodoo_sound/mono_downmix"
         }},
+	{ SCheckBox:{
+                label:"Stereo Expansion",
+                default:`cat /sys/class/misc/voodoo_sound/stereo_expansion`,
+                action:"generic /sys/class/misc/voodoo_sound/stereo_expansion"
+        }},
+	{ SSeekBar:{
+		title:"Stereo Expansion Gain",
+		max:16, unit:"dB",
+		default:`cat /sys/class/misc/voodoo_sound/stereo_expansion_gain`,
+                action:"generic /sys/class/misc/voodoo_sound/stereo_expansion_gain"
+	}},
 	{ SPane:{
 		title:"Microphone Recording Presets",
 		description:"Choose according to your environment."
