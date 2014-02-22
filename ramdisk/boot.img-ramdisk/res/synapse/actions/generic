@@ -2,6 +2,9 @@ if [ -f $1 ];then
 	if [[ ! -z $2 ]]; then
 		echo $2 > $1
 		[ "$1" == "/sys/vibrator/pwm_val" ] && echo 300 > /sys/devices/virtual/timed_output/vibrator/enable
+		if [ "$1" == "/sys/module/intelli_plug/parameters/intelli_plug_active" ] || [ "$2" == "0" ]; then
+			echo 1 > /sys/devices/system/cpu/cpu1/online
+		fi
 	fi
 
 	echo `cat $1`

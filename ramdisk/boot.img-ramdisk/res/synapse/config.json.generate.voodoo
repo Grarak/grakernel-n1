@@ -1,0 +1,87 @@
+#!/sbin/busybox sh
+
+MICROGAIN='0:"Original", 1:"Balanced - with DRC", 2:"High Sensitivity - with DRC", 3:"Loud environment - with DRC"'
+
+cat << CTAG
+{
+    name:Voodoo Sound,
+    elements:[
+	{ SCheckBox:{
+		description:"Low level driver and Android application that tunes your Smartphone hardware configuration to brings you the highest audio quality.",
+                label:"Voodoo Sound Control",
+                default:`cat /sys/class/misc/voodoo_sound_control/enable`,
+                action:"generic /sys/class/misc/voodoo_sound_control/enable"
+        }},
+	{ STitleBar:{
+		title:"Wolfson Class"
+        }},
+	{ SSeekBar:{
+		title:"Headphone Amplifier",
+		description:"Set analog level.",
+		max:5, min:-57, unit:"dB",
+                action:"voodoo /sys/class/misc/voodoo_sound/headphone_amplifier_level"
+	}},
+	{ STitleBar:{
+		title:"Signal Processing"
+        }},
+	{ SCheckBox:{
+		description:"Uses WM8994 ReTune hardware equalizer with advanced Dynamic Range management.",
+                label:"Bass Boost",
+                default:`cat /sys/class/misc/voodoo_sound/headphone_eq`,
+                action:"generic /sys/class/misc/voodoo_sound/headphone_eq"
+        }},
+`
+for BAND in 1 2 3 4 5 ; do
+	echo '{ SSeekBar:{
+		title:"Headphone Band '$BAND' Gain",
+		max:12, min:0, unit:"dB",
+                action:"generic /sys/class/misc/voodoo_sound/headphone_eq_b'$BAND'_gain"
+	}},'
+done
+`
+	{ SCheckBox:{
+		description:"Force mono on stereo outputs.",
+                label:"Mono downmix",
+                default:`cat /sys/class/misc/voodoo_sound/mono_downmix`,
+                action:"generic /sys/class/misc/voodoo_sound/mono_downmix"
+        }},
+	{ SPane:{
+		title:"Microphone Recording Presets",
+		description:"Choose according to your environment."
+        }},
+	{ SOptionList:{
+                default:`cat /sys/class/misc/voodoo_sound/recording_preset`,
+                action:"generic /sys/class/misc/voodoo_sound/recording_preset",
+                values:{
+`
+			echo $MICROGAIN
+`
+                }
+        }},
+	{ STitleBar:{
+		title:"Digital/Analog Conversion Quality"
+        }},
+	{ SCheckBox:{
+		description:"Cleaner sound when playing music (DAC 128x oversampling).",
+                label:"HI-FI Play",
+                default:`cat /sys/class/misc/voodoo_sound/dac_osr128`,
+                action:"generic /sys/class/misc/voodoo_sound/dac_osr128"
+        }},
+	{ SCheckBox:{
+		description:"Maximize recordings quality (ADC 128x oversampling).",
+                label:"HI-FI Record",
+                default:`cat /sys/class/misc/voodoo_sound/adc_osr128`,
+                action:"generic /sys/class/misc/voodoo_sound/adc_osr128"
+        }},
+	{ STitleBar:{
+		title:"Analog Path Optimization"
+        }},
+	{ SCheckBox:{
+		description:"Bypass analog channel mixer (Best SNR, lowest distortion).",
+                label:"DAC Direct",
+                default:`cat /sys/class/misc/voodoo_sound/dac_direct`,
+                action:"generic /sys/class/misc/voodoo_sound/dac_direct"
+        }},
+    ]
+}
+CTAG
