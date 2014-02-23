@@ -41,8 +41,8 @@ done
 `
 	{ SSeekBar:{
 		title:"Dynamic Range Management",
-                default:`cat /sys/devices/virtual/misc/voodoo_sound/digital_gain`,
-                action:"generic /sys/devices/virtual/misc/voodoo_sound/digital_gain",
+                default:`cat /sys/class/misc/voodoo_sound/digital_gain`,
+                action:"generic /sys/class/misc/voodoo_sound/digital_gain",
 		values:{
 `
 			echo $DYNAMICRANGE
