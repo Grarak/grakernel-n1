@@ -1,13 +1,13 @@
-BATTERYTEMP="$((`cat /sys/devices/platform/sec-battery/power_supply/battery/temp`/10)) °C"
+BATTERYTEMP="$(expr `cat /sys/devices/platform/sec-battery/power_supply/battery/temp` / 10)°C"
 
 if [ -e /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq ]; then
-	FREQONE="$((`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq` / 1000)) MHz"
+	FREQONE="$(expr `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq` / 1000)MHz"
 else
 	FREQONE=Offline
 fi
 
 if [ -e /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq ]; then
-	FREQTWO="$((`cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq` / 1000)) MHz"
+	FREQTWO="$(expr `cat /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq` / 1000)MHz"
 else
 	FREQTWO=Offline
 fi
@@ -16,5 +16,5 @@ case $1 in
 	freq)
 		echo Core 1: $FREQONE@nCore 2: $FREQTWO ;;
 	batterytemp)
-		echo $BATTERYTEMP ;;
+		echo Battery: $BATTERYTEMP ;;
 esac
