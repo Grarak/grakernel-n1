@@ -6,8 +6,6 @@ mount -o remount,rw /system
 mount -t tmpfs tmpfs /system/lib/modules
 ln -s /lib/modules/* /system/lib/modules/
 
-for i in /sys/block/*/queue/add_random;do echo 0 > $i;done
-
 echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 echo 2 > /sys/devices/system/cpu/sched_mc_power_savings
 
@@ -22,16 +20,16 @@ echo 14 > /sys/class/misc/voodoo_sound/stereo_expansion_gain
 echo 0 > /sys/class/misc/fsynccontrol/fsync_enabled
 echo 1 > /sys/kernel/mm/ksm/run
 
-ln -s /res/synapse/uci /sbin/uci
-/sbin/uci
+for i in /sys/block/*/queue/add_random;do echo 0 > $i;done
 
 mkdir -p /mnt/ntfs
 chmod 777 /mnt/ntfs
 mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
 
-if [ -d /system/etc/init.d ]; then
-	/sbin/busybox run-parts /system/etc/init.d
-fi;
+[ -d /system/etc/init.d ] && /sbin/busybox run-parts /system/etc/init.d
+
+ln -s /res/synapse/uci /sbin/uci
+/sbin/uci
 
 /sbin/busybox mount -t rootfs -o remount,ro rootfs
 mount -o remount,ro /system

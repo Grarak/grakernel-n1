@@ -1,6 +1,6 @@
 #!/sbin/busybox sh
 
-DYNAMICRANGE='-7000:"100%", -6000:"80%", -4000:"60%", -3000:"40%", -1000:"20%", 0:"Compresser/Limiter Only"'
+DYNAMICRANGE='-12000:"200%", -7000:"100%", -6000:"80%", -4000:"60%", -3000:"40%", -1000:"20%", 0:"Compresser/Limiter Only"'
 MICROGAIN='0:"Original", 1:"Balanced - with DRC", 2:"High Sensitivity - with DRC", 3:"Loud environment - with DRC"'
 
 cat << CTAG
