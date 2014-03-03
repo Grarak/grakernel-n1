@@ -425,13 +425,6 @@ config TEGRA_STAT_MON
         help
           Enables support for hardware statistics monitor for AVP.
 
-config TEGRA_OVERCLOCK
-	bool "Enable overclocking to 1.32 GHz"
-	depends on CPU_FREQ
-	default n
-	help
-	  Enables overclocking to 1.32 GHz.
-
 config TEGRA_CPU_FREQ_LOCK
 	bool "Enable locking and unlocking CPU frequency"
 	depends on CPU_FREQ
