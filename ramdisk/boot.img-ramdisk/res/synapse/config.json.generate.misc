@@ -29,10 +29,10 @@ cat << CTAG
                 action:"generic /sys/class/misc/fsynccontrol/fsync_enabled"
         }},
 	{ SCheckBox:{
-                description:"Kernel SamePage Merging lets the hypervisor system share identical memory pages amongst different processes or virtualized guests. This is done by scanning through the memory finding duplicate pages. The duplicate pair is then merged into a single page, and mapped into both original locations.",
-                label:"Enable KSM",
-                default:`cat /sys/kernel/mm/ksm/run`,
-                action:"generic /sys/kernel/mm/ksm/run"
+                description:"Ultra Kernel SamePage Merging lets the hypervisor system share identical memory pages amongst different processes or virtualized guests. This is done by scanning through the memory finding duplicate pages. The duplicate pair is then merged into a single page, and mapped into both original locations.",
+                label:"Enable UKSM",
+                default:`cat /sys/kernel/mm/uksm/run`,
+                action:"generic /sys/kernel/mm/uksm/run"
         }},
 	{ SSeekBar:{
 		description:"Change sensitivity of vibration.",
