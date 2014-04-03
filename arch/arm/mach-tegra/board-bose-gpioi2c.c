@@ -59,9 +59,6 @@
 #include "board-n1.h"
 #include <mach/tegra_das.h>
 #include <mach/otg_def.h>
-#ifdef CONFIG_FORCE_FAST_CHARGE
-#include <linux/fastchg.h>
-#endif
 
 #define GPIO_AUDIO_I2C_SDA	TEGRA_GPIO_PG3
 #define GPIO_AUDIO_I2C_SCL	TEGRA_GPIO_PI0
@@ -395,17 +392,6 @@ static int max17043_low_batt_cb(void)
 }
 
 #if defined (CONFIG_MACH_BOSE_ATT)
-#ifdef CONFIG_FORCE_FAST_CHARGE
-static struct max17043_platform_data max17043_pdata = {
-	.alert_flag = 0x1F,			/* 1% fuel alert */
-	.charging_rcomp = 0xD0,	/* modified 2011.05.09 by MAXIM */
-	.discharging_rcomp = 0xD0,
-	.standard_temp = 20,
-	.comp_full = 9790,			/* 98.1 */
-	.comp_empty = 90,		/* 0.8 */
-	.low_batt_cb = max17043_low_batt_cb,
-};
-#else
 static struct max17043_platform_data max17043_pdata = {
 	.alert_flag = 0x1F,			/* 1% fuel alert */
 	.charging_rcomp = 0xD0,	/* modified 2011.05.09 by MAXIM */
@@ -415,7 +401,6 @@ static struct max17043_platform_data max17043_pdata = {
 	.comp_empty = 90,		/* 0.8 */
 	.low_batt_cb = max17043_low_batt_cb,
 };
-#endif
 #else
 /*	2011.03.09 1650mAh SDI from MAXIM
  *	Test Condition

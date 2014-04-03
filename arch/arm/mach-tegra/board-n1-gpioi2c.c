@@ -52,9 +52,6 @@
 #include "board-n1.h"
 #include <mach/tegra_das.h>
 #include <mach/otg_def.h>
-#ifdef CONFIG_FORCE_FAST_CHARGE
-#include <linux/fastchg.h>
-#endif
 
 #define GPIO_AUDIO_I2C_SDA	TEGRA_GPIO_PG3
 #define GPIO_AUDIO_I2C_SCL	TEGRA_GPIO_PI0
@@ -462,27 +459,16 @@ static int max17043_low_batt_cb(void)
  *	Charging : 4.2V, 600mA, 60mA cutoff
  *	Discharging : 300mA, 3.4V cutoff
  */
-#ifdef CONFIG_FORCE_FAST_CHARGE
 static struct max17043_platform_data max17043_pdata = {
 	.alert_flag = 0x1F,			/* 1% fuel alert */
 	.charging_rcomp = 0xE7,	/* modified 2011.05.09 by MAXIM */
 	.discharging_rcomp = 0xD7,
 	.standard_temp = 20,
-        .comp_full = 9780,			/* 2011.06.15 modified to 96.8 becase of topoff current changing */
+	.comp_full = 9680,			/* 2011.06.15 modified to 96.8 becase of topoff current changing */
 	.comp_empty = 0,			/* 0 */
 	.low_batt_cb = max17043_low_batt_cb,
 };
-#else
-static struct max17043_platform_data max17043_pdata = {
-	.alert_flag = 0x1F,			/* 1% fuel alert */
-	.charging_rcomp = 0xE7,	/* modified 2011.05.09 by MAXIM */
-	.discharging_rcomp = 0xD7,
-	.standard_temp = 20,
-	.comp_full = 9680, 			//* 2011.06.15 modified to 96.8 becase of topoff current changing */
-	.comp_empty = 0,			/* 0 */
-	.low_batt_cb = max17043_low_batt_cb,
-};
-#endif
+
 static struct i2c_board_info __initdata n1_fuelgauge[] = {
 	{
 		I2C_BOARD_INFO("max17043", 0x36),

@@ -41,9 +41,6 @@
 
 #include "wakeups-t2.h"
 #include "board.h"
-#ifdef CONFIG_FORCE_FAST_CHARGE
-#include <linux/fastchg.h>
-#endif
 
 #define PMC_CTRL		0x0
 #define PMC_CTRL_INTR_LOW	(1 << 17)
@@ -190,7 +187,6 @@ static struct platform_device n1_pda_power_device = {
 };
 #endif
 
-#ifdef CONFIG_FORCE_FAST_CHARGE
 static struct max8907c_charger_pdata n1_charger_pdata = {
 	.irq 			= INT_EXTERNAL_PMU,
 	.topoff_cb		= max8907c_power_topoff_cb,
@@ -198,21 +194,10 @@ static struct max8907c_charger_pdata n1_charger_pdata = {
 	.vchg_r_f_cb		= max8907c_power_vchg_r_f_cb, /* FACTORY TEST BINARY */
 	.topoff_threshold	= MAX8907C_TOPOFF_20PERCENT,
 	.restart_hysteresis	= MAX8907C_RESTART_100MV,
-	.fast_charging_current	= MAX8907C_FASTCHARGE_900MA,
+	.fast_charging_current	= MAX8907C_FASTCHARGE_460MA,
 	.fast_charger_time	= MAX8907C_FCHARGE_TM_OFF,
 };
-#else
-static struct max8907c_charger_pdata n1_charger_pdata = {
-	.irq 			= INT_EXTERNAL_PMU,
-    .topoff_cb = max8907c_power_topoff_cb,
-    .vchg_f_cb = max8907c_power_vchg_f_cb,
-    .vchg_r_f_cb = max8907c_power_vchg_r_f_cb, /* FACTORY TEST BINARY */
-	.topoff_threshold	= MAX8907C_TOPOFF_20PERCENT,
-	.restart_hysteresis	= MAX8907C_RESTART_100MV,
-        .fast_charging_current	= MAX8907C_FASTCHARGE_460MA,
-	.fast_charger_time	= MAX8907C_FCHARGE_TM_OFF,
-};
-#endif
+
 static struct platform_device n1_charger_device = {
 	.name	= "max8907c-charger",
 	.dev	= {
