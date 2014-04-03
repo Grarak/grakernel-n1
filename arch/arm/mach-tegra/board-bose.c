@@ -143,6 +143,7 @@ MODULE_PARM_DESC(charging_mode_from_boot, "Charging mode parameter value.");
 #define SZ_80M                          0x05000000
 #define SZ_100M                         0x06400000
 #define SZ_136M                         0x08800000
+#define SZ_192M                         0x0C000000
 #define SZ_152M                         0x09800000
 #define SZ_300M                         0x12C00000
 
@@ -3096,7 +3097,7 @@ void __init tegra_n1_reserve(void)
 		pr_warn("Cannot reserve first 4K of memory for safety\n");
 
 #ifdef CONFIG_MHL_SII9234
-        tegra_reserve(SZ_152M, SZ_8M, SZ_10M);
+        tegra_reserve(SZ_192M, SZ_8M, SZ_10M);
 #else
         tegra_reserve(SZ_152M, SZ_8M);
 #endif
