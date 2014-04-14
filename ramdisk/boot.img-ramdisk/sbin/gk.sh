@@ -6,7 +6,6 @@ mount -o remount,rw /system
 mount -t tmpfs tmpfs /system/lib/modules
 ln -s /lib/modules/* /system/lib/modules/
 
-echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 echo 2 > /sys/devices/system/cpu/sched_mc_power_savings
 
 echo 6 > /sys/class/misc/voodoo_sound/headphone_eq_b1_gain
@@ -30,6 +29,8 @@ mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
 
 ln -s /res/synapse/uci /sbin/uci
 /sbin/uci
+
+echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
 /sbin/busybox mount -t rootfs -o remount,ro rootfs
 mount -o remount,ro /system
