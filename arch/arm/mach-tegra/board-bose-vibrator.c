@@ -176,7 +176,7 @@ static void n1_vibrator_enable(struct timed_output_dev *dev, int value)
 }
 
 static struct timed_output_dev to_dev = {
-	.name		= "vibrator_mach",
+	.name		= "vibrator",
 	.get_time	= n1_vibrator_get_time,
 	.enable		= n1_vibrator_enable,
 };
