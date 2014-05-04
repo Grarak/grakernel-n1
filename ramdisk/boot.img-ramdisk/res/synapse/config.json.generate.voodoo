@@ -66,11 +66,11 @@ done
 		default:`cat /sys/class/misc/voodoo_sound/stereo_expansion_gain`,
                 action:"generic /sys/class/misc/voodoo_sound/stereo_expansion_gain"
 	}},
-	{ SPane:{
-		title:"Microphone Recording Presets",
-		description:"Choose according to your environment."
+	{ STitleBar:{
+		title:"Microphone Recording Presets"
         }},
 	{ SOptionList:{
+		description:"Choose according to your environment.",
                 default:`cat /sys/class/misc/voodoo_sound/recording_preset`,
                 action:"generic /sys/class/misc/voodoo_sound/recording_preset",
                 values:{

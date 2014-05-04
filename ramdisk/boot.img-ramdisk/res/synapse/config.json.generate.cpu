@@ -63,26 +63,11 @@ cat << CTAG
 `
 		}
 	}},
-	{ SPane:{
-		title:"CPU Governor",
-		description:"The CPU governor determines how the CPU behaves in response to changes in workload. Changing the governor will impact how the CPU scales through the frequency steps available to you CPU."
-	}},
-	{ SOptionList:{
-                default:`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor`,
-                action:"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
-                values:[
-`
-                        for GOVERNOR in \`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors\` ; do
-				echo "\"$GOVERNOR\","
-			done
-`
-                ]
-        }},
-	{ SPane:{
-                title:"Multicore Power Saving",
-                description:"Try to group tasks into the least cores possible. The higher it is, the more the aggression will be."
+	{ STitleBar:{
+                title:"Multicore Power Saving"
         }},
 	{ SSeekBar:{
+		description:"Try to group tasks into the least cores possible. The higher it is, the more the aggression will be.",
                 default:`cat /sys/devices/system/cpu/sched_mc_power_savings`,
                 action:"generic /sys/devices/system/cpu/sched_mc_power_savings",
 		values:{
@@ -91,20 +76,7 @@ cat << CTAG
 `
 		}
         }},
-	{ SPane:{
-                title:"CPU Voltage Control",
-                description:"Decreasing voltage will lower power consumption of the CPU. Increasing it on overclocked frequencies improves stability. Too low voltage may cause instabilities and freezes."
-        }},
-`
-while read FREQ UVOLT UNIT; do
-	echo '{ SSeekBar:{
-	default:'$UVOLT',
-	title:"'${FREQ//mhz\:/}' MHz",
-	action:"cpuvolt '${FREQ}'",
-	unit:"'${UNIT}'", min:750, max:1125, step:5 }},'
-done < /sys/devices/system/cpu/cpu0/cpufreq/UV_mV_table
-`
-	{ SPane:{
+	{ STitleBar:{
                 title:"IntelliPlug"
         }},
 	{ SCheckBox:{

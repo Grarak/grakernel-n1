@@ -2,20 +2,14 @@
 
 cat << CTAG
 {
-    name:Z-RAM,
+    name:zRam,
     elements:[
-        { SPane:{
-		title:"Swappines",
-        }},
 	{ SSeekBar:{
-       		title:"Swappines",
+		title:"Swappiness",
                 min:0, max:100, unit:"%", step:5,
                 default:`cat /proc/sys/vm/swappiness`,
                 action:"generic /proc/sys/vm/swappiness"
 	}},
-        { SPane:{
-		title:"Z-RAM"
-        }},
 	{ SSeekBar:{
        		title:"Disk 1",
                 min:0, max:500, unit:"MB", step:10,

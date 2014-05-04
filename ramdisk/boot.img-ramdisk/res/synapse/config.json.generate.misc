@@ -2,14 +2,16 @@
 
 cat << CTAG
 {
-    name:Miscellaneous,
+    name:Misc,
     elements:[
 	{ STitleBar:{
 		title:"Network"
         }},
+	{ SDescription:{
+		description:"The Transmission Control Protocol is one of the core protocols of the Internet protocol suite (IP), and is so common that the entire suite is often called TCP/IP.",
+	}},
 	{ SOptionList:{
 		title:"TCP Congestion Algorithm",
-		description:"The Transmission Control Protocol is one of the core protocols of the Internet protocol suite (IP), and is so common that the entire suite is often called TCP/IP.",
                 action:"tcp /proc/sys/net/ipv4/tcp_available_congestion_control",
                 values:[
 `
@@ -30,7 +32,7 @@ cat << CTAG
         }},
 	{ SCheckBox:{
                 description:"Ultra Kernel SamePage Merging lets the hypervisor system share identical memory pages amongst different processes or virtualized guests. This is done by scanning through the memory finding duplicate pages. The duplicate pair is then merged into a single page, and mapped into both original locations.",
-                label:"Enable UKSM",
+                label:"UKSM",
                 default:`cat /sys/kernel/mm/uksm/run`,
                 action:"generic /sys/kernel/mm/uksm/run"
         }},

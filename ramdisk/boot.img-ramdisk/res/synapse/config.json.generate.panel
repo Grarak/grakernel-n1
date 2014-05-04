@@ -2,12 +2,14 @@
 
 cat << CTAG
 {
-    name:Screen,
+    name:Panel,
     elements:[
-	{ SPane:{
-                title:"mDNIe global controls",
-                description:"mobile Digital Natural Image engine control. Samsungs hardware image post-processor controls virtually any image manipulation."
+	{ STitleBar:{
+                title:"mDNIe global controls"
         }},
+	{ SDescription:{
+		description:"mobile Digital Natural Image engine control. Samsungs hardware image post-processor controls virtually any image manipulation."
+	}},
 	{ SCheckBox:{
 		description:"Disable this to make white brighter at low brightness (this has impact of battery life).",
                 label:"Content Adaptive Brightness",
