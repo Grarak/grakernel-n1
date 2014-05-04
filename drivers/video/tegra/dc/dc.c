@@ -2590,7 +2590,7 @@ static bool _tegra_dc_controller_enable(struct tegra_dc *dc)
 		tegra_dc_writel(dc, 0, DC_CMD_INT_MASK);
 		disable_irq(dc->irq);
 		tegra_dc_clear_bandwidth(dc);
-		tegra_dc_clk_disable(dc);
+		_tegra_dc_controller_disable(dc);
 		if (dc->out && dc->out->disable)
 			dc->out->disable();
 		return false;
