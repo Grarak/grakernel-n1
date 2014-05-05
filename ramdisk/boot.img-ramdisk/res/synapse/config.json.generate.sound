@@ -5,7 +5,7 @@ MICROGAIN='0:"Original", 1:"Balanced - with DRC", 2:"High Sensitivity - with DRC
 
 cat << CTAG
 {
-    name:Voodoo Sound,
+    name:Sound,
     elements:[
 	{ SCheckBox:{
 		description:"Low level driver and Android application that tunes your Smartphone hardware configuration to brings you the highest audio quality.",

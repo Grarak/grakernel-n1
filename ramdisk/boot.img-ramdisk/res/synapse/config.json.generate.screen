@@ -4,7 +4,7 @@ TIMEOUT='6:"6sec", 5:"5sec", 4:"4sec", 3:"3sec", 2:"2sec", 1:"1sec"'
 
 cat << CTAG
 {
-    name:Touch,
+    name:Screen,
     elements:[
 	{ STitleBar:{
 		title:"Touchscreen"
