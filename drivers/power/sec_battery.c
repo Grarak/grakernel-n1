@@ -526,18 +526,31 @@ static int sec_bat_re_enable_charging_main(struct sec_bat_info *info)
 
 	/* Set charging current */
 	switch (info->cable_type) {
-	case CABLE_TYPE_USB:
-	case CABLE_TYPE_DOCK:
-		val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
-		val_chg_current.intval = 460;	/* mA */
-		break;
-	case CABLE_TYPE_AC:
-		val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
-		val_chg_current.intval = 600;	/* mA */
-		break;
-	default:
-		dev_err(info->dev, "%s: Invalid func use\n", __func__);
-		return -EINVAL;
+		case CABLE_TYPE_USB:
+#ifdef CONFIG_BATTERY_CONTROL
+			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+			val_chg_current.intval = usb_limit;
+			break;
+#endif
+		case CABLE_TYPE_DOCK:
+			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+#ifdef CONFIG_BATTERY_CONTROL
+			val_chg_current.intval = dock_limit;
+#else
+			val_chg_current.intval = 460;	/* mA */
+#endif
+			break;
+		case CABLE_TYPE_AC:
+			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+#ifdef CONFIG_BATTERY_CONTROL
+			val_chg_current.intval = ac_limit;
+#else
+			val_chg_current.intval = 600;	/* mA */
+#endif
+			break;
+		default:
+			dev_err(info->dev, "%s: Invalid func use\n", __func__);
+			return -EINVAL;
 	}
 
 	ret = psy->set_property(psy, POWER_SUPPLY_PROP_CURRENT_NOW,
