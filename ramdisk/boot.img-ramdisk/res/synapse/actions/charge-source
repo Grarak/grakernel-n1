@@ -1,0 +1,18 @@
+case $((`cat /sys/devices/platform/sec-battery/power_supply/battery/batt_charging_source`)) in
+
+0)	echo "Battery power"
+	;;
+
+1)	echo "USB Standard Downstream Port"
+	;;
+
+2)	echo "Mains AC charger"
+	;;
+
+2)	echo "Car dock charger"
+	;;
+
+*)	echo "Unknown"
+	;;
+
+esac

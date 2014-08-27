@@ -7,13 +7,6 @@ cat << CTAG
     name:CPU,
     elements:[
 	{ STitleBar:{
-		title:"Temperature"
-	}},
-	{ SLiveLabel:{
-		refresh:500,
-		action:"live batterytemp"
-	}},
-	{ STitleBar:{
 		title:"CPU Frequency scaling"
 	}},
 	{ SLiveLabel:{

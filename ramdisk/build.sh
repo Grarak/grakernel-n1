@@ -1,15 +1,15 @@
 #!/bin/sh
 
 rm -rf kernel.zip
-rm -rf ramdisk.gz
+rm -rf ramdisk.lzo
 find -name "*~" -exec rm -rf {} \;
 find -name ".DS_Store" -exec rm -rf {} \; 
 
 build () {
     cd boot.img-ramdisk
-    find . | cpio -o -H newc | gzip > ../ramdisk.gz
+    find . | cpio -o -H newc | lzop > ../ramdisk.lzo
     cd ..
-    ./mkbootimg-$1 --kernel zImage --ramdisk ramdisk.gz -o boot.img
+    ./mkbootimg-$1 --kernel zImage --ramdisk ramdisk.lzo -o boot.img
 }
 
 if [ -e ~/.bash_profile ]; then
@@ -23,4 +23,4 @@ cd out
 zip -r kernel.zip META-INF boot.img
 mv -v kernel.zip ../
 cd ..
-adb push kernel.zip /sdcard/.
+adb push kernel.zip /sdcard/

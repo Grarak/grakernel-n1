@@ -30,6 +30,6 @@ elif grep -q ro.build.version.sdk=19 /system/build.prop ; then
 	mv -f /res/aosp44/* /
 fi
 
-[ -d /system/app/Synapse.apk ] || mv -f /res/synapse/Synapse.apk /system/app/ && chmod 644 /system/app/Synapse.apk
+[ -d /system/app/Synapse.apk ] || mv -f /res/synapse/Synapse.apk /system/app
 
 out

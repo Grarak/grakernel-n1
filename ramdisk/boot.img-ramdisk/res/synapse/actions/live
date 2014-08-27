@@ -16,5 +16,5 @@ case $1 in
 	freq)
 		echo Core 1: $FREQONE@nCore 2: $FREQTWO ;;
 	batterytemp)
-		echo Battery: $BATTERYTEMP ;;
+		echo $BATTERYTEMP ;;
 esac

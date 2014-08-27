@@ -22,15 +22,6 @@ cat << CTAG
                 ]
         }},
 	{ STitleBar:{
-		title:"Battery"
-        }},
-	{ SCheckBox:{
-		description:"Enable this will increase the charing speed with USB, but disable usb mass storage.",
-                label:"Force Fast Charge",
-                default:`cat /sys/kernel/fast_charge/force_fast_charge`,
-                action:"generic /sys/kernel/fast_charge/force_fast_charge"
-        }},
-	{ STitleBar:{
 		title:"Other Settings"
 	}},
 	{ SCheckBox:{

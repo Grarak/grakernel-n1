@@ -1,0 +1,58 @@
+#!/sbin/busybox sh
+
+VOLTAGE='0:"0mA", 1:"2mA", 2:"100mA", 3:"200mA", 4:"300mA", 5:"460mA", 6:"500mA", 7:"700mA"'
+
+cat << CTAG
+{
+    name:Battery,
+    elements:[
+	{ SLiveLabel:{
+		refresh:500,
+		action:"live batterytemp"
+	}},
+	{ SDescription:{
+		description:"Device charging currents are composed of input current coming into the device (Nominal 5V) and charge current fed to the battery (Battery Charge Voltage). Charger detection divides charging cable types into several categories as described below. If charging current exceeds input load, then charging current is dynamically adjusted. For avoiding battery deterioration, charging currents of less than 0.7 Coloumb are advised; ex. 2600mAh (Capacity) * 0.7C = ~1820mA."
+	}},
+	{ SLiveLabel:{
+		refresh:500,
+		action:"charge-source"
+        }},
+	{ STitleBar:{
+                title:"Charging Limits"
+        }},
+	{ SDescription:{
+		description:"After changing a value, re-plugin your charger to apply your modifications."
+	}},
+	{ SSeekBar:{
+		title:"AC",
+                default:`cat /sys/kernel/battery_control/ac`,
+                action:"generic /sys/kernel/battery_control/ac",
+		values:{
+`
+			echo $VOLTAGE
+`
+		}
+        }},
+	{ SSeekBar:{
+		title:"Dock",
+                default:`cat /sys/kernel/battery_control/dock`,
+                action:"generic /sys/kernel/battery_control/dock",
+		values:{
+`
+			echo $VOLTAGE
+`
+		}
+        }},
+	{ SSeekBar:{
+		title:"USB",
+                default:`cat /sys/kernel/battery_control/usb`,
+                action:"generic /sys/kernel/battery_control/usb",
+		values:{
+`
+			echo $VOLTAGE
+`
+		}
+        }},
+    ]
+}
+CTAG

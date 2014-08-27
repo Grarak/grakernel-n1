@@ -1,7 +1,7 @@
 #!/sbin/busybox sh
 
 mount -o remount,rw /system
-/sbin/busybox mount -t rootfs -o remount,rw rootfs
+mount -t rootfs -o remount,rw rootfs
 
 mount -t tmpfs tmpfs /system/lib/modules
 ln -s /lib/modules/* /system/lib/modules/
@@ -21,10 +21,6 @@ echo 1 > /sys/kernel/mm/ksm/run
 
 for i in /sys/block/*/queue/add_random;do echo 0 > $i;done
 
-mkdir -p /mnt/ntfs
-chmod 777 /mnt/ntfs
-mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
-
 [ -d /system/etc/init.d ] && /sbin/busybox run-parts /system/etc/init.d
 
 ln -s /res/synapse/uci /sbin/uci
@@ -32,5 +28,5 @@ ln -s /res/synapse/uci /sbin/uci
 
 echo interactive > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
-/sbin/busybox mount -t rootfs -o remount,ro rootfs
+mount -t rootfs -o remount,ro rootfs
 mount -o remount,ro /system
