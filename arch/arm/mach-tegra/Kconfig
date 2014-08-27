@@ -599,4 +599,10 @@ config INTELLI_PLUG_DUAL
 	help
 	  Special dual-core mode for intelli-plug
 
+config BATTERY_CONTROL
+	bool "Change input charging limit of any charging source"
+	default n
+	help
+	  Change the input charging limit of all available charging sources.
+
 endif

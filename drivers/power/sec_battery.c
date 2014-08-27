@@ -29,6 +29,15 @@
 #include <linux/timer.h>
 #include <linux/android_alarm.h>
 
+#ifdef CONFIG_BATTERY_CONTROL
+#include <linux/battery_control.h>
+
+int ac_limit = 600;
+int dock_limit = 460;
+int usb_limit = 460;
+
+#endif
+
 #define HWREV_FOR_EXTERNEL_CHARGER	7
 
 #define POLLING_INTERVAL	(30 * 1000)
@@ -565,13 +574,26 @@ static int sec_bat_enable_charging_main(struct sec_bat_info *info, bool enable)
 	if (enable) { /* Enable charging */
 		switch (info->cable_type) {
 		case CABLE_TYPE_USB:
+#ifdef CONFIG_BATTERY_CONTROL
+			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+			val_chg_current.intval = usb_limit;
+			break;
+#endif
 		case CABLE_TYPE_DOCK:
 			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+#ifdef CONFIG_BATTERY_CONTROL
+			val_chg_current.intval = dock_limit;
+#else
 			val_chg_current.intval = 460;	/* mA */
+#endif
 			break;
 		case CABLE_TYPE_AC:
 			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+#ifdef CONFIG_BATTERY_CONTROL
+			val_chg_current.intval = ac_limit;
+#else
 			val_chg_current.intval = 600;	/* mA */
+#endif
 			break;
 		default:
 			dev_err(info->dev, "%s: Invalid func use\n", __func__);
@@ -653,13 +675,26 @@ static int sec_bat_enable_charging_sub(struct sec_bat_info *info, bool enable)
 
 		switch (info->cable_type) {
 		case CABLE_TYPE_USB:
+#ifdef CONFIG_BATTERY_CONTROL
+			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+			val_chg_current.intval = usb_limit;
+			break;
+#endif
 		case CABLE_TYPE_DOCK:
 			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
-			val_chg_current.intval = 400;	/* mA */
+#ifdef CONFIG_BATTERY_CONTROL
+			val_chg_current.intval = dock_limit;
+#else
+			val_chg_current.intval = 460;	/* mA */
+#endif
 			break;
 		case CABLE_TYPE_AC:
 			val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
-			val_chg_current.intval = 660;	/* mA */
+#ifdef CONFIG_BATTERY_CONTROL
+			val_chg_current.intval = ac_limit;
+#else
+			val_chg_current.intval = 600;	/* mA */
+#endif
 			break;
 		default:
 			dev_err(info->dev, "%s: Invalid func use\n", __func__);
