@@ -24,7 +24,7 @@
  * 2 - 100MA
  * 3 - 200MA
  * 4 - 300MA
- * 5 - 400MA
+ * 5 - 460MA
  * 6 - 500MA
  * 7 - 600MA
  */
@@ -50,7 +50,7 @@ static int getNumber(int voltage) {
 		case 300:
 			ret = 4;
 			break;
-		case 400:
+		case 460:
 			ret = 5;
 			break;
 		case 500:
@@ -85,7 +85,7 @@ static int getVoltage(int number) {
 			ret = 300;
 			break;
 		case 5:
-			ret = 400;
+			ret = 460;
 			break;
 		case 6:
 			ret = 500;
