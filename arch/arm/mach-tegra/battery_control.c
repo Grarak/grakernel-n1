@@ -29,72 +29,18 @@
  * 7 - 600MA
  */
 
-static int getNumber(int voltage) {
-	
-	int ret;
+int voltages[] = {0, 2, 100, 200, 300, 460, 500, 600};
 
-	switch (voltage) {
-		default:
-		case 0:
-			ret = 0;
-			break;
-		case 2:
-			ret = 1;
-			break;
-		case 100:
-			ret = 2;
-			break;
-		case 200:
-			ret = 3;
-			break;
-		case 300:
-			ret = 4;
-			break;
-		case 460:
-			ret = 5;
-			break;
-		case 500:
-			ret = 6;
-			break;
-		case 600:
-			ret = 7;
-			break;
-	}
+static int getNumber(int voltage) {
+	int ret, i;
+	for (i = 0; i < sizeof(voltages) / sizeof(int); i++)
+		if (voltage == voltages[i])
+			ret = i;
 	return ret;
 }
 
 static int getVoltage(int number) {
-
-	int ret;
-
-	switch (number) {
-		default:
-		case 0:
-			ret = 0;
-			break;
-		case 1:
-			ret = 2;
-			break;
-		case 2:
-			ret = 100;
-			break;
-		case 3:
-			ret = 200;
-			break;
-		case 4:
-			ret = 300;
-			break;
-		case 5:
-			ret = 460;
-			break;
-		case 6:
-			ret = 500;
-			break;
-		case 7:
-			ret = 600;
-			break;
-	}
-	return ret;
+	return voltages[number];
 }
 
 /*
