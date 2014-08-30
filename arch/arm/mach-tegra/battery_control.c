@@ -57,7 +57,7 @@ static ssize_t ac_limit_store(struct kobject *kobj, struct kobj_attribute *attr,
 	int value;
 
 	sscanf(buf, "%d", &value);
-	if (value > -1 && value < 11) {
+	if (value > -1 && value < sizeof(voltages) / sizeof(int) + 1) {
 		pr_info("set voltage of ac to %d\n", getVoltage(value));
 		ac_limit = getVoltage(value);
 	}
@@ -79,7 +79,7 @@ static ssize_t dock_limit_store(struct kobject *kobj, struct kobj_attribute *att
 	int value;
 
 	sscanf(buf, "%d", &value);
-	if (value > -1 && value < 11) {
+	if (value > -1 && value < sizeof(voltages) / sizeof(int) + 1) {
 		pr_info("set voltage of dock to %d\n", getVoltage(value));
 		dock_limit = getVoltage(value);
 	}
@@ -101,7 +101,7 @@ static ssize_t usb_limit_store(struct kobject *kobj, struct kobj_attribute *attr
 	int value;
 
 	sscanf(buf, "%d", &value);
-	if (value > -1 && value < 11) {
+	if (value > -1 && value < sizeof(voltages) / sizeof(int) + 1) {
 		pr_info("set voltage of usb to %d\n", getVoltage(value));
 		usb_limit = getVoltage(value);
 	}
