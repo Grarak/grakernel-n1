@@ -476,7 +476,9 @@ static int __devinit gpio_keys_setup_key(struct platform_device *pdev,
 
 		isr = gpio_keys_gpio_isr;
 		irqflags = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING;
-
+#ifdef CONFIG_MACH_N1
+		irqflags |= IRQF_NO_SUSPEND;
+#endif
 	} else {
 		if (!button->irq) {
 			dev_err(dev, "No IRQ specified\n");
@@ -683,7 +685,11 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	input_set_drvdata(input, ddata);
 
 	input->name = pdata->name ? : pdev->name;
+#ifdef CONFIG_MACH_N1
+	input->phys = "sec_key/input0";
+#else
 	input->phys = "gpio-keys/input0";
+#endif
 	input->dev.parent = &pdev->dev;
 	input->open = gpio_keys_open;
 	input->close = gpio_keys_close;
@@ -820,9 +826,21 @@ static int gpio_keys_resume(struct device *dev)
 				input_sync(ddata->input);
 			}
 		}
-
+#ifdef CONFIG_SAMSUNG_LPM_MODE
+		if (pdata->check_lpm) {
+			if (pdata->check_lpm() && bdata->button->code == KEY_POWER) {
+				mod_timer(&ddata->data[i].timer,
+				jiffies + msecs_to_jiffies(1500));
+			} else {
+				gpio_keys_gpio_report_event(&ddata->data[i]);
+			}
+		} else {
+			gpio_keys_gpio_report_event(&ddata->data[i]);
+		}
+#else
 		if (gpio_is_valid(bdata->button->gpio))
 			gpio_keys_gpio_report_event(bdata);
+#endif
 	}
 	input_sync(ddata->input);
 
@@ -836,7 +854,11 @@ static struct platform_driver gpio_keys_device_driver = {
 	.probe		= gpio_keys_probe,
 	.remove		= __devexit_p(gpio_keys_remove),
 	.driver		= {
+#ifdef CONFIG_MACH_N1
+		.name	= "sec_key",
+#else
 		.name	= "gpio-keys",
+#endif
 		.owner	= THIS_MODULE,
 		.pm	= &gpio_keys_pm_ops,
 		.of_match_table = gpio_keys_of_match,
@@ -859,4 +881,8 @@ module_exit(gpio_keys_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Phil Blundell <pb@handhelds.org>");
 MODULE_DESCRIPTION("Keyboard driver for GPIOs");
+#ifdef CONFIG_MACH_N1
+MODULE_ALIAS("platform:sec_key");
+#else
 MODULE_ALIAS("platform:gpio-keys");
+#endif

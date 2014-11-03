@@ -216,6 +216,17 @@ int tegra_emc_set_rate(unsigned long rate)
 	return 0;
 }
 
+#ifdef CONFIG_MACH_N1
+void tegra_init_emc(const struct tegra_emc_table *table, int table_size)
+{
+	tegra_emc_table = table;
+	tegra_emc_table_size = table_size ;
+
+	tegra_emc_min_bus_rate = tegra_emc_table[0].rate * 2 * 1000;
+	tegra_emc_max_bus_rate =
+		tegra_emc_table[tegra_emc_table_size - 1].rate * 2 * 1000;
+}
+#else
 void tegra_init_emc(const struct tegra_emc_chip *chips, int chips_size)
 {
 	int i;
@@ -270,3 +281,4 @@ void tegra_init_emc(const struct tegra_emc_chip *chips, int chips_size)
 		pr_info("%s: Memory pid     = 0x%04x", __func__, pid);
 	}
 }
+#endif

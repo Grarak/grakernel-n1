@@ -392,14 +392,6 @@ config HMC6352
 	  This driver provides support for the Honeywell HMC6352 compass,
 	  providing configuration and heading data via sysfs.
 
-config SENSORS_AK8975
-	tristate "AK8975 compass support"
-	default n
-	depends on I2C
-	help
-	  If you say yes here you get support for Asahi Kasei's
-	  orientation sensor AK8975.
-
 config SENSORS_NCT1008
 	tristate "ON Semiconductor Temperature Sensor"
 	default n
@@ -555,6 +547,43 @@ config TEGRA_CRYPTO_DEV
 	Dev node /dev/tegra-crypto in order to get access to tegra aes
 	hardware from user space
 
+config BCM4330_RFKILL
+    bool "Enable BCM4330 RFKILL driver"
+    default n
+    ---help---
+    Adds BCM4330 RFKILL driver for Broadcom BCM4330 chipset
+
+config SEC_MODEM
+    bool "SAMSUNG MODEM DRIVER"
+    default n
+
+config SAMSUNG_JACK
+    bool "3.5MM ear jack driver for Samsung devices"
+    depends on INPUT
+    default n
+    ---help---
+     This is 3.5MM ear jack driver for Samsung devices.
+     If unsure, say N.
+
+config SAMSUNG_FM_SI4709
+	tristate "Si4709 FM radio"
+	depends on I2C
+	default n
+	help
+	  Say Y to enable Si4709 FM radio support.
+
+config SEC_MISC
+    bool "driver for miscellaneous functions for Samsung boards"
+    default n
+    help
+      Enable this to be able to support Samsung boards
+
+config VIBTONZ
+    tristate "Vibtonz"
+    default n
+    help
+      Say Y to enable Vibtonz support.
+
 config MAX1749_VIBRATOR
 	bool "MAX1749 vibrator device driver"
 	depends on ANDROID_TIMED_OUTPUT
@@ -569,7 +598,7 @@ source "drivers/misc/iwmc3200top/Kconfig"
 source "drivers/misc/ti-st/Kconfig"
 source "drivers/misc/lis3lv02d/Kconfig"
 source "drivers/misc/carma/Kconfig"
-source "drivers/misc/inv_mpu/Kconfig"
 source "drivers/misc/tegra-baseband/Kconfig"
+source "drivers/misc/modem_if/Kconfig"
 
 endif # MISC_DEVICES

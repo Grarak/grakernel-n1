@@ -57,6 +57,12 @@
 #include <mach/irqs.h>
 #include <mach/powergate.h>
 
+#ifdef CONFIG_MACH_N1
+#include <mach/gpio-n1.h>
+#include <linux/gpio.h>
+#include <linux/cm3663.h>
+#endif
+
 #include "board.h"
 #include "clock.h"
 #include "cpuidle.h"
@@ -178,6 +184,7 @@ static struct dvfs_rail *tegra_core_rail;
 static struct clk *tegra_pclk;
 static const struct tegra_suspend_platform_data *pdata;
 static enum tegra_suspend_mode current_suspend_mode = TEGRA_SUSPEND_NONE;
+static enum tegra_suspend_mode current_suspended_state = TEGRA_SUSPEND_NONE;
 
 #if defined(CONFIG_TEGRA_CLUSTER_CONTROL) && INSTRUMENT_CLUSTER_SWITCH
 enum tegra_cluster_switch_time_id {
@@ -318,6 +325,14 @@ fail:
 #else
 	return 0;
 #endif
+}
+
+unsigned int tegra_get_jack_current_suspend_mode(void)
+{
+	if (!pdata)
+		return TEGRA_SUSPEND_NONE;
+
+	return current_suspended_state;
 }
 
 /* ensures that sufficient time is passed for a register write to
@@ -864,6 +879,8 @@ int tegra_suspend_dram(enum tegra_suspend_mode mode, unsigned int flags)
 
 	tegra_pm_set(mode);
 
+    current_suspended_state = mode;
+
 	if (pdata && pdata->board_suspend)
 		pdata->board_suspend(mode, TEGRA_SUSPEND_BEFORE_CPU);
 
@@ -1023,6 +1040,14 @@ static struct kobject *suspend_kobj;
 
 static int tegra_pm_enter_suspend(void)
 {
+#ifdef CONFIG_MACH_N1
+	/* FIXME : set LP1 when the device is in call */
+	if (Is_call_active() || !gpio_get_value(GPIO_ALC_INT)
+				|| Is_proximitysensor_active())
+		current_suspend_mode = TEGRA_SUSPEND_LP1;
+	else
+		current_suspend_mode = pdata->suspend_mode;
+#endif
 	pr_info("Entering suspend state %s\n", lp_state[current_suspend_mode]);
 	if (current_suspend_mode == TEGRA_SUSPEND_LP0)
 		tegra_lp0_cpu_mode(true);
@@ -1033,6 +1058,9 @@ static void tegra_pm_enter_resume(void)
 {
 	if (current_suspend_mode == TEGRA_SUSPEND_LP0)
 		tegra_lp0_cpu_mode(false);
+#ifdef CONFIG_MACH_N1
+	n1_save_wakeup_key(current_suspend_mode);
+#endif
 	pr_info("Exited suspend state %s\n", lp_state[current_suspend_mode]);
 }
 

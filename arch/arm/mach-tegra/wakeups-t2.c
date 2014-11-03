@@ -55,6 +55,9 @@ static int tegra_wake_event_irq[] = {
 	[28] = TEGRA_GPIO_TO_IRQ(TEGRA_GPIO_PQ6),
 	[29] = TEGRA_GPIO_TO_IRQ(TEGRA_GPIO_PQ7),
 	[30] = TEGRA_GPIO_TO_IRQ(TEGRA_GPIO_PN2),
+#ifdef CONFIG_MACH_N1
+	[31] = TEGRA_GPIO_TO_IRQ(TEGRA_GPIO_PO1),
+#endif
 };
 
 int tegra_irq_to_wake(int irq)

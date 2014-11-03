@@ -946,6 +946,7 @@ void clk_timer_callback(unsigned long data)
 	}
 }
 
+#ifndef CONFIG_MACH_N1
 static void clk_timer_work_handler(struct work_struct* clk_timer_work) {
 	struct tegra_ehci_hcd *tegra = container_of(clk_timer_work,
 						struct tegra_ehci_hcd, clk_timer_work);
@@ -984,6 +985,7 @@ static void clk_timer_work_handler(struct work_struct* clk_timer_work) {
 		}
 	}
 }
+#endif
 
 static int tegra_ehci_urb_enqueue (
 	struct usb_hcd	*hcd,
@@ -1006,14 +1008,18 @@ static int tegra_ehci_urb_enqueue (
 		if (transfer_buffer_length < 255) {
 		/* Do nothing for interrupt buffers < 255 */
 		} else {
+#ifndef CONFIG_MACH_N1
 			/* signal to set the busy hints */
 			schedule_work(&pdata->clk_timer_work);
+#endif
 		}
 		break;
 		case USB_ENDPOINT_XFER_ISOC:
 		case USB_ENDPOINT_XFER_BULK:
 			/* signal to set the busy hints */
+#ifndef CONFIG_MACH_N1
 			schedule_work(&pdata->clk_timer_work);
+#endif
 		break;
 		case USB_ENDPOINT_XFER_CONTROL:
 		default:
@@ -1115,9 +1121,11 @@ static int tegra_ehci_probe(struct platform_device *pdev)
 		err = PTR_ERR(tegra->emc_clk);
 		goto fail_emc_clk;
 	}
+#ifndef CONFIG_MACH_N1
 	init_timer(&tegra->clk_timer);
 	tegra->clk_timer.function = clk_timer_callback;
 	tegra->clk_timer.data = (unsigned long) tegra;
+#endif
 
 #ifdef CONFIG_ARCH_TEGRA_2x_SOC
 	/* Set DDR busy hints to 150MHz. For Tegra 2x SOC, DDR rate is half of EMC rate */
@@ -1125,6 +1133,12 @@ static int tegra_ehci_probe(struct platform_device *pdev)
 #else
 	/* Set DDR busy hints to 100MHz. For Tegra 3x SOC DDR rate equals to EMC rate */
 	clk_set_rate(tegra->emc_clk, 100000000);
+#endif
+
+#ifdef CONFIG_MACH_N1
+	clk_enable(tegra->sclk_clk);
+	clk_enable(tegra->emc_clk);
+	tegra->clock_enabled = 1;
 #endif
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -1142,7 +1156,9 @@ static int tegra_ehci_probe(struct platform_device *pdev)
 		goto fail_io;
 	}
 
+#ifndef CONFIG_MACH_N1
 	INIT_WORK(&tegra->clk_timer_work, clk_timer_work_handler);
+#endif
 
 	tegra->phy = tegra_usb_phy_open(instance, hcd->regs, pdata->phy_config,
 					TEGRA_USB_PHY_MODE_HOST, pdata->phy_type);
@@ -1185,7 +1201,7 @@ static int tegra_ehci_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Failed to add USB HCD error = %d\n", err);
 		goto fail;
 	}
-
+#ifndef CONFIG_MACH_N1
 	err = enable_irq_wake(tegra->irq);
 	if (err < 0) {
 		dev_warn(&pdev->dev,
@@ -1194,7 +1210,7 @@ static int tegra_ehci_probe(struct platform_device *pdev)
 		err = 0;
 		tegra->irq = 0;
 	}
-
+#endif
 	return err;
 
 fail:

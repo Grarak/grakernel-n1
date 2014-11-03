@@ -693,11 +693,19 @@ static struct tegra_utmip_config utmip_default[] = {
 	},
 };
 
+#ifdef CONFIG_MACH_N1
+struct usb_phy_plat_data usb_phy_data[] = {
+	{ 0, 0, -1, NULL, NULL, NULL, NULL},
+	{ 0, 0, -1, NULL, NULL, NULL, NULL},
+	{ 0, 0, -1, NULL, NULL, NULL, NULL},
+};
+#else
 struct usb_phy_plat_data usb_phy_data[] = {
 	{ 0, 0, -1, NULL},
 	{ 0, 0, -1, NULL},
 	{ 0, 0, -1, NULL},
 };
+#endif
 
 static int utmip_pad_open(struct tegra_usb_phy *phy)
 {
@@ -785,7 +793,11 @@ static int utmip_pad_power_off(struct tegra_usb_phy *phy, bool is_dpd)
 
 static int utmi_wait_register(void __iomem *reg, u32 mask, u32 result)
 {
+#ifdef CONFIG_MACH_N1
+	unsigned long timeout = 10000;
+#else
 	unsigned long timeout = 2500;
+#endif
 	do {
 		if ((readl(reg) & mask) == result)
 			return 0;
@@ -885,6 +897,10 @@ static void vbus_enable(struct tegra_usb_phy *phy)
 	int gpio_status;
 	int gpio = usb_phy_data[phy->instance].vbus_gpio;
 
+#ifdef CONFIG_MACH_N1
+	if (usb_phy_data[phy->instance].vbus_en)
+		usb_phy_data[phy->instance].vbus_en(1);
+#endif
 	if (gpio == -1)
 		return;
 
@@ -913,6 +929,10 @@ static void vbus_disable(struct tegra_usb_phy *phy)
 #ifdef CONFIG_ARCH_TEGRA_2x_SOC
 	int gpio = usb_phy_data[phy->instance].vbus_gpio;
 
+#ifdef CONFIG_MACH_N1
+	if (usb_phy_data[phy->instance].vbus_en)
+		usb_phy_data[phy->instance].vbus_en(0);
+#endif
 	if (gpio == -1)
 		return;
 
@@ -2330,6 +2350,17 @@ static irqreturn_t usb_phy_vbus_irq_thr(int irq, void *pdata)
 
 #ifdef CONFIG_USB_TEGRA_OTG
 	tegra_otg_check_vbus_detection();
+#ifdef CONFIG_MACH_N1
+	if (usb_phy_data[phy->instance]
+			.otg_clk_data->check_detection
+		&& usb_phy_data[phy->instance].otg_clk_data->clk_cause)
+		usb_phy_data[phy->instance].otg_clk_data->check_detection
+			(usb_phy_data[phy->instance]
+				.otg_clk_data->clk_cause, VBUS_CAUSE);
+	else
+		pr_err("%s: check_detection or clk_cause is null",
+						 __func__);
+#endif
 #endif
 
 	return IRQ_HANDLED;
@@ -2536,7 +2567,11 @@ int tegra_usb_phy_power_on(struct tegra_usb_phy *phy, bool is_dpd)
 		regulator_enable(phy->reg_vdd);
 		phy->regulator_on = 1;
 	}
-
+#ifdef CONFIG_MACH_N1
+	if (usb_phy_data[phy->instance].usb_ldo_en)
+		usb_phy_data[phy->instance].usb_ldo_en
+					(1, phy->instance);
+#endif
 	if (power_on[phy->usb_phy_type])
 		ret = power_on[phy->usb_phy_type](phy, is_dpd);
 
@@ -2570,6 +2605,11 @@ void tegra_usb_phy_power_off(struct tegra_usb_phy *phy, bool is_dpd)
 		regulator_disable(phy->reg_vdd);
 		phy->regulator_on = 0;
 	}
+#ifdef CONFIG_MACH_N1
+	if (usb_phy_data[phy->instance].usb_ldo_en)
+		usb_phy_data[phy->instance].usb_ldo_en
+					(0, phy->instance);
+#endif
 	phy->power_on = false;
 }
 
@@ -2977,6 +3017,14 @@ int __init tegra_usb_phy_init(struct usb_phy_plat_data *pdata, int size)
 			usb_phy_data[pdata->instance].vbus_irq = pdata->vbus_irq;
 			usb_phy_data[pdata->instance].vbus_gpio = pdata->vbus_gpio;
 			usb_phy_data[pdata->instance].vbus_reg_supply = pdata->vbus_reg_supply;
+#ifdef CONFIG_MACH_N1
+			usb_phy_data[pdata->instance].usb_ldo_en
+						= pdata->usb_ldo_en;
+			usb_phy_data[pdata->instance].vbus_en
+						= pdata->vbus_en;
+			usb_phy_data[pdata->instance].otg_clk_data
+						= pdata->otg_clk_data;
+#endif
 		}
 	}
 

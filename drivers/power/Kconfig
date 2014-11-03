@@ -36,6 +36,18 @@ config MAX8925_POWER
 	  Say Y here to enable support for the battery charger in the Maxim
 	  MAX8925 PMIC.
 
+config BATTERY_SEC
+	tristate "SAMSUNG battery driver"
+	depends on ARCH_TEGRA
+	help
+	  Say Y to enable samsung battery driver for devices with TEGRA chip.
+
+config SAMSUNG_LPM_MODE
+	bool "Off charging mode support in sec battery driver"
+	depends on BATTERY_SEC
+	help
+	  Say Y to include support for sec off charging support
+
 config MAX8907C_CHARGER
 	tristate "MAX8907c charger support"
 	depends on MFD_MAX8907C
@@ -184,6 +196,14 @@ config BATTERY_MAX17040
 	  in handheld and portable equipment. The MAX17040 is configured
 	  to operate with a single lithium cell
 
+config BATTERY_MAX17043
+	tristate "Maxim MAX17043 Fuel Gauge"
+	depends on I2C
+	help
+	  MAX17043 is fuel-gauge systems for lithium-ion (Li+) batteries
+	  in handheld and portable equipment. The MAX17043 is configured
+	  to operate with a single lithium cell
+
 config BATTERY_MAX17042
 	tristate "Maxim MAX17042/8997/8966 Fuel Gauge"
 	depends on I2C
@@ -284,6 +304,12 @@ config CHARGER_MAX8998
 	help
 	  Say Y to enable support for the battery charger control sysfs and
 	  platform data of MAX8998/LP3974 PMICs.
+
+config MAX8922_CHARGER
+       tristate "MAX8922 battery charger support"
+       help
+         Say Y here to enable support for the battery charger in the Maxim
+         MAX8922 Charger IC.
 
 endif # POWER_SUPPLY
 

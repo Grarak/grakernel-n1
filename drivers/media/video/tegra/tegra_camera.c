@@ -35,6 +35,7 @@
  * vi_sensor, and csi modules, replacing nvrm and nvos completely for camera
  */
 #define TEGRA_CAMERA_NAME "tegra_camera"
+struct class *camera_class;
 
 struct tegra_camera_dev {
 	struct device *dev;
@@ -533,6 +534,7 @@ static int tegra_camera_probe(struct platform_device *pdev)
 
 	/* dev is set in order to restore in _remove */
 	platform_set_drvdata(pdev, dev);
+	camera_class = class_create(THIS_MODULE, "camera");
 
 	return 0;
 
@@ -565,6 +567,8 @@ static int tegra_camera_remove(struct platform_device *pdev)
 	misc_deregister(&dev->misc_dev);
 	regulator_put(dev->reg);
 	mutex_destroy(&dev->tegra_camera_lock);
+	if (camera_class)
+		class_destroy(camera_class);
 
 	return 0;
 }

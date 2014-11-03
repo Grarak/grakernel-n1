@@ -770,4 +770,14 @@ config TOUCHSCREEN_SYN_RMI4_SPI
 	  To compile this driver as a module, choose M here: the
 	  module will be called rmi-spi.
 
+config TOUCHSCREEN_ATMEL_MXT224E
+    bool "Atmel MXT224E Touchscreen Interface"
+    depends on I2C
+    default n
+    help
+        Say Y here if you want support for atmel_224E touchscreen controllers.
+
+        To compile this driver as a module, choose M here: the
+        module will be called atmel_mxt224E.
+
 endif

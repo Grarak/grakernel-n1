@@ -23,6 +23,9 @@
 #include <linux/init.h>
 #include <linux/nmi.h>
 #include <linux/dmi.h>
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+#include <linux/kernel_sec_common.h>
+#endif
 
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
@@ -107,6 +110,18 @@ NORET_TYPE void panic(const char * fmt, ...)
 
 	bust_spinlocks(0);
 
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+	if (!strcmp(buf, "CP Crash"))
+		kernel_sec_set_upload_cause(UPLOAD_CAUSE_CP_ERROR_FATAL);
+	else if (!strcmp(buf, "Forced_Upload"))
+		kernel_sec_set_upload_cause(UPLOAD_CAUSE_FORCED_UPLOAD);
+	else
+		kernel_sec_set_upload_cause(UPLOAD_CAUSE_KERNEL_PANIC);
+
+	kernel_sec_set_upload_magic_number();
+	
+#endif
+
 	if (!panic_blink)
 		panic_blink = no_blink;
 
@@ -125,6 +140,15 @@ NORET_TYPE void panic(const char * fmt, ...)
 			}
 			mdelay(PANIC_TIMER_STEP);
 		}
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+		/*
+		 * TODO : debugLevel considerationi should be done. (tkhwang)
+		 *        bluescreen display will be necessary.
+		 */
+		/* kernel_sec_set_cp_upload(); */
+		/* kernel_sec_save_final_context(); */
+		kernel_sec_hw_reset(false);
+#endif
 	}
 	if (panic_timeout != 0) {
 		/*
@@ -159,6 +183,15 @@ NORET_TYPE void panic(const char * fmt, ...)
 		}
 		mdelay(PANIC_TIMER_STEP);
 	}
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+	/*
+	 * TODO : debugLevel considerationi should be done. (tkhwang)
+	 *        bluescreen display will be necessary.
+	 */
+	/* kernel_sec_set_cp_upload(); */
+	/* kernel_sec_save_final_context(); */
+	kernel_sec_hw_reset(false);
+#endif
 }
 
 EXPORT_SYMBOL(panic);

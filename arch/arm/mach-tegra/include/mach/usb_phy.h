@@ -22,6 +22,9 @@
 #include <linux/regulator/consumer.h>
 #include <linux/usb/otg.h>
 #include <linux/platform_data/tegra_usb.h>
+#ifdef CONFIG_MACH_N1
+#include <mach/otg_def.h>
+#endif
 
 struct tegra_utmip_config {
 	u8 hssync_start_delay;
@@ -71,6 +74,9 @@ struct tegra_uhsic_config {
 	int (*preresume)(void);
 	int (*usb_phy_ready)(void);
 	int (*post_phy_off)(void);
+#if defined(CONFIG_LINK_DEVICE_HSIC)
+	void (*device_wake)(void);
+#endif
 };
 
 enum tegra_usb_phy_port_speed {
@@ -89,6 +95,11 @@ struct usb_phy_plat_data {
 	int vbus_irq;
 	int vbus_gpio;
 	char * vbus_reg_supply;
+#ifdef CONFIG_MACH_N1
+	void (*vbus_en)(int);
+	void (*usb_ldo_en)(int, int);
+	struct otg_detect_data *otg_clk_data;
+#endif
 };
 
 struct tegra_xtal_freq;
@@ -162,5 +173,13 @@ bool tegra_usb_phy_charger_detect(struct tegra_usb_phy *phy);
 int __init tegra_usb_phy_init(struct usb_phy_plat_data *pdata, int size);
 
 bool tegra_usb_phy_is_remotewake_detected(struct tegra_usb_phy *phy);
+
+#if defined(CONFIG_LINK_DEVICE_HSIC)
+/* enum tegra_host_state { */
+enum {
+	TEGRA_HOST_OFF,
+	TEGRA_HOST_ON,
+};
+#endif
 
 #endif /* __MACH_USB_PHY_H */

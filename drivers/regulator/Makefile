@@ -18,7 +18,11 @@ obj-$(CONFIG_REGULATOR_TWL4030) += twl-regulator.o
 obj-$(CONFIG_REGULATOR_MAX8649)	+= max8649.o
 obj-$(CONFIG_REGULATOR_MAX8660) += max8660.o
 obj-$(CONFIG_REGULATOR_MAX8925) += max8925-regulator.o
+ifeq ($(CONFIG_MACH_N1),y)
+obj-$(CONFIG_REGULATOR_MAX8952) += max8952n1.o
+else
 obj-$(CONFIG_REGULATOR_MAX8952) += max8952.o
+endif
 obj-$(CONFIG_REGULATOR_MAX8997) += max8997.o
 obj-$(CONFIG_REGULATOR_MAX8998) += max8998.o
 obj-$(CONFIG_REGULATOR_MAX8907C) += max8907c-regulator.o

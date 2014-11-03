@@ -43,6 +43,9 @@
 #include <linux/rculist.h>
 
 #include <asm/uaccess.h>
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+#include <linux/io.h>
+#endif
 
 /*
  * Architectures can override it:
@@ -172,6 +175,26 @@ void log_buf_kexec_setup(void)
 }
 #endif
 
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+/*{{Mark for GetLog -1/2*/
+struct struct_kernel_log_mark {
+	u32 special_mark_1;
+	u32 special_mark_2;
+	u32 special_mark_3;
+	u32 special_mark_4;
+	void *p__log_buf;
+};
+
+static struct struct_kernel_log_mark kernel_log_mark = {
+	.special_mark_1 = (('*' << 24) | ('^' << 16) | ('^' << 8) | ('*' << 0)),
+	.special_mark_2 = (('I' << 24) | ('n' << 16) | ('f' << 8) | ('o' << 0)),
+	.special_mark_3 = (('H' << 24) | ('e' << 16) | ('r' << 8) | ('e' << 0)),
+	.special_mark_4 = (('k' << 24) | ('l' << 16) | ('o' << 8) | ('g' << 0)),
+	.p__log_buf = __log_buf,
+};
+/*}} Mark for GetLog -1/2*/
+#endif
+
 /* requested log_buf_len from kernel cmdline */
 static unsigned long __initdata new_log_buf_len;
 
@@ -184,6 +207,12 @@ static int __init log_buf_len_setup(char *str)
 		size = roundup_pow_of_two(size);
 	if (size > log_buf_len)
 		new_log_buf_len = size;
+
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+	/*{{Mark for GetLog -2/2*/
+	kernel_log_mark.p__log_buf = __log_buf;
+	/*}} Mark for GetLog -2/2*/
+#endif
 
 	return 0;
 }

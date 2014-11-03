@@ -524,18 +524,60 @@ struct mass_storage_function_config {
 	struct fsg_common *common;
 };
 
+#ifdef CONFIG_MACH_N1
+# define UMS_WITH_MULTIPLE_LUNS
+#endif
+
 static int mass_storage_function_init(struct android_usb_function *f,
 					struct usb_composite_dev *cdev)
 {
 	struct mass_storage_function_config *config;
 	struct fsg_common *common;
 	int err;
+#ifdef UMS_WITH_MULTIPLE_LUNS
+	int i;
+#endif
 
 	config = kzalloc(sizeof(struct mass_storage_function_config),
 								GFP_KERNEL);
 	if (!config)
 		return -ENOMEM;
 
+#ifdef UMS_WITH_MULTIPLE_LUNS
+	/* All of Nvidia device have SD card slot so we make 2 luns */
+	config->fsg.nluns = 2;
+	pr_notice("usb: %s, nluns=%d\n", __func__,
+			config->fsg.nluns);
+
+	for (i = 0; i < config->fsg.nluns; i++) {
+		config->fsg.luns[i].removable = 1;
+		config->fsg.luns[i].nofua = 1;
+	}
+
+	common = fsg_common_init(NULL, cdev, &config->fsg);
+	if (IS_ERR(common)) {
+		kfree(config);
+		return PTR_ERR(common);
+	}
+
+	for (i = 0; i < config->fsg.nluns; i++) {
+		char luns[5];
+		err = snprintf(luns, 5, "lun%d", i);
+		if (err == 0) {
+			printk(KERN_ERR "usb: %s snprintf error\n",
+					__func__);
+			kfree(config);
+			return err;
+		}
+		err = sysfs_create_link(&f->dev->kobj,
+				&common->luns[i].dev.kobj,
+				luns);
+		if (err) {
+			kfree(config);
+			return err;
+		}
+	}
+#else
 	config->fsg.nluns = 1;
 	config->fsg.luns[0].removable = 1;
 
@@ -552,6 +594,7 @@ static int mass_storage_function_init(struct android_usb_function *f,
 		kfree(config);
 		return err;
 	}
+#endif
 
 	config->common = common;
 	f->config = config;

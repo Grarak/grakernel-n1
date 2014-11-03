@@ -147,6 +147,17 @@ obj-${CONFIG_MACH_WHISTLER}             += board-whistler-kbc.o
 obj-${CONFIG_MACH_WHISTLER}             += board-whistler-baseband.o
 obj-${CONFIG_MACH_WHISTLER}             += board-whistler-memory.o
 
+obj-${CONFIG_MACH_N1}                   += board-n1.o
+obj-${CONFIG_MACH_N1}                   += board-n1-pinmux.o
+obj-${CONFIG_MACH_N1}                   += board-n1-sdhci.o
+obj-${CONFIG_MACH_N1}                   += board-n1-power.o
+obj-${CONFIG_MACH_N1}                   += board-n1-panel.o
+obj-${CONFIG_MACH_N1}                   += board-n1-sensors.o
+obj-${CONFIG_MACH_N1}                   += board-n1-memory.o
+obj-${CONFIG_MACH_N1}                   += board-n1-gpioi2c.o
+obj-${CONFIG_MACH_N1}                   += panel-n1.o
+obj-${CONFIG_MACH_N1}                   += board-n1-vibrator.o
+
 obj-${CONFIG_MACH_CARDHU}               += board-cardhu.o
 obj-${CONFIG_MACH_CARDHU}               += board-cardhu-kbc.o
 obj-${CONFIG_MACH_CARDHU}               += board-cardhu-panel.o
@@ -190,3 +201,5 @@ obj-y                                   += eeprom-wifi-mac.o
 obj-${CONFIG_TEGRA_BB_XMM_POWER}        += baseband-xmm-power.o
 obj-${CONFIG_TEGRA_BB_XMM_POWER2}       += baseband-xmm-power2.o
 
+obj-${CONFIG_BT_BCM4330}                += board-bluetooth-bcm4330.o
+obj-$(CONFIG_SEC_MODEM_N1)              += board-n1-modems.o

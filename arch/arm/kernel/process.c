@@ -40,6 +40,10 @@
 #include <asm/stacktrace.h>
 #include <asm/mach/time.h>
 
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+#include <linux/kernel_sec_common.h>
+#endif
+
 #ifdef CONFIG_CC_STACKPROTECTOR
 #include <linux/stackprotector.h>
 unsigned long __stack_chk_guard __read_mostly;
@@ -131,12 +135,24 @@ void arm_machine_flush_console(void)
 
 void arm_machine_restart(char mode, const char *cmd)
 {
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+	kernel_sec_upload_cause_type upload_cause;
+#endif
 	/*
 	 * Tell the mm system that we are going to reboot -
 	 * we may need it to insert some 1:1 mappings so that
 	 * soft boot works.
 	 */
 	setup_mm_for_reboot(mode);
+
+	/*
+	 * Clear the magic number because it's normal reboot.
+	 */
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+	upload_cause = kernel_sec_get_upload_cause();
+	if (upload_cause == UPLOAD_CAUSE_INIT)
+		kernel_sec_clear_upload_magic_number();
+#endif
 
 	/* Clean and invalidate caches */
 	flush_cache_all();
@@ -265,6 +281,13 @@ __setup("reboot=", reboot_setup);
 
 void machine_shutdown(void)
 {
+#ifdef CONFIG_KERNEL_DEBUG_SEC
+	kernel_sec_upload_cause_type upload_cause;
+	upload_cause = kernel_sec_get_upload_cause();
+        /* Clear the magic number because it's normal reboot */
+	if (upload_cause == UPLOAD_CAUSE_INIT)
+		kernel_sec_clear_upload_magic_number();
+#endif
 #ifdef CONFIG_SMP
 	smp_send_stop();
 #endif

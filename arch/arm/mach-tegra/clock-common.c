@@ -54,7 +54,11 @@ unsigned long tegra_clk_measure_input_freq(void)
 		osc_input_freq = 13000000;
 	else if (clock_autodetect >= 1172 - 3 && clock_autodetect <= 1172 + 3)
 		osc_input_freq = 19200000;
+#ifdef CONFIG_MACH_N1
+	else if (clock_autodetect >= 1587 - 10 && clock_autodetect <= 1587 + 10)
+#else
 	else if (clock_autodetect >= 1587 - 3 && clock_autodetect <= 1587 + 3)
+#endif
 		osc_input_freq = 26000000;
 #ifndef CONFIG_ARCH_TEGRA_2x_SOC
 	else if (clock_autodetect >= 1025 - 3 && clock_autodetect <= 1025 + 3)

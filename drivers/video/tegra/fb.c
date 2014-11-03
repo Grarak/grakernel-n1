@@ -312,6 +312,12 @@ static int tegra_fb_blank(int blank, struct fb_info *info)
 	}
 }
 
+void tegra_fb_dc_data_out(struct fb_info *info)
+{
+	struct tegra_fb_info *tegra_fb = info->par;
+	tegra_dc_data_out(tegra_fb->win->dc);
+}
+
 static int tegra_fb_pan_display(struct fb_var_screeninfo *var,
 				struct fb_info *info)
 {

@@ -196,7 +196,11 @@ int tegra_pinmux_get_pingroup(int gpio_nr)
 }
 EXPORT_SYMBOL_GPL(tegra_pinmux_get_pingroup);
 
+#ifdef CONFIG_MACH_N1
+int tegra_pinmux_set_func(const struct tegra_pingroup_config *config)
+#else
 static int tegra_pinmux_set_func(const struct tegra_pingroup_config *config)
+#endif
 {
 	int mux = -1;
 	int i;
@@ -525,6 +529,41 @@ void tegra_pinmux_config_table(const struct tegra_pingroup_config *config, int l
 		tegra_pinmux_config_pingroup(&config[i]);
 }
 EXPORT_SYMBOL(tegra_pinmux_config_table);
+
+#ifdef CONFIG_MACH_N1
+static void tegra_pinmux_sleep_config_pingroup(const struct tegra_sleep_pingroup_config *config)
+{
+    enum tegra_pingroup pingroup = config->pingroup;
+    enum tegra_pullupdown pupd   = config->pupd;
+    enum tegra_tristate tristate = config->tristate;
+    int err;
+
+    if (config->pupd_ctrl == YES) {
+        if (pingroups[pingroup].pupd_reg >= 0) {
+            err = tegra_pinmux_set_pullupdown(pingroup, pupd);
+            if (err < 0)
+                pr_err("pinmux: can't set pingroup %s pullupdown to %s: %d\n",
+                       pingroup_name(pingroup), pupd_name(pupd), err);
+        }
+    }
+    if (config->tristate_ctrl == YES) {
+        if (pingroups[pingroup].tri_reg >= 0) {
+            err = tegra_pinmux_set_tristate(pingroup, tristate);
+            if (err < 0)
+                pr_err("pinmux: can't set pingroup %s tristate to %s: %d\n",
+                       pingroup_name(pingroup), tri_name(tristate), err);
+        }
+    }
+}
+
+void tegra_pinmux_sleep_config_table(const struct tegra_sleep_pingroup_config *config, int len)
+{
+    int i;
+
+    for (i = 0; i < len; i++)
+        tegra_pinmux_sleep_config_pingroup(&config[i]);
+}
+#endif
 
 static const char *drive_pinmux_name(enum tegra_drive_pingroup pg)
 {

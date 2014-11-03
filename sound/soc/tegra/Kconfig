@@ -106,6 +106,13 @@ config MACH_HAS_SND_SOC_TEGRA_WM8753
 	  this config option, in order to allow the user to enable
 	  SND_SOC_TEGRA_WM8753.
 
+config MACH_HAS_SND_SOC_TEGRA_WM8994
+	bool
+	help
+	  Machines that use the SND_SOC_TEGRA_WM8994 driver should select
+	  this config option, in order to allow the user to enable
+	  SND_SOC_TEGRA_WM8994.
+
 config SND_SOC_TEGRA_WM8753
 	tristate "SoC Audio support for Tegra boards using a WM8753 codec"
 	depends on SND_SOC_TEGRA && I2C && TEGRA_DC
@@ -120,6 +127,21 @@ config SND_SOC_TEGRA_WM8753
 	  Say Y or M here if you want to add support for SoC audio on Tegra
 	  boards using the WM8753 codec. Currently, only supported board is
 	  Whistler.
+
+config SND_SOC_TEGRA_WM8994
+	tristate "SoC Audio support for Tegra boards using a WM8994 codec"
+	depends on SND_SOC_TEGRA && I2C && TEGRA_DC
+	depends on MACH_HAS_SND_SOC_TEGRA_WM8994
+	select SND_SOC_TEGRA20_I2S if ARCH_TEGRA_2x_SOC
+	select SND_SOC_TEGRA30_I2S if ARCH_TEGRA_3x_SOC
+	select SND_SOC_TEGRA20_SPDIF if ARCH_TEGRA_2x_SOC
+	select SND_SOC_TEGRA30_SPDIF if ARCH_TEGRA_3x_SOC
+	select SND_SOC_WM8994
+	select SND_SOC_SPDIF
+	help
+	  Say Y or M here if you want to add support for SoC audio on Tegra
+	  boards using the WM8994 codec. Currently, only supported board is
+	  N1, BOSE.
 
 config MACH_HAS_SND_SOC_TEGRA_MAX98088
 	bool

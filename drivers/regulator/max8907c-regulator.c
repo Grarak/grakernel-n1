@@ -284,6 +284,16 @@ static int max8907c_regulator_wled_get_current_limit(struct regulator_dev *rdev)
 static int max8907c_regulator_ldo_enable(struct regulator_dev *rdev)
 {
 	const struct max8907c_regulator_info *info = rdev_get_drvdata(rdev);
+#ifdef CONFIG_MACH_N1
+    int val;
+
+    val = max8907c_reg_read(info->i2c, info->reg_base + MAX8907C_CTL);
+    if (unlikely(val < 0))
+        return -EDOM;
+
+    if ((val & MAX8907C_MASK_LDO_SEQ) != MAX8907C_MASK_LDO_SEQ)
+        return 0;
+#endif
 
 	return max8907c_set_bits(info->i2c, info->reg_base + MAX8907C_CTL,
 				 MAX8907C_MASK_LDO_EN | MAX8907C_MASK_LDO_SEQ,
@@ -293,6 +303,16 @@ static int max8907c_regulator_ldo_enable(struct regulator_dev *rdev)
 static int max8907c_regulator_out5v_enable(struct regulator_dev *rdev)
 {
 	const struct max8907c_regulator_info *info = rdev_get_drvdata(rdev);
+#ifdef CONFIG_MACH_N1
+    int val;
+
+    val = max8907c_reg_read(info->i2c, info->reg_base);
+    if (unlikely(val < 0))
+        return -EDOM;
+
+    if ((val & MAX8907C_MASK_OUT5V_ENSRC) != MAX8907C_MASK_OUT5V_ENSRC)
+        return 0;
+#endif
 
 	return max8907c_set_bits(info->i2c, info->reg_base,
 				 MAX8907C_MASK_OUT5V_VINEN |
@@ -305,6 +325,16 @@ static int max8907c_regulator_out5v_enable(struct regulator_dev *rdev)
 static int max8907c_regulator_ldo_disable(struct regulator_dev *rdev)
 {
 	const struct max8907c_regulator_info *info = rdev_get_drvdata(rdev);
+#if defined (CONFIG_MACH_N1)
+    int val;
+
+    val = max8907c_reg_read(info->i2c, info->reg_base + MAX8907C_CTL);
+    if (unlikely(val < 0))
+        return -EDOM;
+
+    if ((val & MAX8907C_MASK_LDO_SEQ) != MAX8907C_MASK_LDO_SEQ)
+        return 0;
+#endif
 
 	return max8907c_set_bits(info->i2c, info->reg_base + MAX8907C_CTL,
 				 MAX8907C_MASK_LDO_EN | MAX8907C_MASK_LDO_SEQ,
@@ -331,7 +361,12 @@ static int max8907c_regulator_ldo_is_enabled(struct regulator_dev *rdev)
 	if (val < 0)
 		return -EDOM;
 
+#ifdef CONFIG_MACH_N1
+    return ((val & MAX8907C_MASK_LDO_SEQ) != MAX8907C_MASK_LDO_SEQ)
+            || ((val & MAX8907C_MASK_LDO_EN) == MAX8907C_MASK_LDO_EN);
+#else
 	return (val & MAX8907C_MASK_LDO_EN) || !(val & MAX8907C_MASK_LDO_SEQ);
+#endif
 }
 
 static int max8907c_regulator_out5v_is_enabled(struct regulator_dev *rdev)
@@ -343,6 +378,10 @@ static int max8907c_regulator_out5v_is_enabled(struct regulator_dev *rdev)
 	if (val < 0)
 		return -EDOM;
 
+#ifdef CONFIG_MACH_N1
+    return ((val & MAX8907C_MASK_OUT5V_ENSRC) != MAX8907C_MASK_OUT5V_ENSRC)
+            || ((val & MAX8907C_MASK_OUT5V_EN) == MAX8907C_MASK_OUT5V_EN);
+#else
 	if ((val &
 	     (MAX8907C_MASK_OUT5V_VINEN | MAX8907C_MASK_OUT5V_ENSRC |
 	      MAX8907C_MASK_OUT5V_EN))
@@ -350,6 +389,7 @@ static int max8907c_regulator_out5v_is_enabled(struct regulator_dev *rdev)
 		return 1;
 
 	return 0;
+#endif
 }
 
 static int max8907c_regulator_probe(struct platform_device *pdev)
@@ -379,6 +419,9 @@ static int max8907c_regulator_probe(struct platform_device *pdev)
 	}
 
 	platform_set_drvdata(pdev, rdev);
+#ifdef CONFIG_MACH_N1
+	dev_info(&pdev->dev, "%s : MAX8907C Regulator Driver Loading\n", __func__);
+#endif
 	return 0;
 
 error:

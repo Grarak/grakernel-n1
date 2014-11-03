@@ -38,6 +38,9 @@ void tegra_fb_update_monspecs(struct tegra_fb_info *fb_info,
 			      struct fb_monspecs *specs,
 			      bool (*mode_filter)(const struct tegra_dc *dc,
 						  struct fb_videomode *mode));
+
+/* called by display controller on suspend */
+void tegra_fb_dc_data_out(struct fb_info *info);
 #else
 static inline struct tegra_fb_info *tegra_fb_register(struct nvhost_device *ndev,
 						      struct tegra_dc *dc,

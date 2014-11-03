@@ -529,6 +529,7 @@ int tegra_dc_set_fb_mode(struct tegra_dc *dc, const struct fb_videomode *fbmode,
 unsigned tegra_dc_get_out_height(const struct tegra_dc *dc);
 unsigned tegra_dc_get_out_width(const struct tegra_dc *dc);
 unsigned tegra_dc_get_out_max_pixclock(const struct tegra_dc *dc);
+void tegra_dc_data_out(struct tegra_dc *dc);
 
 /* PM0 and PM1 signal control */
 #define TEGRA_PWM_PM0 0

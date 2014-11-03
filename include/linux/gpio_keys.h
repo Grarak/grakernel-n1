@@ -25,6 +25,12 @@ struct gpio_keys_platform_data {
 	void (*disable)(struct device *dev);
 	const char *name;		/* input device name */
 	int (*wakeup_key)(void);
+#ifdef CONFIG_MACH_N1
+	int (*wakeup_key_twice)(void);
+#endif
+#ifdef CONFIG_SAMSUNG_LPM_MODE
+    bool (*check_lpm)(void);
+#endif
 };
 
 #endif

@@ -21,6 +21,11 @@
 #define MAX8907C_CHG_TOPOFF		(1 << 14)
 #define MAX8907C_CHK_TMR_FAULT		(1 << 15)
 
+enum {
+	BAT_NOT_DETECTED,
+	BAT_DETECTED
+};
+
 enum max8907c_charger_topoff_threshold {
 	MAX8907C_TOPOFF_5PERCENT	= 0x00,
 	MAX8907C_TOPOFF_10PERCENT	= 0x01,
@@ -55,6 +60,11 @@ enum max8907c_fast_charger_time {
 
 struct max8907c_charger_pdata {
 	int irq;
+#ifdef CONFIG_MACH_N1
+	int (*topoff_cb) (void);
+	int (*vchg_f_cb) (int);
+	int (*vchg_r_f_cb) (int); /* FACTORY TEST BINARY */
+#endif
 	enum max8907c_charger_topoff_threshold topoff_threshold;
 	enum max8907c_charger_restart_hysteresis restart_hysteresis;
 	enum max8907c_charger_restart_hysteresis fast_charging_current;

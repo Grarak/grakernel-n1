@@ -131,6 +131,9 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_USB_DCP,	/* Dedicated Charging Port */
 	POWER_SUPPLY_TYPE_USB_CDP,	/* Charging Downstream Port */
 	POWER_SUPPLY_TYPE_USB_ACA,	/* Accessory Charger Adapters */
+#ifdef CONFIG_MACH_N1
+	POWER_SUPPLY_TYPE_DOCK,
+#endif
 };
 
 union power_supply_propval {

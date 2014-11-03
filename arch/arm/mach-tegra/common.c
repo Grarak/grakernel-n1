@@ -791,8 +791,12 @@ out:
 #define SUPPORT_SMMU_BASE_FOR_TEGRA3_A01
 #endif
 
+#ifdef CONFIG_MACH_N1
+void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size)
+#else
 void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size,
 	unsigned long fb2_size)
+#endif
 {
 #ifdef SUPPORT_SMMU_BASE_FOR_TEGRA3_A01
 	int smmu_reserved = 0;
@@ -811,6 +815,7 @@ void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size,
 			tegra_carveout_size = carveout_size;
 	}
 
+#ifndef CONFIG_MACH_N1
 	if (fb2_size) {
 		tegra_fb2_start = memblock_end_of_DRAM() - fb2_size;
 		if (memblock_remove(tegra_fb2_start, fb2_size)) {
@@ -822,6 +827,7 @@ void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size,
 		} else
 			tegra_fb2_size = fb2_size;
 	}
+#endif
 
 	if (fb_size) {
 		tegra_fb_start = memblock_end_of_DRAM() - fb_size;
@@ -838,8 +844,10 @@ void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size,
 	if (tegra_fb_size)
 		tegra_grhost_aperture = tegra_fb_start;
 
+#ifndef CONFIG_MACH_N1
 	if (tegra_fb2_size && tegra_fb2_start < tegra_grhost_aperture)
 		tegra_grhost_aperture = tegra_fb2_start;
+#endif
 
 	if (tegra_carveout_size && tegra_carveout_start < tegra_grhost_aperture)
 		tegra_grhost_aperture = tegra_carveout_start;
@@ -903,7 +911,9 @@ void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size,
 		"LP0:                    %08lx - %08lx\n"
 		"Bootloader framebuffer: %08lx - %08lx\n"
 		"Framebuffer:            %08lx - %08lx\n"
+#ifndef CONFIG_MACH_N1
 		"2nd Framebuffer:        %08lx - %08lx\n"
+#endif
 		"Carveout:               %08lx - %08lx\n"
 		"Vpr:                    %08lx - %08lx\n",
 		tegra_lp0_vec_start,
@@ -915,9 +925,11 @@ void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size,
 		tegra_fb_start,
 		tegra_fb_size ?
 			tegra_fb_start + tegra_fb_size - 1 : 0,
+#ifndef CONFIG_MACH_N1
 		tegra_fb2_start,
 		tegra_fb2_size ?
 			tegra_fb2_start + tegra_fb2_size - 1 : 0,
+#endif
 		tegra_carveout_start,
 		tegra_carveout_size ?
 			tegra_carveout_start + tegra_carveout_size - 1 : 0,

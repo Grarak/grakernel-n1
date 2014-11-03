@@ -51,6 +51,10 @@
 #include "dc_priv.h"
 #include "nvsd.h"
 
+#ifdef CONFIG_MACH_N1
+#include "../cmc623.h"
+#endif
+
 #define TEGRA_CRC_LATCHED_DELAY		34
 
 #define DC_COM_PIN_OUTPUT_POLARITY1_INIT_VAL	0x01000000
@@ -1433,8 +1437,14 @@ void tegra_dc_setup_clk(struct tegra_dc *dc, struct clk *clk)
 		if (parent_clk != clk_get_sys(NULL, "pll_p")) {
 			struct clk *base_clk = clk_get_parent(parent_clk);
 
+#ifdef CONFIG_MACH_N1
+// N1_ICS
+			if (dc->mode.pclk == 24000000)
+				rate = 216000000;
+#else
 			/* Assuming either pll_d or pll_d2 is used */
 			rate = dc->mode.pclk * 2;
+#endif
 
 			if (rate != clk_get_rate(base_clk))
 				clk_set_rate(base_clk, rate);
@@ -1461,6 +1471,7 @@ void tegra_dc_setup_clk(struct tegra_dc *dc, struct clk *clk)
 			clk_set_parent(clk, parent_clk);
 	}
 
+#ifndef CONFIG_MACH_N1
 	if (dc->out->type == TEGRA_DC_OUT_DSI) {
 		unsigned long rate;
 		struct clk *parent_clk;
@@ -1495,8 +1506,12 @@ void tegra_dc_setup_clk(struct tegra_dc *dc, struct clk *clk)
 		if (clk_get_parent(clk) != parent_clk)
 			clk_set_parent(clk, parent_clk);
 	}
+#endif
 
 	pclk = tegra_dc_pclk_round_rate(dc, dc->mode.pclk);
+#ifdef CONFIG_MACH_N1
+	printk(KERN_ERR "%s: pclk %d\n", __func__, pclk);
+#endif
 	tegra_dvfs_set_rate(clk, pclk);
 }
 
@@ -1803,6 +1818,7 @@ int tegra_dc_set_fb_mode(struct tegra_dc *dc,
 }
 EXPORT_SYMBOL(tegra_dc_set_fb_mode);
 
+#ifndef CONFIG_MACH_N1
 void
 tegra_dc_config_pwm(struct tegra_dc *dc, struct tegra_dc_pwm_params *cfg)
 {
@@ -1856,6 +1872,7 @@ tegra_dc_config_pwm(struct tegra_dc *dc, struct tegra_dc_pwm_params *cfg)
 	mutex_unlock(&dc->lock);
 }
 EXPORT_SYMBOL(tegra_dc_config_pwm);
+#endif
 
 void tegra_dc_set_out_pin_polars(struct tegra_dc *dc,
 				const struct tegra_dc_out_pin *pins,
@@ -2486,6 +2503,14 @@ static bool _tegra_dc_controller_enable(struct tegra_dc *dc)
 	return true;
 }
 
+void tegra_dc_data_out(struct tegra_dc *dc)
+{
+		tegra_dc_writel(dc, DISP_CTRL_MODE_C_DISPLAY,
+						DC_CMD_DISPLAY_COMMAND);
+		tegra_dc_writel(dc, GENERAL_UPDATE, DC_CMD_STATE_CONTROL);
+		tegra_dc_writel(dc, GENERAL_ACT_REQ, DC_CMD_STATE_CONTROL);
+}
+
 #ifdef CONFIG_ARCH_TEGRA_2x_SOC
 static bool _tegra_dc_controller_reset_enable(struct tegra_dc *dc)
 {
@@ -2712,6 +2737,10 @@ static void tegra_dc_reset_worker(struct work_struct *work)
 	if (dc->enabled == false)
 		goto unlock;
 
+#ifdef CONFIG_MACH_N1
+	cmc623_suspend(NULL);
+#endif
+
 	dc->enabled = false;
 
 	/*
@@ -2734,6 +2763,10 @@ static void tegra_dc_reset_worker(struct work_struct *work)
 	_tegra_dc_controller_reset_enable(dc);
 
 	dc->enabled = true;
+
+#ifdef CONFIG_MACH_N1
+	cmc623_resume(NULL);
+#endif
 unlock:
 	mutex_unlock(&dc->lock);
 	mutex_unlock(&shared_lock);
@@ -3011,6 +3044,7 @@ static int tegra_dc_remove(struct nvhost_device *ndev)
 #ifdef CONFIG_PM
 static int tegra_dc_suspend(struct nvhost_device *ndev, pm_message_t state)
 {
+#ifndef CONFIG_MACH_N1
 	struct tegra_dc *dc = nvhost_get_drvdata(ndev);
 
 	dev_info(&ndev->dev, "suspend\n");
@@ -3038,12 +3072,14 @@ static int tegra_dc_suspend(struct nvhost_device *ndev, pm_message_t state)
 	}
 
 	mutex_unlock(&dc->lock);
+#endif
 
 	return 0;
 }
 
 static int tegra_dc_resume(struct nvhost_device *ndev)
 {
+#ifndef CONFIG_MACH_N1
 	struct tegra_dc *dc = nvhost_get_drvdata(ndev);
 
 	dev_info(&ndev->dev, "resume\n");
@@ -3060,6 +3096,7 @@ static int tegra_dc_resume(struct nvhost_device *ndev)
 	if (dc->out_ops && dc->out_ops->resume)
 		dc->out_ops->resume(dc);
 	mutex_unlock(&dc->lock);
+#endif
 
 	return 0;
 }
@@ -3089,10 +3126,56 @@ int suspend;
 
 module_param_call(suspend, suspend_set, suspend_get, &suspend, 0644);
 
+#ifdef CONFIG_MACH_N1
+static int tegra_dc_prepare(struct device *dev)
+{
+	struct nvhost_device *ndev = to_nvhost_device(dev);
+	struct tegra_dc *dc = nvhost_get_drvdata(ndev);
+
+	dev_info(&ndev->dev, "prepare\n");
+
+	mutex_lock(&dc->lock);
+	if (dc->out_ops && dc->out_ops->suspend)
+		dc->out_ops->suspend(dc);
+
+	if (dc->enabled) {
+		//tegra_fb_suspend(dc->fb);
+		_tegra_dc_disable(dc);
+	}
+	mutex_unlock(&dc->lock);
+
+	return 0;
+}
+
+static void tegra_dc_complete(struct device *dev)
+{
+	struct nvhost_device *ndev = to_nvhost_device(dev);
+	struct tegra_dc *dc = nvhost_get_drvdata(ndev);
+
+	dev_info(&ndev->dev, "complete\n");
+
+	mutex_lock(&dc->lock);
+	if (dc->enabled)
+		_tegra_dc_enable(dc);
+
+	if (dc->out_ops && dc->out_ops->resume)
+		dc->out_ops->resume(dc);
+	mutex_unlock(&dc->lock);
+}
+
+const struct dev_pm_ops tegra_dc_pm_ops = {
+	.prepare = tegra_dc_prepare,
+	.complete = tegra_dc_complete,
+};
+#endif
+
 struct nvhost_driver tegra_dc_driver = {
 	.driver = {
 		.name = "tegradc",
 		.owner = THIS_MODULE,
+#ifdef CONFIG_MACH_N1
+		.pm = &tegra_dc_pm_ops,
+#endif
 	},
 	.probe = tegra_dc_probe,
 	.remove = tegra_dc_remove,

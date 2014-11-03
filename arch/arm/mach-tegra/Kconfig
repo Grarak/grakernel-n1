@@ -21,6 +21,7 @@ config ARCH_TEGRA_2x_SOC
 	select ARCH_SUPPORTS_MSI if TEGRA_PCI
 	select PCI_MSI if TEGRA_PCI
 	select CPA
+	select ARM_ERRATA_716044
 	help
 	  Support for NVIDIA Tegra AP20 and T20 processors, based on the
 	  ARM CortexA9MP CPU and the ARM PL310 L2 cache controller
@@ -135,6 +136,13 @@ config MACH_WHISTLER
        select MACH_HAS_SND_SOC_TEGRA_TLV320AIC326X if SND_SOC
        help
          Support for NVIDIA Whistler development platform
+
+config MACH_N1
+       bool "N1 board"
+       depends on ARCH_TEGRA_2x_SOC
+       select MACH_HAS_SND_SOC_TEGRA_WM8994 if SND_SOC
+       help
+         Support for Samsung N1 platform
 
 config MACH_ARUBA
        bool "Aruba board"
@@ -485,4 +493,43 @@ config TEGRA_PREINIT_CLOCKS
 	help
 	  Preinitialize Tegra clocks to known states before actual full-
 	  scale clock initialization starts.
+
+config TEGRA_PREPOWER_WIFI
+	bool "Pre-power up WiFi "
+	default n
+	help
+	  Pre-power up the on board WiFi chip
+endif
+
+config BT_BCM4330
+	bool "Enable BCM4330 driver"
+	default n
+	help
+	  Adds BT_BCM4330 to enable BCM4330 chip RFKILL and lpm driver
+	  for Broadcom BCM4330 chipset.
+
+config BT_MGMT
+	bool "Bluetooth Mgmt"
+	default n
+	help
+	  This is for bluetooth mgmt
+
+if SEC_MODEM
+comment "samsung modem feature"
+
+config SEC_MODEM_N1
+	bool "N1 with xmm6260 hsic"
+	depends on SEC_MODEM
+	default n
+	select UMTS_MODEM_XMM6260
+	select LINK_DEVICE_HSIC
+
+config MACH_VIBRATOR
+	bool "Enable vibrator_mach timed_output"
+	depends on MACH_N1
+	default n
+	help
+	  Say Y here to enable second timed_output device called vibrator_mach
+	  implemented in arch/arm/mach-tegra/.
+
 endif

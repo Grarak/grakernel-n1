@@ -67,6 +67,13 @@
 	}
 #endif
 
+/* This information is passed by bootloader */
+#define COMMCHIP_UNKNOWN		0
+#define COMMCHIP_NOCHIP			1
+#define COMMCHIP_BROADCOM_BCM4329	2
+#define COMMCHIP BROADCOM_BCM4330	3
+#define COMMCHIP_MARVELL_SD8797		4
+
 struct memory_accessor;
 
 void tegra_assert_system_reset(char mode, const char *cmd);
@@ -77,8 +84,12 @@ void __init tegra_mc_init(void);
 void __init tegra_map_common_io(void);
 void __init tegra_init_irq(void);
 void __init tegra_init_clock(void);
+#ifdef CONFIG_MACH_N1
+void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size);
+#else
 void __init tegra_reserve(unsigned long carveout_size, unsigned long fb_size,
 	unsigned long fb2_size);
+#endif
 /* FIXME: The following needs to move common.h when arm_soc_desc is
 	  introduced in a future version of the kernel */
 #ifdef CONFIG_CACHE_L2X0
@@ -114,6 +125,15 @@ extern unsigned long tegra_grhost_aperture;
 
 extern struct sys_timer tegra_timer;
 
+#ifdef CONFIG_MACH_N1
+#include <linux/earlysuspend.h>
+
+extern int n1_panel_pre_enable(void);
+extern int n1_panel_disable(void);
+extern int cmc623_suspend(struct early_suspend *h);
+extern int cmc623_resume(struct early_suspend *h);
+#endif
+
 enum board_fab {
 	BOARD_FAB_A = 0,
 	BOARD_FAB_B,
@@ -148,6 +168,11 @@ void tegra_get_board_info(struct board_info *);
 void tegra_get_pmu_board_info(struct board_info *bi);
 void tegra_get_display_board_info(struct board_info *bi);
 void tegra_get_camera_board_info(struct board_info *bi);
+
+#if defined (CONFIG_PM_SLEEP) && defined (CONFIG_MACH_N1)
+void n1_save_wakeup_key(int lp_state);
+#endif
+
 #ifdef CONFIG_TEGRA_CONVSERVATIVE_GOV_ON_EARLYSUPSEND
 #define SET_CONSERVATIVE_GOVERNOR_UP_THRESHOLD 		95
 #define SET_CONSERVATIVE_GOVERNOR_DOWN_THRESHOLD 	50

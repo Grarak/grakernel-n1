@@ -344,10 +344,27 @@ struct tegra_pingroup_desc {
 	int gpionr;
 };
 
+#ifdef CONFIG_MACH_N1
+struct tegra_sleep_pingroup_config {
+	enum tegra_pingroup		pingroup;
+	int						pupd_ctrl;
+	enum tegra_pullupdown	pupd;
+	int						tristate_ctrl;
+	enum tegra_tristate		tristate;
+};
+
+#define NO  0
+#define YES 1
+
+void tegra_pinmux_sleep_config_table(const struct tegra_sleep_pingroup_config *config, int len);
+#endif /* CONFIG_MACH_N1 */
 extern const struct tegra_pingroup_desc tegra_soc_pingroups[];
 extern const struct tegra_drive_pingroup_desc tegra_soc_drive_pingroups[];
 extern const int gpio_to_pingroup[];
 
+#ifdef CONFIG_MACH_N1
+int tegra_pinmux_set_func(const struct tegra_pingroup_config *);
+#endif
 int tegra_pinmux_get_func(enum tegra_pingroup pg);
 int tegra_pinmux_set_tristate(enum tegra_pingroup pg,
 	enum tegra_tristate tristate);
